@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="euc-kr"?>
+	<Body>
+		<Info>
+			<Filename></Filename>
+			<ObjectCount>3</ObjectCount>
+			<MeshCount>1</MeshCount>
+			<AnimationStart>0f</AnimationStart>
+			<AnimationEnd>100f</AnimationEnd>
+			<KeyType>Keyframe</KeyType>
+			<Object>
+				<Value ID="0">NULL</Value>
+				<Value ID="1">Box001</Value>
+			</Object>
+			<Bone>
+				<Value BoneID="0" ID="0">NULL</Value>
+			</Bone>
+		</Info>
+		<Material>
+			<Slot Index="0">
+				<Diffuse>(color 149.94 149.94 149.94)</Diffuse>
+				<Ambient>(color 149.94 149.94 149.94)</Ambient>
+				<Specular>(color 229.5 229.5 229.5)</Specular>
+				<Emissive>(color 0 0 0)</Emissive>
+				<Opacity>100.0</Opacity>
+				<Power>0.0</Power>
+			</Slot>
+			<Slot Index="1">
+				<Diffuse>(color 149.94 149.94 149.94)</Diffuse>
+				<Ambient>(color 149.94 149.94 149.94)</Ambient>
+				<Specular>(color 229.5 229.5 229.5)</Specular>
+				<Emissive>(color 0 0 0)</Emissive>
+				<Opacity>100.0</Opacity>
+				<Power>0.0</Power>
+			</Slot>
+			<Slot Index="2">
+				<Diffuse>(color 149.94 149.94 149.94)</Diffuse>
+				<Ambient>(color 149.94 149.94 149.94)</Ambient>
+				<Specular>(color 229.5 229.5 229.5)</Specular>
+				<Emissive>(color 0 0 0)</Emissive>
+				<Opacity>100.0</Opacity>
+				<Power>0.0</Power>
+			</Slot>
+			<Slot Index="3">
+				<Diffuse>(color 150 150 150)</Diffuse>
+				<Ambient>(color 150 150 150)</Ambient>
+				<Specular>(color 229.5 229.5 229.5)</Specular>
+				<Emissive>(color 0 0 0)</Emissive>
+				<Opacity>100.0</Opacity>
+				<Power>0.0</Power>
+				<DiffuseMap><![CDATA[C:\Users\hi\Documents\3dsMax\sceneassets\images\grass.jpg]]></DiffuseMap>
+			</Slot>
+			<Slot Index="4">
+				<Diffuse>(color 149.94 149.94 149.94)</Diffuse>
+				<Ambient>(color 149.94 149.94 149.94)</Ambient>
+				<Specular>(color 229.5 229.5 229.5)</Specular>
+				<Emissive>(color 0 0 0)</Emissive>
+				<Opacity>100.0</Opacity>
+				<Power>0.0</Power>
+			</Slot>
+			<Slot Index="5">
+				<Diffuse>(color 149.94 149.94 149.94)</Diffuse>
+				<Ambient>(color 149.94 149.94 149.94)</Ambient>
+				<Specular>(color 229.5 229.5 229.5)</Specular>
+				<Emissive>(color 0 0 0)</Emissive>
+				<Opacity>100.0</Opacity>
+				<Power>0.0</Power>
+				<DiffuseMap><![CDATA[C:\Users\hi\Documents\3dsMax\sceneassets\images\troll_cleric29_max2010.jpg]]></DiffuseMap>
+			</Slot>
+			<Slot Index="6">
+				<Diffuse>(color 149.94 149.94 149.94)</Diffuse>
+				<Ambient>(color 149.94 149.94 149.94)</Ambient>
+				<Specular>(color 229.5 229.5 229.5)</Specular>
+				<Emissive>(color 0 0 0)</Emissive>
+				<Opacity>100.0</Opacity>
+				<Power>0.0</Power>
+			</Slot>
+		</Material>
+		<Object ID="0" Name="NULL" Class="Dummy">
+			<Parent ID="-1" Name="undefined">
+			</Parent>
+			<LocalTM>
+				<Value>[1.0,0.0,0.0,0.0]</Value>
+				<Value>[0.0,1.0,0.0,0.0]</Value>
+				<Value>[0.0,0.0,1.0,0.0]</Value>
+				<Value>[0.0,0.0,0.0,1.0]</Value>
+			</LocalTM>
+			<WorldTM>
+				<Value>[1.0,0.0,0.0,0.0]</Value>
+				<Value>[0.0,1.0,0.0,0.0]</Value>
+				<Value>[0.0,0.0,1.0,0.0]</Value>
+				<Value>[0.0,0.0,0.0,1.0]</Value>
+			</WorldTM>
+			<BoundingBox>
+				<Max>[5,5,5]</Max>
+				<Min>[-5,-5,-5]</Min>
+				<Center>[0,0,0]</Center>
+			</BoundingBox>
+		</Object>
+		<Object ID="1" Name="Box001" Class="Editable_mesh">
+			<Parent ID="-1" Name="undefined">
+			</Parent>
+			<LocalTM>
+				<Value>[1.0,0.0,0.0,0.0]</Value>
+				<Value>[0.0,1.0,0.0,0.0]</Value>
+				<Value>[0.0,0.0,1.0,0.0]</Value>
+				<Value>[21.0027,0.0,3.61759,1.0]</Value>
+			</LocalTM>
+			<WorldTM>
+				<Value>[1.0,0.0,0.0,0.0]</Value>
+				<Value>[0.0,1.0,0.0,0.0]</Value>
+				<Value>[0.0,0.0,1.0,0.0]</Value>
+				<Value>[21.0027,0.0,3.61759,1.0]</Value>
+			</WorldTM>
+			<BoundingBox>
+				<Max>[21.3763,28.7109,20.5715]</Max>
+				<Min>[-21.3763,0,-20.5715]</Min>
+				<Center>[0,14.3555,0]</Center>
+			</BoundingBox>
+			<Vertex>
+				<Value Index="0">[-21.3763,0,-20.5715]</Value>
+				<Value Index="1">[21.3763,0,-20.5715]</Value>
+				<Value Index="2">[-21.3763,0,20.5715]</Value>
+				<Value Index="3">[21.3763,0,20.5715]</Value>
+				<Value Index="4">[-21.3763,28.7109,-20.5715]</Value>
+				<Value Index="5">[21.3763,28.7109,-20.5715]</Value>
+				<Value Index="6">[-21.3763,28.7109,20.5715]</Value>
+				<Value Index="7">[21.3763,28.7109,20.5715]</Value>
+			</Vertex>
+			<VertexNormal>
+				<Value Index="0">[0,-1.5708,0]</Value>
+				<Value Index="1">[0,-1.5708,0]</Value>
+				<Value Index="2">[0,-1.5708,0]</Value>
+				<Value Index="3">[0,-1.5708,0]</Value>
+				<Value Index="4">[0,1.5708,0]</Value>
+				<Value Index="5">[0,1.5708,0]</Value>
+				<Value Index="6">[0,1.5708,0]</Value>
+				<Value Index="7">[0,1.5708,0]</Value>
+			</VertexNormal>
+			<TriIndex MaterialCount="6">
+				<Value MaterialID="1">[4,7,5]</Value>
+				<Value MaterialID="1">[7,4,6]</Value>
+				<Value MaterialID="2">[0,3,2]</Value>
+				<Value MaterialID="2">[3,0,1]</Value>
+				<Value MaterialID="3">[2,4,0]</Value>
+				<Value MaterialID="3">[4,2,6]</Value>
+				<Value MaterialID="4">[1,7,3]</Value>
+				<Value MaterialID="4">[7,1,5]</Value>
+				<Value MaterialID="5">[0,5,1]</Value>
+				<Value MaterialID="5">[5,0,4]</Value>
+				<Value MaterialID="6">[3,6,2]</Value>
+				<Value MaterialID="6">[6,3,7]</Value>
+			</TriIndex>
+			<TexVertex>
+				<Value Index="0">[0,1]</Value>
+				<Value Index="1">[1,1]</Value>
+				<Value Index="2">[0,0]</Value>
+				<Value Index="3">[1,0]</Value>
+				<Value Index="4">[0,1]</Value>
+				<Value Index="5">[1,1]</Value>
+				<Value Index="6">[0,0]</Value>
+				<Value Index="7">[1,0]</Value>
+				<Value Index="8">[0,1]</Value>
+				<Value Index="9">[1,1]</Value>
+				<Value Index="10">[0,0]</Value>
+				<Value Index="11">[1,0]</Value>
+			</TexVertex>
+			<TexIndex MaterialCount="6">
+				<Value MaterialID="1">[8,11,9]</Value>
+				<Value MaterialID="1">[11,8,10]</Value>
+				<Value MaterialID="2">[9,10,11]</Value>
+				<Value MaterialID="2">[10,9,8]</Value>
+				<Value MaterialID="3">[0,3,1]</Value>
+				<Value MaterialID="3">[3,0,2]</Value>
+				<Value MaterialID="4">[0,3,1]</Value>
+				<Value MaterialID="4">[3,0,2]</Value>
+				<Value MaterialID="5">[4,7,5]</Value>
+				<Value MaterialID="5">[7,4,6]</Value>
+				<Value MaterialID="6">[4,7,5]</Value>
+				<Value MaterialID="6">[7,4,6]</Value>
+			</TexIndex>
+		</Object>
+	</Body>
