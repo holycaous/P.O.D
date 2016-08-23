@@ -8,7 +8,7 @@
 
 
 // G버퍼 언팩
-SURFACE_DATA UnpackGBuffer(float2 Tex)
+SURFACE_DATA UnpackGBuffer(float4 PosL, float2 Tex)
 {
 	SURFACE_DATA Out;
 	
@@ -28,19 +28,22 @@ SURFACE_DATA UnpackGBuffer(float2 Tex)
 	//--------------------------------------------------------------//
 	// 1.
 	//// 좌표 = ( 파 - 니어 ) *  깊이버퍼 + 니어
-	//float PositionTexZ = (gFar - gNear) * Out.DepthTex.x + gNear;
-	
+	float PositionTexZ = (gFar - gNear) * Out.DepthTex.x + gNear;
+	//
 	//// 최종 위치 구하기
 	//float4 Position = float4(Out.PositionTex.xy, PositionTexZ, 1.0f);
 	//Position = mul(Position, gViewInvTranspose);
 	////Position.z *= Position.w;
 	//Out.PositionTex = Position;
-
+	//
 	//// 2
 	//Out.PositionTex = (Out.PositionTex  * 2.0f) - 1.0f;        // 복원
-	//Out.PositionTex = mul(Out.PositionTex, gProjInvTranspose); // 뷰로 옴긴다
-	//Out.PositionTex = mul(Out.PositionTex, gViewInvTranspose); // 월드로 옮긴다.
-	//Out.PositionTex.z = PositionTexZ;
+	//
+	//float4 pos = float4(PosL.xy, Out.DepthTex.x, 1.0f);
+	//pos = mul(pos, gProjInvTranspose); // 뷰로 옴긴다
+	//pos = mul(pos, gViewInvTranspose); // 월드로 옮긴다.
+	//pos.xyz /= pos.w;
+	//Out.PositionTex = pos;
 	//--------------------------------------------------------------//
 	return Out;
 }
@@ -51,11 +54,7 @@ GVertexOut VS(GVertexIn vin)
 	GVertexOut vout;
 
 	// Transform to world space space.
-	vout.PosW = mul(float4(vin.PosL, 1.0f), vin.World).xyz;
-	//vout.PosW = vin.PosL;
-
-	// Transform to homogeneous clip space.
-	vout.PosH = mul(float4(vout.PosW, 1.0f), gProj);
+	vout.PosL = float4(vin.PosL, 1.0f);
 
 	// Output vertex attributes for interpolation across triangle.
 	// 어차피 변환결과는 같음.
@@ -68,7 +67,7 @@ GVertexOut VS(GVertexIn vin)
 float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 {
 	// 화면 좌표를 얻는다
-	SURFACE_DATA sData = UnpackGBuffer(pin.Tex);
+	SURFACE_DATA sData = UnpackGBuffer(pin.PosL, pin.Tex);
 
 	// 노말 맵 결과
 	float  DotNomalMap = 1.0f;
@@ -104,7 +103,7 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	
 	// 테스트 1
 	// 포인트 라이트
-	//float gPointLight_Length = length(gPointLight.Position.xyz - sData.PositionTex.xyz);
+	float gPointLight_Length = length(gPointLight.Position.xyz - sData.PositionTex.xyz);
 	
 	// 거리 확인
 	//[flatten]

@@ -198,7 +198,7 @@ public:
 				//// 입력조립기에 버퍼 할당
 				//mCoreStorage->md3dImmediateContext->IASetVertexBuffers(0, 1, &mModelManager->GetBuffer(_ShaderMode)->mVB, &stride, &offset);
 				//mCoreStorage->md3dImmediateContext->IASetIndexBuffer(mModelManager->GetBuffer(_ShaderMode)->mIB, _ForMat, 0);
-
+				//
 				// 기본 쉐이더 변수 업데이트 
 				//mShaderManager->SetGbuffer();
 
@@ -303,17 +303,17 @@ public:
 		//		itor->second->mWdMtx[i].;
 		//	}
 		//}
-
+		//
 		//// 디렉셔널 라이트
 		//mShaderManager->GetLightManager()->mSunDirLight.Direction = gCam.GetLook();
-		//
+		
 		//// 포인트 라이트
 		mShaderManager->GetLightManager()->mPointLight.Position = gCam.GetPosition();
 		//
 
 		// 플레이어 손전등
 		//mShaderManager->SetPlyerSpotLight();
-
+		//
 		//// 모델 매니저 업데이트
 		//mModelManager->Update(dt);
 

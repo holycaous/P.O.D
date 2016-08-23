@@ -42,6 +42,7 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexOut pin)
 	// 좌표 = ( 파 - 니어 ) *  깊이버퍼 + 니어
 	float  Depth = (PosV.z - gNear) / (gFar - gNear);
 
+
 	// 탄젠트 노멀 만들기
 	// 읽어들인 노멀맵의 정보를 월드맵으로 옮긴다.
 	// 노말맵 안엔 0~255 가 있어.

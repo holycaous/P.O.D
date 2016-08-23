@@ -307,8 +307,8 @@ public:
 		mXMLParser.SetModelBuf(mScreen);
 
 		// 파싱 시작
-		mXMLParser.LoadScreen(WIN_X / 10, WIN_Y / 10);
-		
+		mXMLParser.LoadScreen(1.0f, 1.0f); // 풀 스크린 스퀘어
+
 		// 변수 계산
 		mScreen->CalValue();
 

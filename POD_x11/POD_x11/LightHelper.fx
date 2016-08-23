@@ -46,13 +46,13 @@ void ComputePointLight(float4 DiffuseTex, Material mat, PointLight L, float3 pos
 	// Initialize outputs.
 	ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	spec    = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// The vector from the surface to the light.
 	float3 lightVec = L.Position - pos;
 
-		// The distance from surface to light.
-		float d = length(lightVec);
+	// The distance from surface to light.
+	float d = length(lightVec);
 
 	// Range test.
 	if (d > L.Range)
@@ -74,10 +74,10 @@ void ComputePointLight(float4 DiffuseTex, Material mat, PointLight L, float3 pos
 	if (diffuseFactor > 0.0f)
 	{
 		float3 v = reflect(-lightVec, normal);
-			float specFactor = pow(max(dot(v, toEye), 0.0f), mat.Specular.w);
+		float specFactor = pow(max(dot(v, toEye), 0.0f), mat.Specular.w);
 
-		diffuse = diffuseFactor * mat.Diffuse * L.Diffuse;
-		spec = specFactor * mat.Specular * L.Specular;
+		diffuse = diffuseFactor * mat.Diffuse  * L.Diffuse;
+		spec    = specFactor    * mat.Specular * L.Specular;
 	}
 
 	// Attenuate

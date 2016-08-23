@@ -108,8 +108,7 @@ struct GVertexIn
 
 struct GVertexOut
 {
-	float4 PosH    : SV_POSITION;
-	float3 PosW    : POSITION;
+	float4 PosL    : SV_POSITION;
 	float2 Tex     : TEXCOORD0; // 보정 용도
 };
 
