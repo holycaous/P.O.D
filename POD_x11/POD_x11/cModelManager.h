@@ -307,7 +307,7 @@ public:
 		mXMLParser.SetModelBuf(mScreen);
 
 		// 파싱 시작
-		mXMLParser.LoadScreen(1.0f, 1.0f); // 풀 스크린 스퀘어
+		mXMLParser.LoadScreen(1.0f, 1.0f); // 풀 스크린쿼드
 
 		// 변수 계산
 		mScreen->CalValue();
@@ -361,24 +361,31 @@ public:
 	// 모델 추가하기
 	void AddModel(string _Name, float _x, float _y, float _z, OBJ_MOVEABLE _moveAble = e_StaticObj)
 	{
-		string _SlectModel;
-		SHADER_TYPE _UseShader;
-
-		// 모델의 체인만큼 (서브 모델)
+		// 모델 파일에 있는 서브 모델 수 만큼
 		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
 		{
-			// 체인에 있는 모델을 순차적으로 선택
-			_SlectModel = mModelChain[_Name][i];
-
-			// 체인에 있는 모델 모두 월드매트릭스에 추가
-			mAllModelData[_SlectModel]->AddModel(_x, _y, _z, _moveAble); // <-- 요 부분을 map<string, vector<InitMetaData*>> mModelChain 로 바꿔서
-			_UseShader = mAllModelData[_SlectModel]->mShaderMode;		 // 모델마다 자신의 서브모델들을 모두 등록할 수 있게 해야 한다.
-			UsingShaderModel(_UseShader);								 // 그래서 모델 크리에이트 하고, string으로 같은 
-			_SlectModel.clear();										 // 문자열을 가진 객체들을 찾아 해쉬로 만들어둘 필요가 잇다.
-																		 // 즉, 자기자신의 내부에잇는 모든 서브 모델들의 포문을 돌면서
-																		 // 같은위치를 추가를 해 줘야한다는 것.
+			// 서브 모델 추가
+			addSubModel(mModelChain[_Name][i], _x, _y, _z, _moveAble);
 		}
 	}	
+
+	// 서브 모델들 모두 추가 @@@@@@
+	void addSubModel(string& _SlectModel, float& _x, float& _y, float& _z, OBJ_MOVEABLE& _moveAble)
+	{
+		// 체인에 있는 모델 모두 월드매트릭스에 추가
+		mAllModelData[_SlectModel]->AddModel(_x, _y, _z, _moveAble);
+
+		// 쉐이더 추가
+		addUseShader(_SlectModel);
+	}
+
+	// 사용한 쉐이더 추가
+	void addUseShader(string& _SlectModel)
+	{
+		SHADER_TYPE _UseShader;
+		_UseShader = mAllModelData[_SlectModel]->mShaderMode;
+		UsingShaderModel(_UseShader);
+	}
 
 	// 모델 추가하기
 	void AddScreen(float _x, float _y, float _z)

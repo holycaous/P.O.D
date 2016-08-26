@@ -665,10 +665,14 @@ public:
 
 	void ClearInsBuf()
 	{
-		// 인스턴스 버퍼 삭제
-		for (auto itor = mInstancedBuffer.begin(); itor != mInstancedBuffer.end(); ++itor)
-			ReleaseCOM(itor->second);
-		mInstancedBuffer.clear();
+		// 인스턴스 버퍼가 있다면
+		if (mInstancedBuffer.size())
+		{
+			// 인스턴스 버퍼 삭제
+			for (auto itor = mInstancedBuffer.begin(); itor != mInstancedBuffer.end(); ++itor)
+				ReleaseCOM(itor->second);
+			mInstancedBuffer.clear();
+		}
 	}
 
 	// 빌드

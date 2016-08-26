@@ -42,14 +42,14 @@ public:
 	}
 
 	// 파싱
-	void LoadXMLRoute(string _ModelRoute)
+	void LoadXMLRoute(string& _ModelRoute)
 	{
 		// XML 루트 데이터 읽기
 		ReadLocMyFormat_Model(_ModelRoute);
 	}
 
 	// 파싱
-	void LoadXMLModel(string _ModelData, int idx)
+	void LoadXMLModel(string& _ModelData, int idx)
 	{
 		// 현재 선택된 번호
 		mIdx = idx;
@@ -381,7 +381,7 @@ public:
 	}
 
 	// 내 포맷으로 읽는다.(데이터) - 본
-	void ReadDataMyFormat_Bone(string _BoneRoute, MyBoneData* _MyBoneData)
+	void ReadDataMyFormat_Bone(string& _BoneRoute, MyBoneData* _MyBoneData)
 	{
 		// 이진 파일 열기
 		FileOpen(_BoneRoute.c_str(), "rb");
@@ -526,6 +526,10 @@ public:
 		mInitMetaData->mIndexCount = mMyMeshData[mIdx].indexCount;
 
 		// 리소스 얻기 (재질 정보)
+		// 테스트
+		if (mInitMetaData->mCreateName == "Model4_1")
+			int i = 0;
+
 		LoadTex(mMyMeshData[mIdx].mMyMat.mDiffuseSRV , e_DiffuseMap);
 		LoadTex(mMyMeshData[mIdx].mMyMat.mNomalSRV   , e_NomalMap);
 		LoadTex(mMyMeshData[mIdx].mMyMat.mSpecularSRV, e_SpecularMap);
@@ -612,7 +616,6 @@ private:
 			break;
 		}
 
-
 		//HRESULT WINAPI
 		//	D3DX11CreateShaderResourceViewFromFileW(
 		//	ID3D11Device*               pDevice,
@@ -624,6 +627,7 @@ private:
 
 		// 클리어
 		_WsTexName.clear();
+		_TexName.clear();
 	}
 
 	// 변환 함수
@@ -632,6 +636,8 @@ private:
 		// 변환
 		for (unsigned int i = 0; i < _string.length(); ++i)
 			_wstring += wchar_t(_string[i]);
+
+		_string.clear();
 	}
 };
 
