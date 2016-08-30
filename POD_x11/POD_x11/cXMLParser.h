@@ -39,6 +39,8 @@ public:
 	{
 		mNewModleLoc.clear();
 		mMyMeshData.clear();
+		mInitMetaData = nullptr;
+		mFilePointer = nullptr;
 	}
 
 	// 파싱
@@ -59,9 +61,6 @@ public:
 
 		// 얻은 데이터 복사해 넣기
 		SaveMyFormat();
-
-		// 연결고리 끊기
-		mInitMetaData = nullptr;
 	}
 
 	// 모델 버퍼 등록
@@ -391,6 +390,10 @@ public:
 		fread(&len, sizeof(int), 1, mFilePointer);
 		fread(&_MyBoneData->mMainName, sizeof(char), len, mFilePointer);
 
+		// Bone 애니 이름
+		fread(&len, sizeof(int), 1, mFilePointer);
+		fread(&_MyBoneData->mAniName, sizeof(char), len, mFilePointer);
+
 		// 본 데이터 사이즈
 		fread(&len, sizeof(int), 1, mFilePointer);
 		_MyBoneData->mBoneData.resize(len);
@@ -527,8 +530,8 @@ public:
 
 		// 리소스 얻기 (재질 정보)
 		// 테스트
-		if (mInitMetaData->mCreateName == "Model4_1")
-			int i = 0;
+		//if (mInitMetaData->mCreateName == "Model4_1")
+		//	int i = 0;
 
 		LoadTex(mMyMeshData[mIdx].mMyMat.mDiffuseSRV , e_DiffuseMap);
 		LoadTex(mMyMeshData[mIdx].mMyMat.mNomalSRV   , e_NomalMap);
@@ -556,6 +559,9 @@ public:
 		// 상위 클래스 이름
 		mInitMetaData->mParentID = mMyMeshData[mIdx].mParentID;
 		strcpy(mInitMetaData->mParentName, mMyMeshData[mIdx].mParentName);
+
+		// 연결고리 끊기
+		mInitMetaData = nullptr;
 	}
 private:
 	// 파일 열기
@@ -578,22 +584,22 @@ private:
 	}
 
 	// 텍스처 로드
-	void LoadTex(const wchar_t* _TexName, TEXTURE_TYPE e_InitTex)
-	{
-		// 텍스처 로딩
-		switch (e_InitTex)
-		{
-		case e_DiffuseMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mInitMetaData->mDiffuseSRV, 0));
-			break;
-		case e_SpecularMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mInitMetaData->mSpecularSRV, 0));
-			break;
-		case e_NomalMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mInitMetaData->mNomalSRV, 0));
-			break;
-		}
-	}
+	//void LoadTex(const wchar_t* _TexName, TEXTURE_TYPE e_InitTex)
+	//{
+	//	// 텍스처 로딩
+	//	switch (e_InitTex)
+	//	{
+	//	case e_DiffuseMap:
+	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mInitMetaData->mDiffuseSRV, 0));
+	//		break;
+	//	case e_SpecularMap:
+	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mInitMetaData->mSpecularSRV, 0));
+	//		break;
+	//	case e_NomalMap:
+	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mInitMetaData->mNomalSRV, 0));
+	//		break;
+	//	}
+	//}
 
 	// 텍스처 로드
 	void LoadTex(string _TexName, TEXTURE_TYPE e_InitTex)

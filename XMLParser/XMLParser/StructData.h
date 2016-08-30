@@ -443,7 +443,7 @@ public:
 
 	// 이름
 	char mMainName[BUF_SIZE];
-
+	char mAniName[BUF_SIZE];
 public:
 	~MyBoneData()
 	{
@@ -546,6 +546,7 @@ private:
 			strcpy(tKeyString.Name, _SelectNode.mObjName);
 			strcpy(tKeyString.objClass, _SelectNode.mObjClass);
 			mBoneHierarchy[_idx].push_back(tKeyString);
+
 			// 부모 노드의 값을 얻어 재귀호출 한다.
 			return GetRootNode(_idx ,mBoneData[_SelectNode.mParentID]);
 		}

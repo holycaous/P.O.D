@@ -1693,6 +1693,7 @@ public:
 
 	// ¿Ã∏ß
 	char mMainName[BUF_SIZE];
+	char mAniName[BUF_SIZE];
 
 public:
 	~MyBoneData()

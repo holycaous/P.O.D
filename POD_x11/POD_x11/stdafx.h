@@ -28,6 +28,7 @@ using namespace std;
 #include "cMathHelper.h"
 #include "cXnaHelper.h"
 #include "d3dx11Effect.h"
+#include "vld.h"
 
 // 사용자 정의 클래스 
 // << 전체 공통 >>

@@ -45,11 +45,18 @@ public:
 		AddTex	      ("BOX4", L"WoodCrate01_spec.dds", e_SpecularMap);
 		
 		// 모델 추가
-		CreateModel("Model0", "Export/FinSkinning_TestLoc.pod", "Export/FinSkinning_TestBone.pod", e_ShaderPongTex);
-		CreateModel("Model1", "Export/FinAman_boyLoc.pod"     , "Export/FinAman_boyBone.pod"     , e_ShaderPongTex);
-		CreateModel("Model2", "Export/FinCat1Loc.pod"         , "Export/FinCat1Bone.pod"         , e_ShaderPongTex);
-		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , "Export/FinAnonSoldierBone.pod"  , e_ShaderPongTex);
-		CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , "Export/FinCyclopsBone.pod"      , e_ShaderPongTex);
+		CreateModel("Model0", "Export/FinSkinning_TestLoc.pod", e_ShaderPongTex);
+		CreateModel("Model1", "Export/FinAman_boyLoc.pod"     , e_ShaderPongTex);
+		CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTex);
+		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTex);
+		CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTex);
+
+		// 애니 추가
+		CreateBoneAni("Model0", "Export/FinSkinning_TestBoneIdel.pod", e_ShaderPongTex);
+		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdel.pod"     , e_ShaderPongTex);
+		CreateBoneAni("Model2", "Export/FinCat1BoneIdel.pod"         , e_ShaderPongTex);
+		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdel.pod"  , e_ShaderPongTex);
+		CreateBoneAni("Model4", "Export/FinCyclopsBoneIdel.pod"      , e_ShaderPongTex);
 
 		//CreateModel("Model4", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
 		//CreateModel("Model5", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
@@ -81,6 +88,7 @@ public:
 	void ClearScreen()
 	{
 		SafeDelete(mScreen);
+		mScreenBuffer->ClearInsBuf();
 		SafeDelete(mScreenBuffer);
 	}
 
@@ -114,7 +122,7 @@ public:
 	// 모델 월드 매트릭스 삭제
 	void ClearModel()
 	{
-		// 모델 데이터 삭제
+		//// 모델 데이터 삭제
 		for (map<string, InitMetaData*>::iterator itor = mAllModelData.begin(); itor != mAllModelData.end(); ++itor)
 		{
 			// 모델 내부 객체 삭제
@@ -129,6 +137,9 @@ public:
 				ReleaseCOM(itor2->second);
 			}
 		}
+
+		// 스크린 인스턴스 제거
+		mScreenBuffer->ClearInsBuf();
 
 		// 모델에 사용되었던 쉐이더 제거
 		mUseAllShader.clear();
@@ -160,6 +171,9 @@ public:
 		// 모델 데이터 삭제
 		for (map<string, InitMetaData*>::iterator itor = mAllModelData.begin(); itor != mAllModelData.end();)
 		{
+			// 모델 내부 객체 삭제
+			itor->second->ClearWdMtx();
+
 			// 모델 내부 객체 삭제
 			SafeDelete(itor->second);
 
@@ -193,7 +207,7 @@ public:
 	}
 
 	// 모델 생성하기
-	void CreateModel(string _Name, string _ModelRoute, string _BoneRoute, SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	void CreateModel(string _Name, string _ModelRoute, SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
 	{
 		string tSelectModelRoute, tNewName;
 		char _ModelNumBuf[128];
@@ -249,7 +263,14 @@ public:
 			tSelectModelRoute.clear();
 			tNewName.clear();
 		}
-		
+
+		// 파서 버퍼 초기화 ( 다음 모델을 받기 위해 ) 
+		mXMLParser.ClearClass();
+	}
+
+	// 모델 생성하기
+	void CreateBoneAni(string _Name, string _BoneRoute, SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	{
 		//----------------------------------------------------//
 		// 본 데이터 파싱
 		//----------------------------------------------------//
@@ -260,7 +281,7 @@ public:
 		mXMLParser.ReadDataMyFormat_Bone(_BoneRoute, &mMyBoneData);
 
 		// 저장
-		mAniManager->mData[_Name] = mMyBoneData;
+		mAniManager->mData[_Name][mMyBoneData.mAniName] = mMyBoneData;
 
 		// 파서 버퍼 초기화 ( 다음 모델을 받기 위해 ) 
 		mXMLParser.ClearClass();

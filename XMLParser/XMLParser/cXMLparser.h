@@ -185,6 +185,47 @@ public:
 		strcat(mFinExportBoneData, mExportFileFormat);
 	}
 
+	// XML 초기화
+	void Init(char* _ModelRoute, char* _Name, char* _AniName)
+	{
+		// 대표 이름 등록
+		strcpy(mName, _Name);
+
+		// Bone 대표 이름 등록
+		strcpy(mMyBoneData.mMainName, mName);
+
+		// Bone 애니 이름 등록
+		strcpy(mMyBoneData.mAniName, _AniName);
+
+		// 경로 저장
+		strcpy(mParsingFileRoute, _ModelRoute);
+
+		// 익스포트 파일 포맷 방식
+		strcpy(mExportFileFormat, ".pod");
+
+		// 익스포트 파일 저장 위치
+		strcpy(mExportFileLoc, "Export/");
+
+		// 파일 이름 얻기
+		GetFileName();
+
+
+		// 익스포트 파일 로케이션
+		strcpy(mFinExportModelLoc, mExportFileLoc);
+		strcat(mFinExportModelLoc, "Fin");
+		strcat(mFinExportModelLoc, mFileName);
+		strcat(mFinExportModelLoc, "Loc");
+		strcat(mFinExportModelLoc, mExportFileFormat);
+
+		// 익스포트 파일 본
+		strcpy(mFinExportBoneData, mExportFileLoc);
+		strcat(mFinExportBoneData, "Fin");
+		strcat(mFinExportBoneData, mFileName);
+		strcat(mFinExportBoneData, "Bone");
+		strcat(mFinExportBoneData, mMyBoneData.mAniName);
+		strcat(mFinExportBoneData, mExportFileFormat);
+	}
+
 	// XML 텍스처 등록
 	void SetTexture(int _MatNum, char* _DiffuseMap = "NULL", float _Opacity = 100.0f, char* _NoamleMap = "NULL", char* _SpecularMap = "NULL")
 	{
@@ -202,7 +243,7 @@ public:
 	}
 
 	// 파싱
-	void LoadXML()
+	void LoadXMLModel()
 	{
 		// XML 데이터 읽고, 계산한다.
 		LoadXmlData();
@@ -232,6 +273,20 @@ public:
 		//MyMeshData test;
 		//ReadDataMyFormat_Model(mNewModleLoc[0].Data, &test); // 0번 데이터 확인~
 
+
+		// 데이터 클리어
+		ClearClass();
+	}
+
+	// 파싱
+	void LoadXMLBone()
+	{
+		// XML 데이터 읽고, 계산한다.
+		LoadXmlData();
+
+		// 데이터 가공 끝
+		FinalData();
+
 		//--------------------------------------------//
 		// 본 데이터
 		//--------------------------------------------//
@@ -240,9 +295,9 @@ public:
 
 		// 내 포맷으로 본 데이터를 작성한다.
 		WriteDataMyFormat_Bone();
-		
+
 		// 내 포맷으로 본 데이터를 읽는다. (테스트) @@@@@
- 		//mMyBoneData.ClearClass();
+		//mMyBoneData.ClearClass();
 		//ReadDataMyFormat_Bone();
 
 		// 데이터 클리어
@@ -1086,6 +1141,11 @@ private:
 		fwrite(&len, sizeof(int), 1, mFilePointer);
 		fwrite(&mMyBoneData.mMainName, sizeof(char), len, mFilePointer);
 
+		// Bone 애니 이름
+		len = strlen(mMyBoneData.mAniName) + 1;
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+		fwrite(&mMyBoneData.mAniName, sizeof(char), len, mFilePointer);
+
 		// 본 데이터 사이즈
 		len = mMyBoneData.mBoneData.size();
 		fwrite(&len, sizeof(int), 1, mFilePointer);
@@ -1189,6 +1249,10 @@ private:
 		fread(&len, sizeof(int), 1, mFilePointer);
 		fread(&mMyBoneData.mMainName, sizeof(char), len, mFilePointer);
 
+		// Bone 애니 이름
+		fread(&len, sizeof(int), 1, mFilePointer);
+		fread(&mMyBoneData.mAniName, sizeof(char), len, mFilePointer);
+		
 		// 본 데이터 사이즈
 		fread(&len, sizeof(int), 1, mFilePointer);
 		mMyBoneData.mBoneData.resize(len);

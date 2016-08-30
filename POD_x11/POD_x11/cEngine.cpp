@@ -35,6 +35,8 @@ cEngine::~cEngine()
 	cLightManager   ::DestroyInstance();
 	cDrawManager    ::GetInstance()->ClearClass();
 	cDrawManager    ::DestroyInstance();
+
+	cCoreStorage::DestroyInstance();
 }
 
 // 화면 다시 만들기
