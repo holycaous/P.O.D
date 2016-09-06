@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Base">
+      <UniqueIdentifier>{570ccfd4-b548-4aa0-9d15-127855d6bd45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Terrain">
+      <UniqueIdentifier>{40792f28-e0f7-4d89-8f68-217a664a01f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Protocol">
+      <UniqueIdentifier>{c6d12de5-a6d8-4352-b3b4-39736ab8480b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object">
+      <UniqueIdentifier>{9e6fe2e8-414d-4da3-8bb6-21d2f8329e8a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CConnectedUser.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CConnectedUserManager.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CCircularQueue.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="CEventSelect.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="CIocp.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="CMultiThreadSync.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="CMemoryPool.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="CNetworkSession.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="CPacketSession.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="CIocpServer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CTree.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="cServerMGR.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CTerrain_Server.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="CCriticalSection.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Server_Protocol.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="CObject.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="cPlayer_Info.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="cMonster_1.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="cMonster_Info.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="cMonsterMGR.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="POD_Server.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CConnectedUser.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CConnectedUserManager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CCircularQueue.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="CEventSelect.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="CIocp.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="CPacketSession.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="CNetworkSession.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="cSeverMGR.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CIocpServer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CTree.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="CTerrain_Server.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="Server_Protocol.cpp">
+      <Filter>Protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="cPlayer_Info.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="cMonster_Info.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="cMonster_1.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="cMonsterMGR.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
