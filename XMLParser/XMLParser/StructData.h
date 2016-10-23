@@ -476,6 +476,10 @@ public:
 			mBoneData[i].mObjID = i;
 		}
 
+		// 옮길 데이터
+		string tParentName;
+		string tObjName;
+
 		// 부모 노드 재 배치
 		// 전체 순회
 		for (unsigned int i = 0; i < mBoneData.size(); ++i)
@@ -483,8 +487,12 @@ public:
 			// 엔 제곱만큼 수행 
 			for (unsigned int idx = 0; idx < mBoneData.size(); ++idx)
 			{
+				// 데이터 복사
+				tParentName = mBoneData[i].mParentName;
+				tObjName    = mBoneData[idx].mObjName;
+
 				// 찾는 정보가 일치한다면
-				if (strstr(mBoneData[i].mParentName, mBoneData[idx].mObjName))
+				if (tParentName == tObjName)
 				{
 					// 덮어쓴다.
 					mBoneData[i].mParentID = mBoneData[idx].mObjID;
@@ -492,6 +500,10 @@ public:
 				}
 			}
 		}
+
+		// 제거
+		tParentName.clear();
+		tObjName.clear();
 	}
 
 	// 트리를 구성한다

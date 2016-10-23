@@ -43,7 +43,10 @@ public:
 		AddTex	      ("BOX4", L"WoodCrate01_diff.dds", e_DiffuseMap);
 		AddTex		  ("BOX4", L"WoodCrate01_norm.dds", e_NomalMap);
 		AddTex	      ("BOX4", L"WoodCrate01_spec.dds", e_SpecularMap);
-		
+
+		// 맵 추가
+		CreateModel("Map1", "Export/FinTestMapLoc.pod", e_ShaderPongTex);
+
 		// 모델 추가
 		CreateModel("Model0", "Export/FinSkinning_TestLoc.pod", e_ShaderPongTex);
 		CreateModel("Model1", "Export/FinAman_boyLoc.pod"     , e_ShaderPongTex);
@@ -118,6 +121,81 @@ public:
 			_SlectModel.clear();
 		}
 	}	
+
+	// 모델 회전하기
+	void SetRotate(int _uniqueCode, string _Name, float _x, float _y, float _z)
+	{
+		string _SlectModel;
+
+		// 모델의 체인만큼 (서브 모델)
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델을 순차적으로 선택
+			_SlectModel = mModelChain[_Name][i];
+
+			// 체인에 있는 모델 모두 회전
+			mAllModelData[_SlectModel]->SetRotate(_uniqueCode, _x, _y, _z);
+			_SlectModel.clear();
+		}
+	}
+
+	// 모델 크기 키우기
+	void SetScale(int _uniqueCode, string _Name, float _x, float _y, float _z)
+	{
+		string _SlectModel;
+
+		// 모델의 체인만큼 (서브 모델)
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델을 순차적으로 선택
+			_SlectModel = mModelChain[_Name][i];
+
+			// 체인에 있는 모델 모두 이동
+			mAllModelData[_SlectModel]->SetScale(_uniqueCode, _x, _y, _z);
+			_SlectModel.clear();
+		}
+	}
+
+	// 모델 데이터 가져오기 (_outData에 모두 다 가져감. _outData는 밖에서 생성하고 별도로 삭제해줘야함) // 주의
+	void getModelData(int _uniqueCode, string _Name, vector<ObjData>& _outData)
+	{
+		string _SlectModel;
+
+		// 모델의 체인만큼 (서브 모델)
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델을 순차적으로 선택
+			_SlectModel = mModelChain[_Name][i];
+
+			// 체인에 있는 모델 모두 반환
+			_outData.push_back(mAllModelData[_SlectModel]->getObj(_uniqueCode));
+			_SlectModel.clear();
+		}
+	}
+
+	// 모델 데이터 가져오기 (_outData에 모두 다 가져감. _outData는 밖에서 생성하고 별도로 삭제해줘야함) // 주의
+	void getAllModelData(string _Name, vector<ObjData>& _outData)
+	{
+		string _SlectModel;
+
+		// 모델의 체인만큼 (서브 모델)
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델을 순차적으로 선택
+			_SlectModel = mModelChain[_Name][i];
+
+			// 오브젝트 데이터 모두 가져오기
+			vector<ObjData> t_ObjDataStorage = mAllModelData[_SlectModel]->getAllObj();
+			for (unsigned int x = 0; x < t_ObjDataStorage.size(); ++x)
+			{
+				// 체인에 있는 모델 모두 반환
+				_outData.push_back(t_ObjDataStorage[x]);
+			}
+
+			_SlectModel.clear();
+			t_ObjDataStorage.clear();
+		}
+	}
 
 	// 모델 월드 매트릭스 삭제
 	void ClearModel()

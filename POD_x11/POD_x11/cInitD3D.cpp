@@ -395,11 +395,6 @@ LRESULT cInitD3D::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			PostQuitMessage(0);
 			return 0;
 
-		case '0':
-			cGameStateSave::GetInstance()->m_StateChaneNumber = e_MapTool;
-			cGameStateSave::GetInstance()->m_StateChangeCheck = true;
-			return 0;
-
 		case '1':
 			cGameStateSave::GetInstance()->m_StateChaneNumber = e_MainState;
 			cGameStateSave::GetInstance()->m_StateChangeCheck = true;
@@ -407,6 +402,11 @@ LRESULT cInitD3D::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case '2':
 			cGameStateSave::GetInstance()->m_StateChaneNumber = e_PlayState;
+			cGameStateSave::GetInstance()->m_StateChangeCheck = true;
+			return 0;
+
+		case '3':
+			cGameStateSave::GetInstance()->m_StateChaneNumber = e_MapTool;
 			cGameStateSave::GetInstance()->m_StateChangeCheck = true;
 			return 0;
 

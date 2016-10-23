@@ -245,20 +245,19 @@ public:
 	char objClass[BUF_SIZE];
 };
 
+// 스텟 등 정보들 모두 넣을 거임
 class ObjData
 {
 public:
-	int          mKey;
+	int          mUniqueCode;
 	XMFLOAT4X4   mWdMtx;
 	OBJ_MOVEABLE mObjMoveAble;
 
-	XMFLOAT3     mLookDir; // 룩벡터
-	XMFLOAT3     mUpdir;   // 업벡터
 public:
 	ObjData()
 	{
-		// 키 
-		mKey = -1;
+		// 키 (따로 키 번호를 부여해주고 있음)
+		mUniqueCode = -1; 
 
 		// 월드 매트릭스 초기화
 		XMMATRIX I = XMMatrixIdentity();
@@ -266,14 +265,93 @@ public:
 
 		// 오브젝트가 동적인지 정적인지
 		mObjMoveAble = e_StaticObj;
-
-		// 룩벡터 & 업벡터
-		mLookDir = XMFLOAT3(0.0f, 0.0f, 1.0f);
-		mUpdir   = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	}
 	~ObjData()
 	{
 
+	}
+
+	// 위치 반환
+	XMFLOAT3 getPos() const
+	{
+		return XMFLOAT3(mWdMtx._41, mWdMtx._42, mWdMtx._43);
+	}
+
+	// 위치 반환
+	XMFLOAT3 getPosXZ() const
+	{
+		return XMFLOAT3(mWdMtx._41, 0.0f, mWdMtx._43);
+	}
+
+	// 위치 설정
+	void setPos(float _x, float _y, float _z)
+	{
+		mWdMtx._41 = _x;
+		mWdMtx._42 = _y;
+		mWdMtx._43 = _z;
+	}
+
+	// 스케일 설정
+	void setScale(float _x, float _y, float _z)
+	{
+		mWdMtx._11 *= _x;
+		mWdMtx._22 *= _y;
+		mWdMtx._33 *= _z;
+	}
+
+	// 월드 매트릭스 얻기
+	XMFLOAT4X4 getWdMtx() const
+	{
+		return mWdMtx;
+	}
+
+	// X 방향 얻기
+	XMFLOAT3 getRightDir() const
+	{
+		return XMFLOAT3(mWdMtx._31, mWdMtx._32, mWdMtx._33);
+	}
+
+	// Y 방향 얻기
+	XMFLOAT3 getUpDir() const
+	{
+		return XMFLOAT3(mWdMtx._21, mWdMtx._22, mWdMtx._23);
+	}
+
+	// Z 방향 얻기
+	XMFLOAT3 getLookDir() const
+	{
+		return XMFLOAT3(mWdMtx._11, mWdMtx._12, mWdMtx._13);
+	}
+
+
+	// 월드 매트릭스 저장
+	void SetWdMtx(XMFLOAT4X4 _WdMtx)
+	{
+		mWdMtx = _WdMtx;
+	}
+
+	// X 방향 저장
+	void setRightDir(float _x, float _y, float _z) 
+	{
+		mWdMtx._31 = _x;
+		mWdMtx._32 = _y;
+		mWdMtx._33 = _z;
+	}
+
+	// Y 방향 저장
+	void setUpDir(float _x, float _y, float _z) 
+	{
+		mWdMtx._21 = _x;
+		mWdMtx._22 = _y;
+		mWdMtx._23 = _z;
+	}
+
+	// Z 방향 저장
+	void setLookDir(float _x, float _y, float _z) 
+	{
+		mWdMtx._11 = _x;
+		mWdMtx._12 = _y;
+		mWdMtx._13 = _z;
 	}
 };
 
@@ -290,7 +368,7 @@ public:
 	vector<UINT>     TexIndices;
 	vector<XMFLOAT3> TexVertices;
 
-	// 월드 매트릭스 (각 캐릭터 구분용) @@@@@@@@
+	// 월드 매트릭스 (각 캐릭터 구분용) @@@@@@@@ (벡터가 유니코드 였었군.. -_-;)
 	vector<ObjData> mObjData;
 
 	// 텍스처 변환 매트릭스
@@ -468,8 +546,8 @@ public:
 		// 오브젝트 초기화
 		ObjData _ObjData;
 
-		// 유니크 코드
-		_ObjData.mKey = mObjData.size();
+		// 유니크 코드 부여
+		_ObjData.mUniqueCode = mObjData.size();
 
 		// 좌표 저장
 		_ObjData.mWdMtx._41 = _x;
@@ -487,11 +565,59 @@ public:
 	void SetPos(int _uniqueCode, float _x, float _y, float _z)
 	{
 		// 오브젝트 이동
-		mObjData[_uniqueCode].mWdMtx._41 = _x;
-		mObjData[_uniqueCode].mWdMtx._42 = _y;
-		mObjData[_uniqueCode].mWdMtx._43 = _z;
+		mObjData[_uniqueCode].setPos(_x, _y, _z);
+	}
+	
+	// 오브젝트 회전
+	void SetRotate(int _uniqueCode, float _x, float _y, float _z)
+	{
+		// 회전 보간 양
+		float InterpolationAmount = 12;
+
+		// 회전 범위제한
+		float Rotatelimit = 0.05f;
+
+		// 위치가 주어진다.
+		XMVECTOR tPoint = XMLoadFloat3(&XMFLOAT3(_x, 0.0f, _z));
+		XMVECTOR tObjPos = XMLoadFloat3(&mObjData[_uniqueCode].getPosXZ());
+
+		// 오브젝트 각도를 얻는다.
+		XMVECTOR tObjLook  = XMLoadFloat3(&mObjData[_uniqueCode].getLookDir());
+		XMVECTOR tObjUp    = XMLoadFloat3(&mObjData[_uniqueCode].getUpDir());
+		XMVECTOR tObjRight = XMLoadFloat3(&mObjData[_uniqueCode].getRightDir());
+
+		// 위치로 향하는 벡터를 얻는다.
+		XMVECTOR tfromPointLookDir = XMVector3Normalize(tPoint - tObjPos);
+
+		// 회전 방향을 얻는다(좌, 우) - 스칼라 삼중적
+		float tRadius = XMVectorGetX(XMVector3Dot(tObjUp, XMVector3Cross(tObjLook, tfromPointLookDir)));
+
+		// 회전할만한 가치가 있는가?
+		if (tRadius > Rotatelimit || tRadius < -Rotatelimit)
+		{
+			// 빠른쪽을 기준으로 회전 행렬을 만든다.
+			XMMATRIX tRotMtx;
+			tRotMtx = XMMatrixRotationAxis(tObjUp, tRadius / InterpolationAmount);
+
+			// 회전 행렬 곱
+			XMFLOAT3 tFinLookDir;
+			XMStoreFloat3(&tFinLookDir, XMVector3TransformNormal(tObjLook, tRotMtx));
+
+			XMFLOAT3 tFiRightDir;
+			XMStoreFloat3(&tFiRightDir, XMVector3TransformNormal(tObjRight, tRotMtx));
+
+			// 각 방향벡터에 적용한다.
+			mObjData[_uniqueCode].setLookDir(tFinLookDir.x, tFinLookDir.y, tFinLookDir.z);
+			mObjData[_uniqueCode].setRightDir(tFiRightDir.x, tFiRightDir.y, tFiRightDir.z);
+		}
 	}
 
+	// 오브젝트 스케일
+	void SetScale(int _uniqueCode, float _x, float _y, float _z)
+	{
+		// 오브젝트 이동
+		mObjData[_uniqueCode].setScale(_x, _y, _z);
+	}
 
 	// 오브젝트 삭제
 	void ClearWdMtx()
@@ -503,9 +629,27 @@ public:
 	void CalValue()
 	{
 		mVertexOffset = Vertices.size();
-		mIndexOffset = Indices.size();
-		mIndexCount = Indices.size();
+		mIndexOffset  = Indices.size();
+		mIndexCount   = Indices.size();
 	}
+
+	// 오브젝트 데이터 1개 가져요기
+	ObjData& getObj(int _uniqueCode)
+	{
+		return mObjData[_uniqueCode];
+	}
+
+	// 오브젝트 데이터 모두 가져오기
+	vector<ObjData>& getAllObj()
+	{
+		return mObjData;
+	}
+
+	XMFLOAT3 getPos(int _uniqueCode) const
+	{
+		XMFLOAT3 XMFLOAT3(mObjData[_uniqueCode].mWdMtx._41, mObjData[_uniqueCode].mWdMtx._42, mObjData[_uniqueCode].mWdMtx._43);
+	}
+	
 
 	/*
 	void CreateGrid(float width, float depth, UINT m, UINT n, InitMetaData& meshData)

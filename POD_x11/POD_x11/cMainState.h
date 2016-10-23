@@ -10,6 +10,11 @@ public:
 		// 이전 모델 데이터 삭제 ( 정확히말하면 월드 매트릭스 )
 		mModelManager->ClearModel();
 
+		// 맵 테스트용
+		mModelManager->AddModel("Map1", 0.0f, 100.0f, 0.0f);
+		mModelManager->SetScale(0, "Map1", 5.0f, 1.0f, 5.0f);
+
+
 		//// 모델 추가
 		//int size = 1250;
 		//int Count = 2500;
@@ -42,15 +47,20 @@ public:
 		//		break;
 		//	}
 		//}
-
 		
+
 		// 단일 객체 테스트용
-		mModelManager->AddModel("Model0", 100.0f, 100.0f, 100.0f );
-		mModelManager->AddModel("Model1", 100.0f, 100.0f, 200.0f );
-		mModelManager->AddModel("Model2", 100.0f, 100.0f, 250.0f );
+		//mModelManager->AddModel("Model0", 100.0f, 100.0f, 100.0f );
+		//mModelManager->AddModel("Model1", 100.0f, 100.0f, 200.0f );
+		//mModelManager->AddModel("Model2", 100.0f, 100.0f, 250.0f );
 		mModelManager->AddModel("Model3", 100.0f, 100.0f, 350.0f ); // <-- 모든 모델의 유니크코드는 0번부터 시작
-		mModelManager->AddModel("Model3", 100.0f, 100.0f, 470.0f ); //     동일한 모델을 또 만들면 유니크 코드가 1씩 증가함 
-		mModelManager->AddModel("Model4", 100.0f, 100.0f, 470.0f );
+		//mModelManager->AddModel("Model3", 100.0f, 100.0f, 470.0f ); //     동일한 모델을 또 만들면 유니크 코드가 1씩 증가함 
+		//mModelManager->AddModel("Model4", 100.0f, 100.0f, 470.0f );
+
+
+		// 테스트용
+		mModelManager->AddModel("Model1", -100.0f, 100.0f, -100.0f);
+		mModelManager->AddModel("Model1", 100.0f, 100.0f, 100.0f);
 		
 		// 스크린 추가 (풀 스크린쿼드)
 		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);
@@ -87,28 +97,79 @@ public:
 		// 렌더링 제어
 		switch (wParam)
 		{
+		// 이동 테스트
 		case 'W':
-			mModelManager->SetPos(1, "Model3", 100.0f, 100.0f, 100.0f + 100.0f);
+			mModelManager->SetPos(0, "Model3", 100.0f, 100.0f, 100.0f + 100.0f);
 			break;
 
 		case 'A':
-			mModelManager->SetPos(1, "Model3", 100.0f + 100.0f, 100.0f, 100.0f);
+			mModelManager->SetPos(0, "Model3", 100.0f + 100.0f, 100.0f, 100.0f);
 			break;
 
 		case 'S':
-			mModelManager->SetPos(1, "Model3", 100.0f, 100.0f, 100.0f - 100.0f);
+			mModelManager->SetPos(0, "Model3", 100.0f, 100.0f, 100.0f - 100.0f);
 			break;
 
 		case 'D':
-			mModelManager->SetPos(1, "Model3", 100.0f - 100.0f, 100.0f, 100.0f);
+			mModelManager->SetPos(0, "Model3", 100.0f - 100.0f, 100.0f, 100.0f);
 			break;
 
 		case 'Z':
 			mDrawManager->SetRes(e_Solid);
+			mDrawManager->mSolidDraw = true;
 			break;
 
 		case 'X':
-			mDrawManager->SetRes(e_Wire);
+			mDrawManager->mSolidDraw = false;
+			break;
+
+		// 회전 테스트
+		case 'Q':
+			mModelManager->SetRotate(0, "Model3", -100.0f, 100.0f, -100.0f);
+			break;
+
+		case 'E':
+			mModelManager->SetRotate(0, "Model3", 100.0f, 100.0f, 100.0f);
+			break;
+
+		// 스케일 테스트
+		case 'T':
+			break;
+
+		case 'G':
+			break;
+		
+		// 기타 테스트
+		case 'H':
+			{
+				// 데이터를 임시로 저장할 공간
+				vector<ObjData> _testOut;
+
+				//--------------------------------------------------------//
+				// <1> 1개의 오브젝트 정보만 빼낸다.
+				mModelManager->getModelData(1, "Model3", _testOut);
+
+				for (unsigned int i = 0; i < _testOut.size(); ++i)
+				{
+					// 원하는 정보를 뺴낸다.
+					_testOut[i].getLookDir(); // 룩 벡터
+					_testOut[i].getWdMtx();   // 요건 월드 매트릭스
+				}
+				_testOut.clear(); // 사용후에는 반드시 클리어
+
+				//--------------------------------------------------------//
+				// <2> 모든 오브젝트의 정보를 빼낸다.
+				mModelManager->getAllModelData("Model3", _testOut);
+
+				for (unsigned int i = 0; i < _testOut.size(); ++i)
+				{
+					// 원하는 정보를 뺴낸다.
+					_testOut[i].getLookDir(); // 룩 벡터
+					_testOut[i].getWdMtx();   // 요건 월드 매트릭스
+				}
+				_testOut.clear(); // 사용후에는 반드시 클리어
+				//--------------------------------------------------------//
+			}
 			break;
 		}
 	}

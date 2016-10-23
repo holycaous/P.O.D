@@ -14,6 +14,10 @@ class cDrawManager : public cSingleton<cDrawManager>
 	ID3D11RasterizerState* mWireframeRS  = nullptr;
 	ID3D11RasterizerState* mSolidframeRS = nullptr;
 
+public:
+	// 모드 설정
+	bool mSolidDraw;
+
 	//// 깊이, 스텐실 테스트 설정
 	//ID3D11DepthStencilState* m_pNoDepthWriteLessStencilMaskState = nullptr;
 	//ID3D11DepthStencilState* m_DepthStencilState = nullptr;
@@ -23,6 +27,7 @@ public:
 		// 레스터라이즈 방법
 		InitRes();
 		SetRes(e_Solid);
+		mSolidDraw = true;
 
 		// 각종 쉐이더 변수 업데이트
 		for (map<string, InitMetaData*>::iterator itor = mModelManager->mAllModelData.begin(); itor != mModelManager->mAllModelData.end(); ++itor)
@@ -216,10 +221,10 @@ private:
 			//----------------------------------//
 			gCam.Strafe(100.0f*dt);
 		}
-		if (GetAsyncKeyState('E') & 0x8000)
+		if (GetAsyncKeyState('R') & 0x8000)
 			gCam.Change3PersonCam();
 
-		if (GetAsyncKeyState('R') & 0x8000)
+		if (GetAsyncKeyState('T') & 0x8000)
 			gCam.Change1PersonCam();
 
 		// 카메라 매트릭스 재생성 
@@ -267,9 +272,22 @@ private:
 		// 렌더 타겟 셋 
 		mCoreStorage->SetRenderTaget();
 
+#ifdef DEBUG_MODE
 		//-------------------------------------------------------------------//
 		// 스크린 그리기
+		if (mSolidDraw)
+		{
+			DrawScreen();
+		}
+		else
+		{
+			cCoreStorage::GetInstance()->md3dImmediateContext->RSSetState(mSolidframeRS);
+			DrawScreen();
+			cCoreStorage::GetInstance()->md3dImmediateContext->RSSetState(mWireframeRS);
+		}
+#else
 		DrawScreen();
+#endif
 		//-------------------------------------------------------------------//
 	}
 
