@@ -35,14 +35,9 @@ public:
 		CreateBoxModel("BOX2", e_ShaderLight);
 		
 		CreateBoxModel("BOX3", e_ShaderPongTex);
-		AddTex	      ("BOX3", L"WoodCrate01_diff.dds", e_DiffuseMap);
-		AddTex		  ("BOX3", L"WoodCrate01_norm.dds", e_NomalMap);
-		AddTex	      ("BOX3", L"WoodCrate01_spec.dds", e_SpecularMap);
-		
-		CreateBoxModel("BOX4", e_ShaderPongTex); //e_ShaderCartoonTex
-		AddTex	      ("BOX4", L"WoodCrate01_diff.dds", e_DiffuseMap);
-		AddTex		  ("BOX4", L"WoodCrate01_norm.dds", e_NomalMap);
-		AddTex	      ("BOX4", L"WoodCrate01_spec.dds", e_SpecularMap);
+		AddTex	      ("BOX3", "WoodCrate01_diff.dds", e_DiffuseMap);
+		AddTex		  ("BOX3", "WoodCrate01_norm.dds", e_NomalMap);
+		AddTex	      ("BOX3", "WoodCrate01_spec.dds", e_SpecularMap);
 
 		// 맵 추가
 		CreateModel("Map1", "Export/FinTestMapLoc.pod", e_ShaderPongTex);
@@ -297,11 +292,11 @@ public:
 		// 읽은 경로만큼 매시데이터가 존재한다는 것이므로,
 		// 이에 맞춰 파싱할 데이터를 넣을 공간을 확보해준다.
 		int _ReadLocNum = mXMLParser.mNewModleLoc.size();
-		mXMLParser.mMyMeshData.resize(_ReadLocNum);
 
 		// 읽은 경로내의 모델 갯수만큼 반복
 		for (int i = 0; i < _ReadLocNum; ++i)
 		{
+			mXMLParser.InitClass();
 			tSelectModelRoute = mXMLParser.mNewModleLoc[i].Data; // 선택된 모델의 루트
 
 			// 첫 모델이라면 자신의 이름으로 짓는다.
@@ -328,7 +323,7 @@ public:
 			//----------------------------------------------------//
 			// 모델 데이터 파싱
 			//----------------------------------------------------//
-			mXMLParser.LoadXMLModel(tSelectModelRoute, i);
+			mXMLParser.LoadXMLModel(tSelectModelRoute);
 
 			// 쉐이더&모델 초기화 전용
 			UseAllShaderModel(_ShaderMode);
@@ -336,6 +331,9 @@ public:
 
 			// 모델 체인에 이름 등록
 			mModelChain[_Name].push_back(tNewName);
+
+			// 포인터 삭제
+			mXMLParser.ClearPointer();
 
 			// string 삭제
 			tSelectModelRoute.clear();
@@ -504,7 +502,7 @@ public:
 	}
 
 	// 텍스처 추가하기
-	void AddTex(string _Name, const wchar_t* _TexName, TEXTURE_TYPE _InitTexTpye)
+	void AddTex(string _Name, string _TexName, TEXTURE_TYPE _InitTexTpye)
 	{
 		mAllModelData[_Name]->LoadTex(_TexName, _InitTexTpye);
 	}

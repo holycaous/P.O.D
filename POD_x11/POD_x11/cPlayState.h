@@ -15,19 +15,16 @@ public:
 		int Count = 5500;
 		for (int x = 0; x < Count; ++x)
 		{
-			switch (rand() % 4)
+			switch (rand() % 3)
 			{
 			case 0:
-				mModelManager->AddModel( "BOX1", float(rand() % size), float(rand() % size), float(rand() % size));
+				mModelManager->AddModel("BOX1", float(rand() % size), float(rand() % size), float(rand() % size));
 				break;
 			case 1:
 				mModelManager->AddModel("BOX2", float(rand() % size), float(rand() % size), float(rand() % size));
 				break;
 			case 2:
 				mModelManager->AddModel("BOX3", float(rand() % size), float(rand() % size), float(rand() % size));
-				break;
-			case 3:
-				mModelManager->AddModel("BOX4", float(rand() % size), float(rand() % size), float(rand() % size));
 				break;
 			}
 		}

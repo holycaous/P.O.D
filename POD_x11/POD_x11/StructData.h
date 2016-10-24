@@ -158,12 +158,22 @@ public:
 public:
 	MyMat()
 	{
+		InitClass();
+	}
+	~MyMat()
+	{
+		ClearClass();
+	}
+
+	void InitClass()
+	{
 		strcpy(mDiffuseSRV , "NULL\0");
 		strcpy(mSpecularSRV, "NULL\0");
 		strcpy(mNomalSRV   , "NULL\0");
 		mOpacity = 100.0f;
 	}
-	~MyMat()
+
+	void ClearClass()
 	{
 		memset(&mDiffuseSRV , '\0', sizeof(mDiffuseSRV));
 		memset(&mSpecularSRV, '\0', sizeof(mSpecularSRV));
@@ -223,6 +233,11 @@ public:
 	vector<KeyVtx> Scale;
 public:
 	~AniData()
+	{
+		ClearClass();
+	}
+
+	void ClearClass()
 	{
 		Position.clear();
 		Quaternion.clear();
@@ -465,7 +480,6 @@ public:
 		strcpy(mObjName   , "NULL\0");
 		strcpy(mObjClass  , "NULL\0");
 		strcpy(mParentName, "NULL\0");
-
 	}
 
 	InitMetaData(SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY)
@@ -489,49 +503,63 @@ public:
 
 		// 어떤식으로 모델을 구성할 것인가
 		_PRIMITIVE_TOPOLOGY = _D3D_PRIMITIVE_TOPOLOGY;
-
 	}
 
 	~InitMetaData()
 	{
+#ifdef DEBUG_MODE
+		printf("클리어 객체명: %17s ---> 생성명: %12s, 이름: %12s\n", mObjName, mCreateName.c_str(), mMainName);
+#endif
+		ReleaseCOM(mDiffuseSRV);
+		ReleaseCOM(mSpecularSRV);
+		ReleaseCOM(mNomalSRV);
+
+		for (unsigned int i = 0; i < weightVtx.size(); ++i)
+			weightVtx[i].Bone.clear();
+		weightVtx.clear();
+
 		Vertices   .clear();
 		Indices    .clear();
 		TexIndices .clear();
 		TexVertices.clear();
 		mObjData   .clear();
 		mCreateName.clear();
-
-		for (unsigned int i = 0; i < weightVtx.size(); ++i)
-			weightVtx[i].Bone.clear();
-		weightVtx.clear();
-
-		ReleaseCOM(mDiffuseSRV);
-		ReleaseCOM(mSpecularSRV);
-		ReleaseCOM(mNomalSRV);
 	}
 
 	// 텍스처 로드
-	void LoadTex(const wchar_t* _TexName, TEXTURE_TYPE e_InitTex)
+	void LoadTex(string _TexName, TEXTURE_TYPE e_InitTex)
 	{
+		// string --> wString으로 변환
+		wstring _WsTexName;
+		StringToWchar_t(_TexName.c_str(), _WsTexName);
+
+		// 텍스처 로딩
 		switch (e_InitTex)
 		{
 		case e_DiffuseMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mDiffuseSRV, 0));
+			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &mDiffuseSRV, 0));
 			break;
 		case e_NomalMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mNomalSRV, 0));
+			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &mNomalSRV, 0));
 			break;
 		case e_SpecularMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mSpecularSRV, 0));
+			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &mSpecularSRV, 0));
 			break;
 		}
+
+		// 클리어
+		_WsTexName.clear();
+		_TexName.clear();
 	}
 
-	// 파싱 데이터
-	void ParsingData()
+	// 변환 함수
+	void StringToWchar_t(string _string, wstring& _wstring)
 	{
+		// 변환
+		for (unsigned int i = 0; i < _string.length(); ++i)
+			_wstring += wchar_t(_string[i]);
 
-
+		_string.clear();
 	}
 
 	// 모델 (월드 매트릭스) 추가하기
@@ -1788,10 +1816,27 @@ public:
 	char mParentName[BUF_SIZE];
 
 public:
+	MyMeshData()
+	{
+		InitClass();
+	}
+
 	~MyMeshData()
 	{
-		vertices.clear();
-		indices.clear();
+		ClearClass();
+	}
+
+	void InitClass()
+	{
+		mMyMat.InitClass();
+	}
+
+	void ClearClass()
+	{
+		mMyMat   .ClearClass();
+		aniData  .ClearClass();
+		vertices .clear();
+		indices  .clear();
 		weightVtx.clear();
 	}
 };

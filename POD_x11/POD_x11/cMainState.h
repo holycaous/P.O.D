@@ -53,14 +53,15 @@ public:
 		//mModelManager->AddModel("Model0", 100.0f, 100.0f, 100.0f );
 		//mModelManager->AddModel("Model1", 100.0f, 100.0f, 200.0f );
 		//mModelManager->AddModel("Model2", 100.0f, 100.0f, 250.0f );
-		mModelManager->AddModel("Model3", 100.0f, 100.0f, 350.0f ); // <-- 모든 모델의 유니크코드는 0번부터 시작
+		mModelManager  ->AddModel("Model3", 100.0f, 100.0f, 350.0f ); // <-- 모든 모델의 유니크코드는 0번부터 시작
 		//mModelManager->AddModel("Model3", 100.0f, 100.0f, 470.0f ); //     동일한 모델을 또 만들면 유니크 코드가 1씩 증가함 
 		//mModelManager->AddModel("Model4", 100.0f, 100.0f, 470.0f );
 
 
 		// 테스트용
-		mModelManager->AddModel("Model1", -100.0f, 100.0f, -100.0f);
-		mModelManager->AddModel("Model1", 100.0f, 100.0f, 100.0f);
+		mModelManager->AddModel("Model4", -100.0f, 100.0f, -100.0f);
+		mModelManager->AddModel("Model2",    0.0f, 100.0f,    0.0f);
+		mModelManager->AddModel("Model1",  100.0f, 100.0f,  100.0f);
 		
 		// 스크린 추가 (풀 스크린쿼드)
 		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);

@@ -10,7 +10,7 @@ public:
 	vector<CharBuf> mNewModleLoc;
 
 	// 새로 만들어진 모델의 정보
-	vector<MyMeshData> mMyMeshData;
+	MyMeshData mMyMeshData;
 
 	//------------------------------------------------------------------//	
 private:
@@ -26,21 +26,34 @@ private:
 	char mReadBuf[BUF_SIZE];
 	char mSaveBuf[BUF_SIZE];
 	
-	// 인덱스
-	int mIdx;
 public:
+	cXMLParser()
+	{
+		InitClass();
+	}
+
 	~cXMLParser()
 	{
 		ClearClass();
 	}
 
+	void InitClass()
+	{
+		mMyMeshData.InitClass();
+	}
+
 	// 버퍼 초기화
 	void ClearClass()
 	{
+		ClearPointer();
 		mNewModleLoc.clear();
-		mMyMeshData.clear();
+	}
+
+	void ClearPointer()
+	{
+		mMyMeshData.ClearClass();
 		mInitMetaData = nullptr;
-		mFilePointer = nullptr;
+		mFilePointer  = nullptr;
 	}
 
 	// 파싱
@@ -51,11 +64,8 @@ public:
 	}
 
 	// 파싱
-	void LoadXMLModel(string& _ModelData, int idx)
+	void LoadXMLModel(string& _ModelData)
 	{
-		// 현재 선택된 번호
-		mIdx = idx;
-
 		// XML 모델 데이터 읽기
 		ReadDataMyFormat_Model(_ModelData); 
 
@@ -251,105 +261,105 @@ public:
 
 		// 버텍스
 		fread(&len, sizeof(int), 1, mFilePointer);
-		mMyMeshData[mIdx].vertices.resize(len);
+		mMyMeshData.vertices.resize(len);
 
 		for (int i = 0; i < len; ++i)
-			fread(&mMyMeshData[mIdx].vertices[i], sizeof(Vertex), 1, mFilePointer);
+			fread(&mMyMeshData.vertices[i], sizeof(Vertex), 1, mFilePointer);
 
 		// 인덱스 리스트
 		fread(&len, sizeof(int), 1, mFilePointer);
-		mMyMeshData[mIdx].indices.resize(len);
+		mMyMeshData.indices.resize(len);
 
 		for (int i = 0; i < len; ++i)
-			fread(&mMyMeshData[mIdx].indices[i], sizeof(XMFLOAT3), 1, mFilePointer);
+			fread(&mMyMeshData.indices[i], sizeof(XMFLOAT3), 1, mFilePointer);
 
 		// 애니데이터
 
 		// 위치
 		fread(&len, sizeof(int), 1, mFilePointer);
-		mMyMeshData[mIdx].aniData.Position.resize(len);
+		mMyMeshData.aniData.Position.resize(len);
 
 		for (int i = 0; i < len; ++i)
-			fread(&mMyMeshData[mIdx].aniData.Position[i], sizeof(KeyVtx), 1, mFilePointer);
+			fread(&mMyMeshData.aniData.Position[i], sizeof(KeyVtx), 1, mFilePointer);
 
 		// 회전
 		fread(&len, sizeof(int), 1, mFilePointer);
-		mMyMeshData[mIdx].aniData.Quaternion.resize(len);
+		mMyMeshData.aniData.Quaternion.resize(len);
 
 		for (int i = 0; i < len; ++i)
-			fread(&mMyMeshData[mIdx].aniData.Quaternion[i], sizeof(KeyVtx), 1, mFilePointer);
+			fread(&mMyMeshData.aniData.Quaternion[i], sizeof(KeyVtx), 1, mFilePointer);
 
 		// 스케일
 		fread(&len, sizeof(int), 1, mFilePointer);
-		mMyMeshData[mIdx].aniData.Scale.resize(len);
+		mMyMeshData.aniData.Scale.resize(len);
 
 		for (int i = 0; i < len; ++i)
-			fread(&mMyMeshData[mIdx].aniData.Scale[i], sizeof(KeyVtx), 1, mFilePointer);
+			fread(&mMyMeshData.aniData.Scale[i], sizeof(KeyVtx), 1, mFilePointer);
 
 
 		// 가중치 데이터
 
 		// 전체 사이즈
 		fread(&len, sizeof(int), 1, mFilePointer);
-		mMyMeshData[mIdx].weightVtx.resize(len);
+		mMyMeshData.weightVtx.resize(len);
 
 		for (int i = 0; i < len; ++i)
 		{
 			// 타겟 인덱스
-			fread(&mMyMeshData[mIdx].weightVtx[i].TagetIdx, sizeof(int), 1, mFilePointer);
+			fread(&mMyMeshData.weightVtx[i].TagetIdx, sizeof(int), 1, mFilePointer);
 
 			// 본 데이터 총 크기
 			int Bonelen = 0;
 			fread(&Bonelen, sizeof(int), 1, mFilePointer);
-			mMyMeshData[mIdx].weightVtx[i].Bone.resize(Bonelen);
+			mMyMeshData.weightVtx[i].Bone.resize(Bonelen);
 
 			// 본 데이터
 			for (int idx = 0; idx < Bonelen; ++idx)
 			{
 				// ID
-				fread(&mMyMeshData[mIdx].weightVtx[i].Bone[idx].ID, sizeof(int), 1, mFilePointer);
+				fread(&mMyMeshData.weightVtx[i].Bone[idx].ID, sizeof(int), 1, mFilePointer);
 
 				// 가중치
-				fread(&mMyMeshData[mIdx].weightVtx[i].Bone[idx].Weight, sizeof(float), 1, mFilePointer);
+				fread(&mMyMeshData.weightVtx[i].Bone[idx].Weight, sizeof(float), 1, mFilePointer);
 
 				// 버퍼(이름)
 				int Bonebuflen = 0;
 				fread(&Bonebuflen, sizeof(int), 1, mFilePointer);
-				fread(&mMyMeshData[mIdx].weightVtx[i].Bone[idx].Name, sizeof(char), Bonebuflen, mFilePointer);
+				fread(&mMyMeshData.weightVtx[i].Bone[idx].Name, sizeof(char), Bonebuflen, mFilePointer);
 			}
 		}
 
 		// 오프셋
-		fread(&mMyMeshData[mIdx].vertexOffset, sizeof(int), 1, mFilePointer);
-		fread(&mMyMeshData[mIdx].indexOffset, sizeof(UINT), 1, mFilePointer);
+		fread(&mMyMeshData.vertexOffset, sizeof(int), 1, mFilePointer);
+		fread(&mMyMeshData.indexOffset, sizeof(UINT), 1, mFilePointer);
 
 		// 카운트
-		fread(&mMyMeshData[mIdx].indexCount, sizeof(UINT), 1, mFilePointer);
+		fread(&mMyMeshData.indexCount, sizeof(UINT), 1, mFilePointer);
 
 		// 재질 정보
 
 		// 투명도
-		fread(&mMyMeshData[mIdx].mMyMat.mOpacity, sizeof(float), 1, mFilePointer);
+		fread(&mMyMeshData.mMyMat.mOpacity, sizeof(float), 1, mFilePointer);
 
 		// 디퓨즈
 		fread(&len, sizeof(int), 1, mFilePointer);
-		fread(&mMyMeshData[mIdx].mMyMat.mDiffuseSRV, sizeof(char), len, mFilePointer);
+		fread(&mMyMeshData.mMyMat.mDiffuseSRV, sizeof(char), len, mFilePointer);
 
 		// 노멀
 		fread(&len, sizeof(int), 1, mFilePointer);
-		fread(&mMyMeshData[mIdx].mMyMat.mNomalSRV, sizeof(char), len, mFilePointer);
+		fread(&mMyMeshData.mMyMat.mNomalSRV, sizeof(char), len, mFilePointer);
 
 		// 스팩
 		fread(&len, sizeof(int), 1, mFilePointer);
-		fread(&mMyMeshData[mIdx].mMyMat.mSpecularSRV, sizeof(char), len, mFilePointer);
+		fread(&mMyMeshData.mMyMat.mSpecularSRV, sizeof(char), len, mFilePointer);
 
 
 		// TM 행렬
-		fread(&mMyMeshData[mIdx].mTMLocalMtx, sizeof(XMFLOAT4X4), 1, mFilePointer);
-		fread(&mMyMeshData[mIdx].mTMWorldMtx, sizeof(XMFLOAT4X4), 1, mFilePointer);
+		fread(&mMyMeshData.mTMLocalMtx, sizeof(XMFLOAT4X4), 1, mFilePointer);
+		fread(&mMyMeshData.mTMWorldMtx, sizeof(XMFLOAT4X4), 1, mFilePointer);
 
 		// 바운딩 박스
-		fread(&mMyMeshData[mIdx].mBoundingBox, sizeof(BoundBox), 1, mFilePointer);
+		fread(&mMyMeshData.mBoundingBox, sizeof(BoundBox), 1, mFilePointer);
 
 		//--------------------------------------------------//
 		// 오브젝트 식별 정보
@@ -357,22 +367,22 @@ public:
 
 		// 이름
 		fread(&len, sizeof(int), 1, mFilePointer);
-		fread(&mMyMeshData[mIdx].mMainName, sizeof(char), len, mFilePointer);
+		fread(&mMyMeshData.mMainName, sizeof(char), len, mFilePointer);
 
 		// 오브젝트이름
-		fread(&mMyMeshData[mIdx].mObjID, sizeof(int), 1, mFilePointer);
+		fread(&mMyMeshData.mObjID, sizeof(int), 1, mFilePointer);
 
 		fread(&len, sizeof(int), 1, mFilePointer);
-		fread(&mMyMeshData[mIdx].mObjName, sizeof(char), len, mFilePointer);
+		fread(&mMyMeshData.mObjName, sizeof(char), len, mFilePointer);
 
 		fread(&len, sizeof(int), 1, mFilePointer);
-		fread(&mMyMeshData[mIdx].mObjClass, sizeof(char), len, mFilePointer);
+		fread(&mMyMeshData.mObjClass, sizeof(char), len, mFilePointer);
 
 		// 상위 클래스 이름
-		fread(&mMyMeshData[mIdx].mParentID, sizeof(int), 1, mFilePointer);
+		fread(&mMyMeshData.mParentID, sizeof(int), 1, mFilePointer);
 
 		fread(&len, sizeof(int), 1, mFilePointer);
-		fread(&mMyMeshData[mIdx].mParentName, sizeof(char), len, mFilePointer);
+		fread(&mMyMeshData.mParentName, sizeof(char), len, mFilePointer);
 
 		// 파일 종료
 		fclose(mFilePointer);
@@ -487,23 +497,23 @@ public:
 	void SaveMyFormat()
 	{
 		// 버텍스
-		mInitMetaData->Vertices = mMyMeshData[mIdx].vertices;
+		mInitMetaData->Vertices = mMyMeshData.vertices;
 
 		// 인덱스
-		for (unsigned int i = 0; i < mMyMeshData[mIdx].indices.size(); ++i)
+		for (unsigned int i = 0; i < mMyMeshData.indices.size(); ++i)
 		{
 			for (int vIdx = 0; vIdx < 3; ++vIdx)
 			{
 				switch (vIdx)
 				{
 				case 0:
-					mInitMetaData->Indices.push_back((UINT)mMyMeshData[mIdx].indices[i].x);
+					mInitMetaData->Indices.push_back((UINT)mMyMeshData.indices[i].x);
 					break;
 				case 1:
-					mInitMetaData->Indices.push_back((UINT)mMyMeshData[mIdx].indices[i].y);
+					mInitMetaData->Indices.push_back((UINT)mMyMeshData.indices[i].y);
 					break;
 				case 2:
-					mInitMetaData->Indices.push_back((UINT)mMyMeshData[mIdx].indices[i].z);
+					mInitMetaData->Indices.push_back((UINT)mMyMeshData.indices[i].z);
 					break;
 				default:
 					break;
@@ -512,53 +522,53 @@ public:
 		}
 
 		// 애니 데이터
-		mInitMetaData->aniData = mMyMeshData[mIdx].aniData;
+		mInitMetaData->aniData = mMyMeshData.aniData;
 
 		// 가중치 데이터
-		mInitMetaData->weightVtx = mMyMeshData[mIdx].weightVtx;
+		mInitMetaData->weightVtx = mMyMeshData.weightVtx;
 
 		// TM 매트릭스
-		mInitMetaData->mLocTMMtx = mMyMeshData[mIdx].mTMLocalMtx;
-		mInitMetaData->mWdTMMtx  = mMyMeshData[mIdx].mTMWorldMtx;
+		mInitMetaData->mLocTMMtx = mMyMeshData.mTMLocalMtx;
+		mInitMetaData->mWdTMMtx  = mMyMeshData.mTMWorldMtx;
 
 		// 오프셋
-		mInitMetaData->mVertexOffset = mMyMeshData[mIdx].vertexOffset;
-		mInitMetaData->mIndexOffset  = mMyMeshData[mIdx].indexOffset;
+		mInitMetaData->mVertexOffset = mMyMeshData.vertexOffset;
+		mInitMetaData->mIndexOffset  = mMyMeshData.indexOffset;
 
 		// 카운트
-		mInitMetaData->mIndexCount = mMyMeshData[mIdx].indexCount;
+		mInitMetaData->mIndexCount = mMyMeshData.indexCount;
 
 		// 리소스 얻기 (재질 정보)
 		// 테스트
 		//if (mInitMetaData->mCreateName == "Model4_1")
 		//	int i = 0;
 
-		LoadTex(mMyMeshData[mIdx].mMyMat.mDiffuseSRV , e_DiffuseMap);
-		LoadTex(mMyMeshData[mIdx].mMyMat.mNomalSRV   , e_NomalMap);
-		LoadTex(mMyMeshData[mIdx].mMyMat.mSpecularSRV, e_SpecularMap);
+		LoadTex(mMyMeshData.mMyMat.mDiffuseSRV , e_DiffuseMap);
+		LoadTex(mMyMeshData.mMyMat.mNomalSRV   , e_NomalMap);
+		LoadTex(mMyMeshData.mMyMat.mSpecularSRV, e_SpecularMap);
 
 
 		// 투명 (디퓨즈 맵)
-		mInitMetaData->mOpacity = mMyMeshData[mIdx].mMyMat.mOpacity;
+		mInitMetaData->mOpacity = mMyMeshData.mMyMat.mOpacity;
 
 		// 바운딩 박스
-		mInitMetaData->mBoundingBox = mMyMeshData[mIdx].mBoundingBox;
+		mInitMetaData->mBoundingBox = mMyMeshData.mBoundingBox;
 
 		//--------------------------------------------------//
 		// 오브젝트 식별 정보
 		//--------------------------------------------------//
 
 		// 이름
-		strcpy(mInitMetaData->mMainName, mMyMeshData[mIdx].mMainName);
+		strcpy(mInitMetaData->mMainName, mMyMeshData.mMainName);
 
 		// 오브젝트이름
-		mInitMetaData->mObjID = mMyMeshData[mIdx].mObjID;
-		strcpy(mInitMetaData->mObjName , mMyMeshData[mIdx].mObjName);
-		strcpy(mInitMetaData->mObjClass, mMyMeshData[mIdx].mObjClass);
+		mInitMetaData->mObjID = mMyMeshData.mObjID;
+		strcpy(mInitMetaData->mObjName , mMyMeshData.mObjName);
+		strcpy(mInitMetaData->mObjClass, mMyMeshData.mObjClass);
 
 		// 상위 클래스 이름
-		mInitMetaData->mParentID = mMyMeshData[mIdx].mParentID;
-		strcpy(mInitMetaData->mParentName, mMyMeshData[mIdx].mParentName);
+		mInitMetaData->mParentID = mMyMeshData.mParentID;
+		strcpy(mInitMetaData->mParentName, mMyMeshData.mParentName);
 
 		// 연결고리 끊기
 		mInitMetaData = nullptr;
