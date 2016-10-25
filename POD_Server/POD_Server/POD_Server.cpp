@@ -24,7 +24,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	srand((unsigned)time(NULL));
 	// 서버 시작.
 	if (IocpServer.Begin())
+<<<<<<< HEAD
 	{ 
+=======
+	{
+		
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 		ServerMGR->Init();//서버 초기화
 		while (1)
 		{
@@ -44,8 +49,13 @@ int _tmain(int argc, _TCHAR* argv[])
 							IocpServer.GetConnectUserManager()->GetConnectUser(i)->Update(fAccdt);
 					}
 					MonsterMGR->Update(fAccdt); //몬스터 업데이트
+<<<<<<< HEAD
 				 
 				fAccdt = 0.0f; 
+=======
+				
+				fAccdt = 0.0f;
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 			}
 		}
 		getchar();

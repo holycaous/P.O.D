@@ -36,8 +36,11 @@ CTerrain_Server::CTerrain_Server(InitInfo _Info)
 	P[QD_LB].y = (long)(-(float)m_nPatch_CntZ / 2.f);
 	P[QD_RB].x = (long)((float)m_nPatch_CntX / 2.f);
 	P[QD_RB].y = (long)(-(float)m_nPatch_CntZ / 2.f);
+<<<<<<< HEAD
 	P[QD_CN].x = 0;
 	P[QD_CN].y = 0;
+=======
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 	UINT F[QD_MAX];  //FACE= ªÔ∞¢«¸ 
 	int columnCnt = m_nPatch_CntX * 2;
@@ -45,8 +48,11 @@ CTerrain_Server::CTerrain_Server(InitInfo _Info)
 	F[QD_RT] = columnCnt - 1;
 	F[QD_LB] = columnCnt * (m_nPatch_CntZ - 1);
 	F[QD_RB] = columnCnt - 1 + (m_nPatch_CntZ - 1) * columnCnt;
+<<<<<<< HEAD
 	F[QD_CN] = 0;
 
+=======
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 	m_Tree.Create(m_Info.s_nLV, P, F); //(∏ ¡§∫∏¿« ∆Æ∏Æ±Ì¿Ã,≤¿¡˛¡°,∆‰¿ÃΩ∫)
 

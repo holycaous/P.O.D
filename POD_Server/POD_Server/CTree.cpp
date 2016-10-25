@@ -5,7 +5,10 @@
 //**************************************************************************************
 //#include "CGameEngine.h"
 #include "stdafx.h"
+<<<<<<< HEAD
 #include "cServerMGR.h"
+=======
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 
 UINT CTreeNode::m_nNodeTotalCnt = 0;
@@ -35,7 +38,12 @@ CTreeNode::~CTreeNode()
 {
 	_ClearChild();
 	SAFE_DELETE(m_pCurrNode);
+<<<<<<< HEAD
 	m_pParentNode = NULL;
+=======
+
+	m_pParentNode - NULL;
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 }
 
@@ -74,6 +82,7 @@ bool CTreeNode::_InRect(POINT _Pos, QUAD* _pQuad)
 
 
 
+<<<<<<< HEAD
 //////////////////////////////////////////////////////////////////////////////////////////
 // _InCircle()
 bool CTreeNode::_InCircle(POINT _Pos, float _fRadius, QUAD* _pQuad)
@@ -100,6 +109,8 @@ bool CTreeNode::_InCircle(POINT _Pos, float _fRadius, QUAD* _pQuad)
 
 
 
+=======
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Create()
@@ -114,7 +125,11 @@ void CTreeNode::Create(UINT _nMaxLv, UINT _CurrLv, UINT _nNum, POINT _Pos[QD_MAX
 	pQuad->s_nLV = _CurrLv;  //현재레벨저장
 	pQuad->s_nNum = _nNum;  //
 
+<<<<<<< HEAD
 	// 현재 노드 정보 등록.
+=======
+	// 현내 노드 정보 등록.
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	m_pCurrNode = pQuad;
 	m_nLv = _CurrLv;
 	m_nMaxLv = _nMaxLv;
@@ -131,12 +146,18 @@ void CTreeNode::CreateChild()
 	// 현재 노드 4등분. 
 	POINT& sp = m_pCurrNode->s_P[QD_LT];
 	POINT& ep = m_pCurrNode->s_P[QD_RB];
+<<<<<<< HEAD
 	POINT& cp = m_pCurrNode->s_P[QD_CN];
 
 	UINT& sf = m_pCurrNode->s_F[QD_LT];
 	UINT& ef = m_pCurrNode->s_F[QD_RB];
 	UINT& cf = m_pCurrNode->s_F[QD_CN];
 
+=======
+
+	UINT& sf = m_pCurrNode->s_F[QD_LT];
+	UINT& ef = m_pCurrNode->s_F[QD_RB];
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 	//fabs()함수- 절대값을 반환하는 함수      
 	float w = fabs((float)m_pCurrNode->s_P[QD_RT].x - m_pCurrNode->s_P[QD_LT].x) / 2;
@@ -147,8 +168,13 @@ void CTreeNode::CreateChild()
 	int fh = (fw / 2);
 
 	POINT s;
+<<<<<<< HEAD
 	POINT P[5];
 	UINT F[5];
+=======
+	POINT P[4];
+	UINT F[4];
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 	int k = 0;
 	UINT f;
@@ -170,8 +196,12 @@ void CTreeNode::CreateChild()
 			P[QD_LB].y = s.y - h;
 			P[QD_RB].x = s.x + w;
 			P[QD_RB].y = s.y - h;
+<<<<<<< HEAD
 			P[QD_CN].x = s.x + (w / 2);
 			P[QD_CN].y = s.y - (h / 2);
+=======
+
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 			//----------------------------------------------
 			// 페이스.
 			//----------------------------------------------
@@ -183,7 +213,10 @@ void CTreeNode::CreateChild()
 			F[QD_RT] = f + (fw - 1);
 			F[QD_LB] = f + (d * (fh - 1));
 			F[QD_RB] = (f + (d * (fh - 1))) + fw - 1;
+<<<<<<< HEAD
 			F[QD_CN] = 0;
+=======
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 			// 차일드 등록
 			m_pChildNode[k] = new CTreeNode;
@@ -228,10 +261,15 @@ QUAD* CTreeNode::IsIn(POINT _Pos)
 		pQuad = m_pChildNode[i]->IsIn(_Pos);
 		if (pQuad) return pQuad;
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	return m_pCurrNode;
 }
 
 
+<<<<<<< HEAD
 //////////////////////////////////////////////////////////////////////////////////////////
 // IsColision()
 QUAD* CTreeNode::IsCollision(POINT _vPos, float _fRadius)
@@ -254,6 +292,9 @@ QUAD* CTreeNode::IsCollision(POINT _vPos, float _fRadius)
 	}
 	return m_pCurrNode;
 }
+=======
+
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 
 
@@ -295,7 +336,11 @@ int CTree::Create(UINT _nMaxLv, POINT _vPos[QD_MAX], UINT _nFace[QD_MAX])
 	// 최상위 노드 생성.
 	CTreeNode* pNode = new CTreeNode;
 	pNode->Create(_nMaxLv, 0, 0, _vPos, _nFace, NULL);
+<<<<<<< HEAD
 	 
+=======
+
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	m_pTopNode = pNode;
 
 	m_pTopNode->CreateChild();
@@ -324,4 +369,15 @@ int CTree::Find(POINT _Pos, QUAD*& _pQuad)
 	return(_pQuad) ? true : false;
 }
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+
+
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 //****************************** End of File "CTree.cpp" ******************************//

@@ -2,6 +2,10 @@
 
 extern CIocpServer IocpServer;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 cMonster_1::cMonster_1(UINT Type, float HP, float posX, float posY, float posZ)
 :cMonster_Info()
 {
@@ -14,9 +18,15 @@ cMonster_1::cMonster_1(UINT Type, float HP, float posX, float posY, float posZ)
 }
 void cMonster_1::Monster_Init(int num)
 {
+<<<<<<< HEAD
 	/*m_posx = m_posx;
 	m_posy = m_posy;
 	m_posz = m_posz;*/
+=======
+	m_posx = m_posx + (rand() % 100);
+	m_posy = m_posy;
+	m_posz = m_posz + (rand() % 200);
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 
 	// 데이터 조립.
@@ -72,6 +82,7 @@ VOID cMonster_1::Update(float dt, int num)
 	// 전송.
 	IocpServer.GetConnectUserManager()->WriteCulling(CMONSTER_POS, pData, size, m_NodeNum);
 	//IocpServer.GetConnectUserManager()->WriteGameClientAll(CMONSTER_POS, pData, size);
+<<<<<<< HEAD
 }
 VOID cMonster_1::AI_Update(float dt)
 {
@@ -128,5 +139,17 @@ VOID cMonster_1::AI_Update(float dt)
 		}
 
 		}
+=======
+
+}
+VOID cMonster_1::AI_Update(float dt)
+{
+	switch (rand() % 4)
+	{
+	case 0:cout << "m_posx++" << endl; m_posx++; break;
+	case 1:cout << "m_posx--" << endl; m_posx--; break;
+	case 2:cout << "m_posz++" << endl; m_posz++; break;
+	case 3:cout << "m_posz--" << endl; m_posz--; break;
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	}
 }

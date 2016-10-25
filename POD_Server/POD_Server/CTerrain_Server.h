@@ -76,7 +76,11 @@ public:
 	float GetHeight(D3DXVECTOR3& _vObjPos);
 	void GetSize(float* _pWidth, float* _pDepth) { *_pWidth = (float)m_Info.s_nHeightMapWidth, *_pDepth = (float)m_Info.s_nHeightMapDepth; }
 	
+<<<<<<< HEAD
 	CTree* GetTree() { return &m_Tree; } 
+=======
+	CTree* GetTree() { return &m_Tree; }
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 };
 

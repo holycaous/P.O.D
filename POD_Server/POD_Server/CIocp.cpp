@@ -56,7 +56,11 @@ BOOL CIocp::Begin(VOID)
 		mWorkerThreadVector.push_back(WorkerThread);
 		// 하나의 쓰레드마다 생성이 완료될 때까지 대기
 		WaitForSingleObject(mStartupEventHandle, INFINITE);
+<<<<<<< HEAD
 	} 
+=======
+	}
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	return TRUE;
 }
 

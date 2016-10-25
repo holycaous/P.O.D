@@ -37,6 +37,7 @@ void CConnectedUser::Update(float _fDTime)
 	CThreadSync Sync;
 	POINT p;
 
+<<<<<<< HEAD
 	p.x = m_PlayerInfo->GetPositionX(); 
 	p.y = m_PlayerInfo->GetPositionZ();
 	
@@ -49,6 +50,16 @@ void CConnectedUser::Update(float _fDTime)
 	//cout << "ID: " << m_PlayerInfo->GetClientID() << "=" << "pQuad->s_NodeNum::" << endl;
 	//m_NodeNum = ServerMGR->GetTerrainServer()->GetTree()->GetTopNode()->IsIn(p)->s_NodeNum;//현재 플레이어위치의 트리노드번호를 입력
 	m_PlayerInfo->SetNodeNum(m_NodeNum); //플레이어백터에도 트리노드번호입력
+=======
+	p.x = m_PlayerInfo->GetPositionX();
+	p.y = m_PlayerInfo->GetPositionZ();
+	QUAD *pQuad = ServerMGR->GetTerrainServer()->GetTree()->GetTopNode()->IsIn(p); //쿼드트리에 속한 트리노드를 알아낸다.
+	m_NodeNum = pQuad->s_NodeNum;//현재 플레이어위치의 트리노드번호를 입력
+//	cout << "ID: " << m_PlayerInfo->GetClientID() << "=" << "pQuad->s_NodeNum::" << endl;
+	//m_NodeNum = ServerMGR->GetTerrainServer()->GetTree()->GetTopNode()->IsIn(p)->s_NodeNum;//현재 플레이어위치의 트리노드번호를 입력
+	//m_PlayerInfo->SetNodeNum(m_NodeNum); //플레이어백터에도 트리노드번호입력
+	
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	m_PlayerInfo->Update(_fDTime); //플레이어 패킷 보내기
 	
 }
@@ -59,10 +70,18 @@ void CConnectedUser::Player_Init()
 	int z=100;
 	sum_X = sum_X+20;
 
+<<<<<<< HEAD
 
 	m_PlayerInfo->PlayerInit(ServerMGR->PlayerID, sum_X, 100, 200, 100);
 
 }
+=======
+	m_PlayerInfo->PlayerInit(ServerMGR->PlayerID, sum_X, 100, 200, 100);
+
+
+}
+
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 void CConnectedUser::ComUpdate(float _fDTime)
 {
 	//CThreadSync Sync;

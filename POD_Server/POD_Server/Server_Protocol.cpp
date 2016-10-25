@@ -22,9 +22,16 @@ namespace ServerProtocol_Func{
 		ServerProtocol_Func::Player_Push_A,
 		ServerProtocol_Func::Player_Push_D
 
+<<<<<<< HEAD
 	}; 
 	void Connect_Complete_Func(BYTE* _pPacket, DWORD& _Length)
 	{
+=======
+	};
+	void Connect_Complete_Func(BYTE* _pPacket, DWORD& _Length)
+	{
+
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 		printf("클라이언트 로딩 완료 \n");
 		/*ServerMGR->TerrainWidth = *(float*)(_pPacket);
 		ServerMGR->TerrainDepth = *(float*)(_pPacket+sizeof(float));
@@ -40,6 +47,10 @@ namespace ServerProtocol_Func{
 		}
 		//MonsterMGR->INIT(); //몬스터 전송
 		//IocpServer.GetConnectUserManager()->WriteAll(CPlAYER_INFO, (BYTE*)ClientID, sizeof(UINT)); //모든 클라이언트에게 접속한 클라의 아이디(클라이언트 수)를 보내준다.
+<<<<<<< HEAD
+=======
+
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	}
 	void DisConnect(BYTE* _pPacket, DWORD& _Length)
 	{

@@ -39,7 +39,11 @@ public:
 	virtual void Update(float _fDTime);
 	void PlayerInit(int ID,float pos_x,float pos_y,float pos_z,float hp);
 	void PlayerInfo();
+<<<<<<< HEAD
 	void PlayerCollison();
+=======
+
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 	VOID Move(int state);
 

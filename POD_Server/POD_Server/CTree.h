@@ -12,7 +12,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////
 enum{
+<<<<<<< HEAD
 	QD_CN,
+=======
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	QD_LT,
 	QD_RT,
 	QD_LB,
@@ -21,12 +24,20 @@ enum{
 };
 
 struct QUAD{
+<<<<<<< HEAD
 	POINT s_P[QD_MAX];	// 노드 구성하는 꼭지점 4개.
 	UINT s_F[QD_MAX];	// 노드 구성하는 페이스 4개.
 	UINT s_nLV;			// 노드 레벨.
 	UINT s_nNum;		// 몇사분면 쿼드?
 	UINT s_NodeNum;     //노드 넘버 
 	FLOAT s_Radius;     //노드 반지름
+=======
+	POINT s_P[QD_MAX];	// 노드 구성하는 꼭지점 5개.
+	UINT s_F[QD_MAX];	// 노드 구성하는 페이스 5개.
+	UINT s_nLV;			// 노드 레벨.
+	UINT s_nNum;		// 몇사분면 쿼드?
+	UINT s_NodeNum;     //노드 넘버
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	vector<cMonster_Info*> Monster_arr; //몬스터1 오브젝트 배열
 };
 
@@ -59,7 +70,10 @@ protected:
 protected:
 	void _ClearChild();
 	bool _InRect(POINT _Pos, QUAD* _pQuad);
+<<<<<<< HEAD
 	bool _InCircle(POINT _Pos, float _fRadius, QUAD* _Quad);
+=======
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 public:
 	void Create(UINT _MaxLv, UINT _CurrLv, UINT _nNum, POINT _Pos[QD_MAX], UINT _nFace[QD_MAX], CTreeNode* _pParent);
@@ -69,10 +83,15 @@ public:
 
 	// 주어진 좌표가 현재 노드의 영역에 있는지 검사.
 	QUAD* IsIn(POINT vPos);
+<<<<<<< HEAD
 	QUAD* IsCollision(POINT _vPos, float _Radius);
 
 	static UINT GetNodeTotalCnt() { return m_nNodeTotalCnt; }
 	
+=======
+
+	static UINT GetNodeTotalCnt() { return m_nNodeTotalCnt; }
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 };
 
 
@@ -92,7 +111,10 @@ protected:
 	CTreeNode* m_pTopNode; // 최상위 노드.
 
 	UINT m_nMaxLv;
+<<<<<<< HEAD
 	UINT m_nQude_Index; //충돌체크쿼드배열 인덱스
+=======
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 public:
 	int Create(UINT _nMaxLv, POINT _vPos[QD_MAX], UINT _nFace[QD_MAX]); // 영역을 일정 단계(Lv1)까지 나누기.
@@ -103,6 +125,7 @@ public:
 
 	CTreeNode* GetTopNode() { return m_pTopNode; }
 	void SetTop(CTreeNode* _pNode) { m_pTopNode = _pNode; }
+<<<<<<< HEAD
 
 	QUAD* Quad_Arr[4];//충돌된 쿼드트리노드 배열 
 	
@@ -121,5 +144,9 @@ public:
 
 };
  
+=======
+};
+
+>>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 //****************************** End of File "CTree.h" ******************************//
