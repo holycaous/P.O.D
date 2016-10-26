@@ -285,7 +285,7 @@ public:
 	vector<WeightVtx> weightVtx;
 
 	// 오프셋
-	int  vertexOffset;
+	UINT vertexOffset;
 	UINT indexOffset;
 
 	// 카운트

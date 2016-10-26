@@ -402,7 +402,7 @@ public:
 	float mOpacity;
 
 	// 오프셋
-	int  mVertexOffset;
+	UINT mVertexOffset;
 	UINT mIndexOffset;
 
 	// 카운트
@@ -451,19 +451,8 @@ private:
 public:
 	InitMetaData(const char* _Name, SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY)
 	{
-		// 리소스 뷰
-		mDiffuseSRV = mSpecularSRV = mNomalSRV = nullptr;
-
-		// 디퓨즈맵 투명도
-		mOpacity = 100.0f;
-
-		// 매트릭스 초기화
-		XMMATRIX I = XMMatrixIdentity();
-
-		// 텍스처 변환 매트릭스 초기화
-		XMStoreFloat4x4(&mTexMtx, I);
-		XMStoreFloat4x4(&mLocTMMtx, I);
-		XMStoreFloat4x4(&mWdTMMtx, I);
+		// 변수 초기화
+		initValue();
 
 		// 이름 등록
 		strcpy(mMainName, _Name);
@@ -475,8 +464,6 @@ public:
 		_PRIMITIVE_TOPOLOGY = _D3D_PRIMITIVE_TOPOLOGY;
 
 		// 변수 초기화
-		mObjID    = -1;
-		mParentID = -1;
 		strcpy(mObjName   , "NULL\0");
 		strcpy(mObjClass  , "NULL\0");
 		strcpy(mParentName, "NULL\0");
@@ -484,7 +471,37 @@ public:
 
 	InitMetaData(SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY)
 	{
-		// 리소스 뷰
+		// 변수 초기화
+		initValue();
+		
+		// 쉐이더 모드
+		mShaderMode = _ShaderMode;
+
+		// 어떤식으로 모델을 구성할 것인가
+		_PRIMITIVE_TOPOLOGY = _D3D_PRIMITIVE_TOPOLOGY;
+
+	}
+
+	~InitMetaData()
+	{
+#ifdef DEBUG_MODE
+		printf("클리어 객체명: %17s ---> 생성명: %12s, 이름: %12s\n", mObjName, mCreateName.c_str(), mMainName);
+#endif
+		ReleaseCOM(mDiffuseSRV);
+		ReleaseCOM(mSpecularSRV);
+		ReleaseCOM(mNomalSRV);
+
+		initValue();
+	}
+
+	// 변수 초기화
+	void initValue()
+	{
+		// 아이디 값
+		mObjID    = -1;
+		mParentID = -1;
+
+		// 리소스
 		mDiffuseSRV = mSpecularSRV = mNomalSRV = nullptr;
 
 		// 디퓨즈맵 투명도
@@ -498,22 +515,13 @@ public:
 		XMStoreFloat4x4(&mLocTMMtx, I);
 		XMStoreFloat4x4(&mWdTMMtx, I);
 
-		// 쉐이더 모드
-		mShaderMode = _ShaderMode;
+		// 버퍼 초기화
+		memset(&mMainName  , '\0', sizeof(mMainName));
+		memset(&mObjName   , '\0', sizeof(mObjName));
+		memset(&mObjClass  , '\0', sizeof(mObjClass));
+		memset(&mParentName, '\0', sizeof(mParentName));
 
-		// 어떤식으로 모델을 구성할 것인가
-		_PRIMITIVE_TOPOLOGY = _D3D_PRIMITIVE_TOPOLOGY;
-	}
-
-	~InitMetaData()
-	{
-#ifdef DEBUG_MODE
-		printf("클리어 객체명: %17s ---> 생성명: %12s, 이름: %12s\n", mObjName, mCreateName.c_str(), mMainName);
-#endif
-		ReleaseCOM(mDiffuseSRV);
-		ReleaseCOM(mSpecularSRV);
-		ReleaseCOM(mNomalSRV);
-
+		// STL 초기화
 		for (unsigned int i = 0; i < weightVtx.size(); ++i)
 			weightVtx[i].Bone.clear();
 		weightVtx.clear();
@@ -595,6 +603,17 @@ public:
 		// 오브젝트 이동
 		mObjData[_uniqueCode].setPos(_x, _y, _z);
 	}
+
+	// 해당 위치로 가는 벡터를 얻는다
+	XMVECTOR GetPointDir(int _uniqueCode, float _x, float _y, float _z)
+	{
+		// 위치가 주어진다.
+		XMVECTOR tPoint  = XMLoadFloat3(&XMFLOAT3(_x, 0.0f, _z));
+		XMVECTOR tObjPos = XMLoadFloat3(&mObjData[_uniqueCode].getPosXZ());
+
+		// 위치로 향하는 벡터를 얻는다.
+		return XMVECTOR(XMVector3Normalize(tPoint - tObjPos));
+	}
 	
 	// 오브젝트 회전
 	void SetRotate(int _uniqueCode, float _x, float _y, float _z)
@@ -605,17 +624,13 @@ public:
 		// 회전 범위제한
 		float Rotatelimit = 0.05f;
 
-		// 위치가 주어진다.
-		XMVECTOR tPoint = XMLoadFloat3(&XMFLOAT3(_x, 0.0f, _z));
-		XMVECTOR tObjPos = XMLoadFloat3(&mObjData[_uniqueCode].getPosXZ());
+		// 위치로 향하는 벡터를 얻는다.
+		XMVECTOR tfromPointLookDir = GetPointDir(_uniqueCode, _x, _y, _z);
 
 		// 오브젝트 각도를 얻는다.
 		XMVECTOR tObjLook  = XMLoadFloat3(&mObjData[_uniqueCode].getLookDir());
 		XMVECTOR tObjUp    = XMLoadFloat3(&mObjData[_uniqueCode].getUpDir());
 		XMVECTOR tObjRight = XMLoadFloat3(&mObjData[_uniqueCode].getRightDir());
-
-		// 위치로 향하는 벡터를 얻는다.
-		XMVECTOR tfromPointLookDir = XMVector3Normalize(tPoint - tObjPos);
 
 		// 회전 방향을 얻는다(좌, 우) - 스칼라 삼중적
 		float tRadius = XMVectorGetX(XMVector3Dot(tObjUp, XMVector3Cross(tObjLook, tfromPointLookDir)));
@@ -811,12 +826,16 @@ public:
 public:
 	BufferType()
 	{
+		initValue();
+
 		// 버퍼
 		mVB = mIB = nullptr;
 	}
 
 	BufferType(SHADER_TYPE _ShaderMode)
 	{
+		initValue();
+
 		// 버퍼
 		mVB = mIB = nullptr;
 
@@ -825,14 +844,22 @@ public:
 	}
 	~BufferType()
 	{
+		initValue();
+
+		ReleaseCOM(mVB);
+		ReleaseCOM(mIB);
+
+		// 버퍼
+		mVB = mIB = nullptr;
+	}
+
+	void initValue()
+	{
 		// 인스턴스 버퍼 삭제
 		ClearInsBuf();
 
 		// 모델 리스트 삭제
 		mModelList.clear();
-
-		ReleaseCOM(mVB);
-		ReleaseCOM(mIB);
 	}
 
 	void ClearInsBuf()
@@ -1783,7 +1810,7 @@ public:
 	vector<WeightVtx> weightVtx;
 
 	// 오프셋
-	int  vertexOffset;
+	UINT vertexOffset;
 	UINT indexOffset;
 
 	// 카운트
@@ -1838,6 +1865,13 @@ public:
 		vertices .clear();
 		indices  .clear();
 		weightVtx.clear();
+		
+		mObjID = mParentID = vertexOffset = indexOffset = indexCount = 0;
+
+		memset(&mMainName  , '\0', sizeof(mMainName));
+		memset(&mObjName   , '\0', sizeof(mObjName));
+		memset(&mObjClass  , '\0', sizeof(mObjClass));
+		memset(&mParentName, '\0', sizeof(mParentName));
 	}
 };
 

@@ -138,6 +138,9 @@ private:
 	// 읽을 데이터가 할 행동
 	ReadingCurrentData mReadCurData = e_Read;
 
+	// 읽을 재질 순서
+	int mMtrlCount;
+
 public:
 	// 버퍼 비우기
 	void ClearClass()
@@ -183,6 +186,9 @@ public:
 		strcat(mFinExportBoneData, mFileName);
 		strcat(mFinExportBoneData, "Bone");
 		strcat(mFinExportBoneData, mExportFileFormat);
+
+		// 재질 카운트 초기화
+		mMtrlCount = -1;
 	}
 
 	// XML 초기화
@@ -227,7 +233,7 @@ public:
 	}
 
 	// XML 텍스처 등록
-	void SetTexture(int _MatNum, char* _DiffuseMap = "NULL", float _Opacity = 100.0f, char* _NoamleMap = "NULL", char* _SpecularMap = "NULL")
+	void SetTexture(char* _DiffuseMap = "NULL", float _Opacity = 100.0f, char* _NoamleMap = "NULL", char* _SpecularMap = "NULL")
 	{
 		// 텍스처 초기화
 		TextuerInfo tTex;
@@ -239,7 +245,7 @@ public:
 		tTex.mOpacity = _Opacity;
 
 		// 모델 등록
-		mMtrl[_MatNum] = tTex;
+		mMtrl[++mMtrlCount] = tTex;
 	}
 
 	// 파싱
@@ -347,7 +353,7 @@ private:
 	void DataErrCheck()
 	{
 		// 파일 닫기
-		fclose(mFilePointer);
+		FileClose();
 		printf("[Succes] 파일 종료.\n");
 
 		// 생성된 서브 모델 만큼
@@ -376,7 +382,7 @@ private:
 			// 열린경우만 닫으면 됨.
 			if (FileOpen(mInPutTexFileLoc, "rb"))
 			{
-				fclose(mFilePointer);
+				FileClose();
 				printf("[Succes] 파일 종료.\n");
 
 				strcpy(mOutPutTexFileLoc, "Export/");
@@ -410,11 +416,22 @@ private:
 			return false;
 		}
 		if ((_ReadType == "wb") || (_ReadType == "wt"))
+		{
+			rewind(mFilePointer);
 			printf("[Succes] [%s] 쓰기모드 시작.\n", _Route);
+		}
 		else if ((_ReadType == "rb") || (_ReadType == "rt"))
+		{
+			rewind(mFilePointer);
 			printf("[Succes] [%s] 열기모드 시작.\n", _Route);
-
+		}
 		return true;
+	}
+
+	void FileClose()
+	{
+		fclose(mFilePointer);
+		mFilePointer = nullptr;
 	}
 
 	// 한줄 내용 읽기
@@ -456,28 +473,29 @@ private:
 		// 파일을 읽는다.
 		ReadLineData(_ReadLineData);
 
-		// 재질
-		if (stMtrl == _ReadLineData)
-		{
-			while (true)
-			{
-				// 다음 파일을 읽는다.
-				ReadLineData(_ReadLineData);
+		//// 재질
+		//if (stMtrl == _ReadLineData)
+		//{
+		//	while (true)
+		//	{
+		//		// 다음 파일을 읽는다.
+		//		ReadLineData(_ReadLineData);
 
-				// 끝을 알리는 문자가 나왔는지 확인
-				if (edMtrl == _ReadLineData) { mReadCurData = e_Read; break; }
+		//		// 끝을 알리는 문자가 나왔는지 확인
+		//		if (edMtrl == _ReadLineData) { mReadCurData = e_Read; break; }
 
-				// 원하는 내용을 옮긴다 ( 현재 리드버퍼는 읽어져있는 상태 )
-				sscanf_s(mReadBuf, "\t\t<Slot Index=\"%d\">\n", &_CreateMatNum);
+		//		// 원하는 내용을 옮긴다 ( 현재 리드버퍼는 읽어져있는 상태 )
+		//		sscanf_s(mReadBuf, "\t\t<Slot Index=\"%d\">\n", &_CreateMatNum);
 
-				// 해당 재질을 생성한다 저장한다.
-				// 단, 기존에 재질이 없을때 저장한다. (모든 맵 이름이 NULL이면, 따로 텍스처를 추가 안했다는 뜻)
-				if (strstr(mMtrl[_CreateMatNum].mDiffuseMap, "NULL") && strstr(mMtrl[_CreateMatNum].mSpecularMap, "NULL") && strstr(mMtrl[_CreateMatNum].mNoamleMap, "NULL"))
-					mMtrl[_CreateMatNum] = tTex;
-			}
-		}
-		// 매쉬
-		else if (stMesh == _ReadLineData)
+		//		// 해당 재질을 생성한다 저장한다.
+		//		// 단, 기존에 재질이 없을때 저장한다. (모든 맵 이름이 NULL이면, 따로 텍스처를 추가 안했다는 뜻)
+		//		if (strstr(mMtrl[_CreateMatNum].mDiffuseMap, "NULL") && strstr(mMtrl[_CreateMatNum].mSpecularMap, "NULL") && strstr(mMtrl[_CreateMatNum].mNoamleMap, "NULL"))
+		//			mMtrl[_CreateMatNum] = tTex;
+		//	}
+		//}
+		//// 매쉬
+		//else 
+		if (stMesh == _ReadLineData)
 		{
 			// 임시 버퍼 초기화
 			memset(&tMetaData, 0, sizeof(tMetaData));
@@ -594,7 +612,9 @@ private:
 						sscanf_s(mReadBuf, "\t\t\t\t<Value MaterialID=\"%d\">[%f,%f,%f]</Value>", &tKeyVtx.Key, &tKeyVtx.Vtx.x, &tKeyVtx.Vtx.y, &tKeyVtx.Vtx.z);
 
 						// 만약 재질이 -1(기본)이라면 0으로 초기화 시킨다.
-						if (tKeyVtx.Key == -1)
+						tKeyVtx.Key -= 1;
+
+						if (tKeyVtx.Key <= -1)
 							tKeyVtx.Key = 0;
 
 						tMetaData.Indices.push_back(tKeyVtx);
@@ -808,7 +828,7 @@ private:
 		}
 
 		// 파일 종료
-		fclose(mFilePointer);
+		FileClose();
 		printf("[Succes] 파일 종료.\n");
 	}
 
@@ -835,7 +855,7 @@ private:
 		}
 
 		// 파일 종료
-		fclose(mFilePointer);
+		FileClose();
 		printf("[Succes] 파일 종료.\n");
 	}
 
@@ -924,7 +944,7 @@ private:
 		}
 
 		// 오프셋
-		fwrite(&mMyMeshData[_ModelNum].vertexOffset, sizeof(int), 1, mFilePointer);
+		fwrite(&mMyMeshData[_ModelNum].vertexOffset, sizeof(UINT), 1, mFilePointer);
 		fwrite(&mMyMeshData[_ModelNum].indexOffset, sizeof(UINT), 1, mFilePointer);
 
 		// 카운트
@@ -985,7 +1005,7 @@ private:
 		fwrite(&mMyMeshData[_ModelNum].mParentName, sizeof(char), len, mFilePointer);
 
 		// 파일 종료
-		fclose(mFilePointer);
+		FileClose();
 		printf("[Succes] 파일 종료.\n");
 	}
 
@@ -1071,7 +1091,7 @@ private:
 		}
 
 		// 오프셋
-		fread(&_MyMeshData->vertexOffset, sizeof(int), 1, mFilePointer);
+		fread(&_MyMeshData->vertexOffset, sizeof(UINT), 1, mFilePointer);
 		fread(&_MyMeshData->indexOffset, sizeof(UINT), 1, mFilePointer);
 
 		// 카운트
@@ -1126,7 +1146,7 @@ private:
 		fread(&_MyMeshData->mParentName, sizeof(char), len, mFilePointer);
 
 		// 파일 종료
-		fclose(mFilePointer);
+		FileClose();
 		printf("[Succes] 파일 종료.\n");
 	}
 
@@ -1234,7 +1254,7 @@ private:
 		}
 
 		// 파일 종료
-		fclose(mFilePointer);
+		FileClose();
 		printf("[Succes] 파일 종료.\n");
 	}
 
@@ -1338,7 +1358,7 @@ private:
 		}
 
 		// 파일 종료
-		fclose(mFilePointer);
+		FileClose();
 		printf("[Succes] 파일 종료.\n");
 	}
 

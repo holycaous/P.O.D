@@ -59,8 +59,8 @@ public:
 
 
 		// 테스트용
-		mModelManager->AddModel("Model4", -100.0f, 100.0f, -100.0f);
-		mModelManager->AddModel("Model2",    0.0f, 100.0f,    0.0f);
+		mModelManager->AddModel("Model4",  100.0f, 100.0f,  300.0f);
+		mModelManager->AddModel("Model2",  100.0f, 100.0f,  200.0f);
 		mModelManager->AddModel("Model1",  100.0f, 100.0f,  100.0f);
 		
 		// 스크린 추가 (풀 스크린쿼드)
@@ -100,19 +100,19 @@ public:
 		{
 		// 이동 테스트
 		case 'W':
-			mModelManager->SetPos(0, "Model3", 100.0f, 100.0f, 100.0f + 100.0f);
+			mModelManager->SetPos(0, "Model3", 200.0f         , 100.0f, 200.0f + 100.0f);
 			break;
 
 		case 'A':
-			mModelManager->SetPos(0, "Model3", 100.0f + 100.0f, 100.0f, 100.0f);
+			mModelManager->SetPos(0, "Model3", 200.0f + 100.0f, 100.0f, 150.0f);
 			break;
 
 		case 'S':
-			mModelManager->SetPos(0, "Model3", 100.0f, 100.0f, 100.0f - 100.0f);
+			mModelManager->SetPos(0, "Model3", 200.0f	      , 100.0f, 200.0f - 100.0f);
 			break;
 
 		case 'D':
-			mModelManager->SetPos(0, "Model3", 100.0f - 100.0f, 100.0f, 100.0f);
+			mModelManager->SetPos(0, "Model3", 200.0f - 100.0f, 100.0f, 150.0f);
 			break;
 
 		case 'Z':
@@ -126,7 +126,7 @@ public:
 
 		// 회전 테스트
 		case 'Q':
-			mModelManager->SetRotate(0, "Model3", -100.0f, 100.0f, -100.0f);
+			mModelManager->SetRotate(0, "Model3", 100.0f, 100.0f, 300.0f);
 			break;
 
 		case 'E':
@@ -143,12 +143,23 @@ public:
 		// 기타 테스트
 		case 'H':
 			{
+				//--------------------------------------------------------//
+				// 테스트 1
+				//--------------------------------------------------------//
+			    // 해당 위치로 가는 방향벡터 얻기 (0번 모델3이 해당 위치로 가는 방향벡터 얻기)
+				XMFLOAT3 dir = mModelManager->GetPointDir(0, "Model3", 100.0f, 100.0f, 300.0f);
+
+
+				//--------------------------------------------------------//
+				// 테스트 2
+				//--------------------------------------------------------//
 				// 데이터를 임시로 저장할 공간
 				vector<ObjData> _testOut;
 
 				//--------------------------------------------------------//
-				// <1> 1개의 오브젝트 정보만 빼낸다.
-				mModelManager->getModelData(1, "Model3", _testOut);
+				// <1> 0번 모델3의 정보를 빼낸다.
+				//--------------------------------------------------------//
+				mModelManager->getModelData(0, "Model3", _testOut);
 
 				for (unsigned int i = 0; i < _testOut.size(); ++i)
 				{
@@ -159,7 +170,8 @@ public:
 				_testOut.clear(); // 사용후에는 반드시 클리어
 
 				//--------------------------------------------------------//
-				// <2> 모든 오브젝트의 정보를 빼낸다.
+				// <2> Model3에 속한, 모든 정보를 빼낸다.
+				//--------------------------------------------------------//
 				mModelManager->getAllModelData("Model3", _testOut);
 
 				for (unsigned int i = 0; i < _testOut.size(); ++i)

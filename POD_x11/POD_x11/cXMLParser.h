@@ -16,9 +16,6 @@ public:
 private:
 	cCoreStorage* mCoreStorage = cCoreStorage::GetInstance();
 
-	// 모델 데이터
-	InitMetaData* mInitMetaData;
-
 	// 파일 포인터
 	FILE* mFilePointer = nullptr;
 
@@ -29,6 +26,7 @@ private:
 public:
 	cXMLParser()
 	{
+		ClearClass();
 		InitClass();
 	}
 
@@ -52,36 +50,36 @@ public:
 	void ClearPointer()
 	{
 		mMyMeshData.ClearClass();
-		mInitMetaData = nullptr;
+
+		memset(&mReadBuf, '\0', sizeof(mReadBuf));
+		memset(&mSaveBuf, '\0', sizeof(mSaveBuf));
+
 		mFilePointer  = nullptr;
 	}
 
 	// 파싱
 	void LoadXMLRoute(string& _ModelRoute)
 	{
+		// 초기화
+		ClearPointer();
+
 		// XML 루트 데이터 읽기
 		ReadLocMyFormat_Model(_ModelRoute);
 	}
 
 	// 파싱
-	void LoadXMLModel(string& _ModelData)
+	void LoadXMLModel(string& _ModelData, InitMetaData& _InitMetaData)
 	{
 		// XML 모델 데이터 읽기
 		ReadDataMyFormat_Model(_ModelData); 
 
 		// 얻은 데이터 복사해 넣기
-		SaveMyFormat();
-	}
-
-	// 모델 버퍼 등록
-	void SetModelBuf(InitMetaData* _InitMetaData)
-	{
-		mInitMetaData = _InitMetaData;
+		SaveMyFormat(_InitMetaData);
 	}
 
 	// 더미 박스 만들기
 	// 박스 만들기
-	void LoadBox(float width, float height, float depth)
+	void LoadBox(InitMetaData& _InitMetaData, float width, float height, float depth)
 	{
 		Vertex v[8];
 
@@ -101,7 +99,7 @@ public:
 		v[6] = Vertex(-w2, -h2, +d2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 		v[7] = Vertex(+w2, -h2, +d2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
-		mInitMetaData->Vertices.assign(&v[0], &v[8]);
+		_InitMetaData.Vertices.assign(&v[0], &v[8]);
 
 
 		// Create the indices.
@@ -125,7 +123,7 @@ public:
 		i[30] = 2; i[31] = 3; i[32] = 6;
 		i[33] = 3; i[34] = 7; i[35] = 6;
 
-		mInitMetaData->Indices.assign(&i[0], &i[36]);
+		_InitMetaData.Indices.assign(&i[0], &i[36]);
 
 
 		// 텍스처
@@ -142,7 +140,7 @@ public:
 		tv[6] = XMFLOAT3(1.0f, 1.0f, 0.0f);
 		tv[7] = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
-		mInitMetaData->TexVertices.assign(&tv[0], &tv[8]);
+		_InitMetaData.TexVertices.assign(&tv[0], &tv[8]);
 
 		// 텍스트 인덱스 좌표 임의 구성
 		UINT ti[36];
@@ -165,14 +163,10 @@ public:
 		ti[30] = 2; ti[31] = 3; ti[32] = 6;
 		ti[33] = 3; ti[34] = 7; ti[35] = 6;
 
-		mInitMetaData->TexIndices.assign(&ti[0], &ti[36]);
-
-		// 연결고리 끊기
-		mInitMetaData = nullptr;
-
+		_InitMetaData.TexIndices.assign(&ti[0], &ti[36]);
 	}
 
-	void LoadScreen(float width, float height)
+	void LoadScreen(InitMetaData& _InitMetaData, float width, float height)
 	{
 		Vertex v[8];
 
@@ -185,7 +179,7 @@ public:
 		v[2] = Vertex(-w2, -h2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 		v[3] = Vertex(+w2, -h2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
-		mInitMetaData->Vertices.assign(&v[0], &v[4]);
+		_InitMetaData.Vertices.assign(&v[0], &v[4]);
 
 
 		// Create the indices.
@@ -194,7 +188,7 @@ public:
 		i[0] = 0; i[1] = 1; i[2] = 2;
 		i[3] = 1; i[4] = 3; i[5] = 2;
 
-		mInitMetaData->Indices.assign(&i[0], &i[6]);
+		_InitMetaData.Indices.assign(&i[0], &i[6]);
 
 
 		// 텍스처
@@ -207,7 +201,7 @@ public:
 		tv[2] = XMFLOAT3(0.0f, 1.0f, 0.0f);
 		tv[3] = XMFLOAT3(1.0f, 1.0f, 0.0f);
 
-		mInitMetaData->TexVertices.assign(&tv[0], &tv[4]);
+		_InitMetaData.TexVertices.assign(&tv[0], &tv[4]);
 
 		// 텍스트 인덱스 좌표 임의 구성
 		UINT ti[6];
@@ -215,10 +209,8 @@ public:
 		ti[0] = 0; ti[1] = 1; ti[2] = 2;
 		ti[3] = 1; ti[4] = 3; ti[5] = 2;
 
-		mInitMetaData->TexIndices.assign(&ti[0], &ti[6]);
+		_InitMetaData.TexIndices.assign(&ti[0], &ti[6]);
 
-		// 연결고리 끊기
-		mInitMetaData = nullptr;
 	}
 
 	// 파일 읽기 테스트 (모델 데이터 경로 로드)
@@ -244,8 +236,9 @@ public:
 		}
 
 		// 파일 종료
-		fclose(mFilePointer);
+		FileClose();
 		printf("[Succes] 파일 종료.\n");
+		_FinModelLoc.clear();
 	}
 
 	// 내 포맷으로 읽는다.(데이터) // <--- 테스트
@@ -330,7 +323,7 @@ public:
 		}
 
 		// 오프셋
-		fread(&mMyMeshData.vertexOffset, sizeof(int), 1, mFilePointer);
+		fread(&mMyMeshData.vertexOffset, sizeof(UINT), 1, mFilePointer);
 		fread(&mMyMeshData.indexOffset, sizeof(UINT), 1, mFilePointer);
 
 		// 카운트
@@ -385,7 +378,7 @@ public:
 		fread(&mMyMeshData.mParentName, sizeof(char), len, mFilePointer);
 
 		// 파일 종료
-		fclose(mFilePointer);
+		FileClose();
 		printf("[Succes] 파일 종료.\n");
 	}
 
@@ -489,15 +482,15 @@ public:
 		}
 
 		// 파일 종료
-		fclose(mFilePointer);
+		FileClose();
 		printf("[Succes] 파일 종료.\n");
 	}
 
 	// 파일 저장하기
-	void SaveMyFormat()
+	void SaveMyFormat(InitMetaData& _InitMetaData)
 	{
 		// 버텍스
-		mInitMetaData->Vertices = mMyMeshData.vertices;
+		_InitMetaData.Vertices = mMyMeshData.vertices;
 
 		// 인덱스
 		for (unsigned int i = 0; i < mMyMeshData.indices.size(); ++i)
@@ -507,13 +500,13 @@ public:
 				switch (vIdx)
 				{
 				case 0:
-					mInitMetaData->Indices.push_back((UINT)mMyMeshData.indices[i].x);
+					_InitMetaData.Indices.push_back((UINT)mMyMeshData.indices[i].x);
 					break;
 				case 1:
-					mInitMetaData->Indices.push_back((UINT)mMyMeshData.indices[i].y);
+					_InitMetaData.Indices.push_back((UINT)mMyMeshData.indices[i].y);
 					break;
 				case 2:
-					mInitMetaData->Indices.push_back((UINT)mMyMeshData.indices[i].z);
+					_InitMetaData.Indices.push_back((UINT)mMyMeshData.indices[i].z);
 					break;
 				default:
 					break;
@@ -522,56 +515,54 @@ public:
 		}
 
 		// 애니 데이터
-		mInitMetaData->aniData = mMyMeshData.aniData;
+		_InitMetaData.aniData = mMyMeshData.aniData;
 
 		// 가중치 데이터
-		mInitMetaData->weightVtx = mMyMeshData.weightVtx;
+		_InitMetaData.weightVtx = mMyMeshData.weightVtx;
 
 		// TM 매트릭스
-		mInitMetaData->mLocTMMtx = mMyMeshData.mTMLocalMtx;
-		mInitMetaData->mWdTMMtx  = mMyMeshData.mTMWorldMtx;
+		_InitMetaData.mLocTMMtx = mMyMeshData.mTMLocalMtx;
+		_InitMetaData.mWdTMMtx  = mMyMeshData.mTMWorldMtx;
 
 		// 오프셋
-		mInitMetaData->mVertexOffset = mMyMeshData.vertexOffset;
-		mInitMetaData->mIndexOffset  = mMyMeshData.indexOffset;
+		_InitMetaData.mVertexOffset = mMyMeshData.vertexOffset;
+		_InitMetaData.mIndexOffset  = mMyMeshData.indexOffset;
 
 		// 카운트
-		mInitMetaData->mIndexCount = mMyMeshData.indexCount;
+		_InitMetaData.mIndexCount = mMyMeshData.indexCount;
 
 		// 리소스 얻기 (재질 정보)
 		// 테스트
-		//if (mInitMetaData->mCreateName == "Model4_1")
+		//if (_InitMetaData.mCreateName == "Model4_1")
 		//	int i = 0;
 
-		LoadTex(mMyMeshData.mMyMat.mDiffuseSRV , e_DiffuseMap);
-		LoadTex(mMyMeshData.mMyMat.mNomalSRV   , e_NomalMap);
-		LoadTex(mMyMeshData.mMyMat.mSpecularSRV, e_SpecularMap);
+		LoadTex(_InitMetaData, mMyMeshData.mMyMat.mDiffuseSRV , e_DiffuseMap);
+		LoadTex(_InitMetaData, mMyMeshData.mMyMat.mNomalSRV   , e_NomalMap);
+		LoadTex(_InitMetaData, mMyMeshData.mMyMat.mSpecularSRV, e_SpecularMap);
 
 
 		// 투명 (디퓨즈 맵)
-		mInitMetaData->mOpacity = mMyMeshData.mMyMat.mOpacity;
+		_InitMetaData.mOpacity = mMyMeshData.mMyMat.mOpacity;
 
 		// 바운딩 박스
-		mInitMetaData->mBoundingBox = mMyMeshData.mBoundingBox;
+		_InitMetaData.mBoundingBox = mMyMeshData.mBoundingBox;
 
 		//--------------------------------------------------//
 		// 오브젝트 식별 정보
 		//--------------------------------------------------//
 
 		// 이름
-		strcpy(mInitMetaData->mMainName, mMyMeshData.mMainName);
+		strcpy(_InitMetaData.mMainName, mMyMeshData.mMainName);
 
 		// 오브젝트이름
-		mInitMetaData->mObjID = mMyMeshData.mObjID;
-		strcpy(mInitMetaData->mObjName , mMyMeshData.mObjName);
-		strcpy(mInitMetaData->mObjClass, mMyMeshData.mObjClass);
+		_InitMetaData.mObjID = mMyMeshData.mObjID;
+		strcpy(_InitMetaData.mObjName , mMyMeshData.mObjName);
+		strcpy(_InitMetaData.mObjClass, mMyMeshData.mObjClass);
 
 		// 상위 클래스 이름
-		mInitMetaData->mParentID = mMyMeshData.mParentID;
-		strcpy(mInitMetaData->mParentName, mMyMeshData.mParentName);
+		_InitMetaData.mParentID = mMyMeshData.mParentID;
+		strcpy(_InitMetaData.mParentName, mMyMeshData.mParentName);
 
-		// 연결고리 끊기
-		mInitMetaData = nullptr;
 	}
 private:
 	// 파일 열기
@@ -587,10 +578,22 @@ private:
 			return false;
 		}
 		if ((_ReadType == "wb") || (_ReadType == "wt"))
+		{
+			rewind(mFilePointer);
 			cout << "[Succes] [" << _Route << "] 쓰기모드 시작.\n";
+		}
 		else if ((_ReadType == "rb") || (_ReadType == "rt"))
+		{
+			rewind(mFilePointer);
 			cout << "[Succes] [" << _Route << "] 열기모드 시작.\n";
+		}
 		return true;
+	}
+
+	void FileClose()
+	{
+		fclose(mFilePointer);
+		mFilePointer = nullptr;
 	}
 
 	// 텍스처 로드
@@ -600,19 +603,19 @@ private:
 	//	switch (e_InitTex)
 	//	{
 	//	case e_DiffuseMap:
-	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mInitMetaData->mDiffuseSRV, 0));
+	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &_InitMetaData.mDiffuseSRV, 0));
 	//		break;
 	//	case e_SpecularMap:
-	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mInitMetaData->mSpecularSRV, 0));
+	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &_InitMetaData.mSpecularSRV, 0));
 	//		break;
 	//	case e_NomalMap:
-	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &mInitMetaData->mNomalSRV, 0));
+	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &_InitMetaData.mNomalSRV, 0));
 	//		break;
 	//	}
 	//}
 
 	// 텍스처 로드
-	void LoadTex(string _TexName, TEXTURE_TYPE e_InitTex)
+	void LoadTex(InitMetaData& _InitMetaData, string _TexName, TEXTURE_TYPE e_InitTex)
 	{
 		// string --> wString으로 변환
 		wstring _WsTexName;
@@ -622,13 +625,13 @@ private:
 		switch (e_InitTex)
 		{
 		case e_DiffuseMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &mInitMetaData->mDiffuseSRV, 0));
+			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &_InitMetaData.mDiffuseSRV, 0));
 			break;
 		case e_NomalMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &mInitMetaData->mNomalSRV, 0));
+			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &_InitMetaData.mNomalSRV, 0));
 			break;
 		case e_SpecularMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &mInitMetaData->mSpecularSRV, 0));
+			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &_InitMetaData.mSpecularSRV, 0));
 			break;
 		}
 

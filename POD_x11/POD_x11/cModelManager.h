@@ -49,12 +49,12 @@ public:
 		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTex);
 		CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTex);
 
-		// 애니 추가
-		CreateBoneAni("Model0", "Export/FinSkinning_TestBoneIdel.pod", e_ShaderPongTex);
-		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdel.pod"     , e_ShaderPongTex);
-		CreateBoneAni("Model2", "Export/FinCat1BoneIdel.pod"         , e_ShaderPongTex);
-		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdel.pod"  , e_ShaderPongTex);
-		CreateBoneAni("Model4", "Export/FinCyclopsBoneIdel.pod"      , e_ShaderPongTex);
+		//// 애니 추가
+		//CreateBoneAni("Model0", "Export/FinSkinning_TestBoneIdel.pod", e_ShaderPongTex);
+		//CreateBoneAni("Model1", "Export/FinAman_boyBoneIdel.pod"     , e_ShaderPongTex);
+		//CreateBoneAni("Model2", "Export/FinCat1BoneIdel.pod"         , e_ShaderPongTex);
+		//CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdel.pod"  , e_ShaderPongTex);
+		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdel.pod"      , e_ShaderPongTex);
 
 		//CreateModel("Model4", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
 		//CreateModel("Model5", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
@@ -132,6 +132,16 @@ public:
 			mAllModelData[_SlectModel]->SetRotate(_uniqueCode, _x, _y, _z);
 			_SlectModel.clear();
 		}
+	}
+
+	// 해당 위치로가는 벡터
+	XMFLOAT3 GetPointDir(int _uniqueCode, string _Name, float _x, float _y, float _z)
+	{
+		// 체인에 있는 모델 하나만 선택해서 방향 보냄
+		XMFLOAT3 ptDir;
+		XMStoreFloat3(&ptDir, mAllModelData[mModelChain[_Name][0]]->GetPointDir(_uniqueCode, _x, _y, _z));
+
+		return ptDir;
 	}
 
 	// 모델 크기 키우기
@@ -287,6 +297,7 @@ public:
 		//----------------------------------------------------//
 		// 모델 경로 파싱
 		//----------------------------------------------------//
+		// 초기화
 		mXMLParser.LoadXMLRoute(_ModelRoute);
 
 		// 읽은 경로만큼 매시데이터가 존재한다는 것이므로,
@@ -301,7 +312,9 @@ public:
 
 			// 첫 모델이라면 자신의 이름으로 짓는다.
 			if (i == 0)
+			{
 				tNewName = _Name;
+			}
 			// 서브 모델이 있는 모델이라면 '_번호'로 추가해서 짓는다.
 			else
 			{
@@ -310,20 +323,17 @@ public:
 				tNewName = _Name + '_' + _ModelNumBuf; 
 			}
 
-			// 모델 추가 생성 (기초 정보로 공간 확보)
+			// 모델 추가 생성 (생성할 이름으로 공간 확보)
 			mAllModelData[tNewName] = new InitMetaData(_ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
 
 			// 모델의 종류
 			mAllModelData[tNewName]->mModelType = e_ParsingModel;
 			mAllModelData[tNewName]->mCreateName = tNewName;
-
-			// 추가한 모델을 파서에 등록해 데이터를 채워 넣을거임
-			mXMLParser.SetModelBuf(mAllModelData[tNewName]);
-
+			
 			//----------------------------------------------------//
 			// 모델 데이터 파싱
 			//----------------------------------------------------//
-			mXMLParser.LoadXMLModel(tSelectModelRoute);
+			mXMLParser.LoadXMLModel(tSelectModelRoute, *mAllModelData[tNewName]);
 
 			// 쉐이더&모델 초기화 전용
 			UseAllShaderModel(_ShaderMode);
@@ -342,6 +352,7 @@ public:
 
 		// 파서 버퍼 초기화 ( 다음 모델을 받기 위해 ) 
 		mXMLParser.ClearClass();
+		_Name.clear();
 	}
 
 	// 모델 생성하기
@@ -379,11 +390,8 @@ public:
 		_nowModel->mModelType = e_BasicModel;
 		_nowModel->mCreateName = _Name;
 
-		// 파서에 버퍼 등록
-		mXMLParser.SetModelBuf(_nowModel);
-
 		// 파싱 시작
-		mXMLParser.LoadBox(10.0f, 10.0f, 10.0f);
+		mXMLParser.LoadBox(*_nowModel, 10.0f, 10.0f, 10.0f);
 
 		// 쉐이더, 모델 등록 (필터링 용)
 		UseAllShaderModel(_ShaderMode);
@@ -400,11 +408,8 @@ public:
 		mScreen->mModelType  = e_BasicModel;
 		mScreen->mCreateName = "GSreen";
 
-		// 파서에 버퍼 등록
-		mXMLParser.SetModelBuf(mScreen);
-
 		// 파싱 시작
-		mXMLParser.LoadScreen(1.0f, 1.0f); // 풀 스크린쿼드
+		mXMLParser.LoadScreen(*mScreen, 1.0f, 1.0f); // 풀 스크린쿼드
 
 		// 변수 계산
 		mScreen->CalValue();
