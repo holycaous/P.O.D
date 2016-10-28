@@ -61,7 +61,6 @@ using namespace std;
 #define MAX_QUEUE_LENGTH	 4096
 #define MAX_SESSION		10
 #define MAX_MONSTER		10
-
 #define DEFAULT_PORT	9876
 #define SERVER_IP    "127.0.0.1"
 

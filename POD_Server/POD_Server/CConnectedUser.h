@@ -37,6 +37,10 @@ public:
 	void SetNodeNum(UINT _NodeNum) { m_NodeNum = _NodeNum; }
 	UINT GetNodeNum() { return m_NodeNum; }
 
+	//충돌체크배열 넘버
+	/*void SetColisonNum(UINT _CollisonNum) { m_CollisonNum = _CollisonNum; }
+	UINT GetColisonNum() { return m_CollisonNum; }
+*/
 	cPlayer_Info* Get_Playerinfo() { return m_PlayerInfo;}
 
 private:
@@ -52,6 +56,8 @@ private:
 	UINT m_nCharacter;
 	
 	UINT m_NodeNum; //현재클라이언트의  플레이어 트리노드 번호
+
+	//UINT m_CollisonNum; //현재클라이언트의 플레이어 트리노드 충돌넘버
 
 	cPlayer_Info* m_PlayerInfo; //플레이어 정보 
 

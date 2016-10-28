@@ -37,15 +37,10 @@ void		cServerMGR::TerrainInit(CTerrain_Server::InitInfo* Terrain_info)
 {
 	Terrain_info->s_pHeightMapFilename = L"../Terrain/terrain2_1024x1024.raw";
 	Terrain_info->s_fHeightScale = 0;
-<<<<<<< HEAD
 	Terrain_info->s_nHeightMapDepth = 512;
 	Terrain_info->s_nHeightMapWidth = 512;
-	Terrain_info->s_nLV = 3;
-=======
-	Terrain_info->s_nHeightMapDepth = 1024;
-	Terrain_info->s_nHeightMapWidth = 1024;
 	Terrain_info->s_nLV = 1;
->>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
+
 	pTerrainServer = new CTerrain_Server(*Terrain_info);
 
 }

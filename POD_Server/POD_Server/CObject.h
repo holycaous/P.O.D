@@ -12,32 +12,20 @@ public:
 protected:
 	UINT m_nClientID;
 
-<<<<<<< HEAD
 	FLOAT m_posx;
 	FLOAT m_posy;
 	FLOAT m_posz;
 	FLOAT m_Radius;
 	FLOAT m_dirX, m_dirY, m_dirZ;
 	
-=======
-
-	FLOAT m_posx;
-	FLOAT m_posy;
-	FLOAT m_posz;
-	float m_dirX, m_dirY, m_dirZ;
-
->>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	FLOAT m_HP;
 	bool m_blive;
 
 	UINT m_NodeNum; //현재 쿼드트리노드에서의 위치 
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	//시간
-	DWORD ET = timeGetTime();//현재시간
+	DWORD ET = timeGetTime();//현재시간 
 	DWORD DT = timeGetTime();//경과시간
 	float fDt = 0.f; //누적시간
 	float fAccdt = 0.f; //총 누적시간
@@ -51,6 +39,12 @@ public:
 
 	void SetNodeNum(UINT _NodeNum) { m_NodeNum = _NodeNum; }
 	UINT GetNodeNum() { return m_NodeNum; }
+
+	void SetDirVector(FLOAT x, FLOAT y, FLOAT z) { m_dirX = x; m_dirY = y; m_dirZ = z;  }
+	FLOAT GetDirVectorX() { return m_dirX; }
+	FLOAT GetDirVectorY() { return m_dirY; }
+	FLOAT GetDirVectorZ() { return m_dirZ; }
+
 
 
 	void SetHP(FLOAT hp) { m_HP = hp; }

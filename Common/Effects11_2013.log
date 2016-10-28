@@ -1,0 +1,25 @@
+﻿빌드 시작: 2016-02-17 오전 3:45:28
+     1>2 노드의 "C:\Users\Star\Desktop\Effects11 (1)\Effects11_2013.vcxproj" 프로젝트(Build 대상)입니다.
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I.\Binary /I.\Inc /ZI /nologo /W4 /WX- /Od /Oi /Oy- /D _WIN7_PLATFORM_UPDATE /D WIN32 /D _DEBUG /D DEBUG /D PROFILE /D _WINDOWS /D _LIB /D D3DXFX_LARGEADDRESS_HANDLE /D _WIN32_WINNT=0x0600 /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /arch:SSE2 /fp:fast /Zc:wchar_t /Zc:forScope /openmp- /Yc"pchfx.h" /Fp"Bin\Desktop_2013\Win32\Debug\Effects11.pch" /Fo"Bin\Desktop_2013\Win32\Debug\\" /Fd"Bin\Desktop_2013\Win32\Debug\Effects11.pdb" /Gd /TP /analyze- /errorReport:prompt  d3dxGlobal.cpp
+         d3dxGlobal.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I.\Binary /I.\Inc /ZI /nologo /W4 /WX- /Od /Oi /Oy- /D _WIN7_PLATFORM_UPDATE /D WIN32 /D _DEBUG /D DEBUG /D PROFILE /D _WINDOWS /D _LIB /D D3DXFX_LARGEADDRESS_HANDLE /D _WIN32_WINNT=0x0600 /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /arch:SSE2 /fp:fast /Zc:wchar_t /Zc:forScope /openmp- /Yu"pchfx.h" /Fp"Bin\Desktop_2013\Win32\Debug\Effects11.pch" /Fo"Bin\Desktop_2013\Win32\Debug\\" /Fd"Bin\Desktop_2013\Win32\Debug\Effects11.pdb" /Gd /TP /analyze- /errorReport:prompt  EffectAPI.cpp EffectLoad.cpp EffectNonRuntime.cpp EffectReflection.cpp EffectRuntime.cpp
+         EffectAPI.cpp
+         EffectLoad.cpp
+         EffectNonRuntime.cpp
+         EffectReflection.cpp
+         EffectRuntime.cpp
+         코드를 생성하고 있습니다...
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"Bin\Desktop_2013\Win32\Debug\Effects11.lib" /NOLOGO Bin\Desktop_2013\Win32\Debug\d3dxGlobal.obj
+         Bin\Desktop_2013\Win32\Debug\EffectAPI.obj
+         Bin\Desktop_2013\Win32\Debug\EffectLoad.obj
+         Bin\Desktop_2013\Win32\Debug\EffectNonRuntime.obj
+         Bin\Desktop_2013\Win32\Debug\EffectReflection.obj
+         Bin\Desktop_2013\Win32\Debug\EffectRuntime.obj
+         Effects11_2013.vcxproj -> C:\Users\Star\Desktop\Effects11 (1)\Bin\Desktop_2013\Win32\Debug\Effects11.lib
+     1>"C:\Users\Star\Desktop\Effects11 (1)\Effects11_2013.vcxproj" 프로젝트를 빌드했습니다(Build 대상).
+
+빌드했습니다.
+
+경과 시간: 00:00:02.71

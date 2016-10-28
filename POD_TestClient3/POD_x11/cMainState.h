@@ -168,7 +168,7 @@ public:
 		{
 		case 'W':
 			Cla_ServerMGR->ClientNet()->WritePacket(SPUSH_W, pData, sizeof(UINT)); //서버에게 패킷전송
-			//mModelManager->SetPos(1, "Model3", 100.0f, 100.0f, 100.0f + 100.0f);
+			//mModelManager->SetPos(1, "Model3", 1500.0f, 100.0f, 100.0f + 100.0f);
 			break;
 
 		case 'A':

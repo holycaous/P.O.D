@@ -82,11 +82,8 @@ enum Client_Protocol
 	CPLAYER_POS,
 	CMONSTER_INIT,
 	CMONSTER_POS,
-<<<<<<< HEAD
 	CMONSTER_MOVE,
 	CMONSTER_ATTACK,
-=======
->>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 	CPROTOCOL_FULL,
 };
@@ -107,6 +104,13 @@ struct FACE
 	FACE(){};
 	FACE(UINT _0, UINT _1, UINT _2){ s_iIndex[0] = _0, s_iIndex[1] = _1; s_iIndex[2] = _2; }
 };
+struct DIRECTECTION
+{
+	float x;
+	float y;
+	float z;
+};
+
 /////////////
 
 #define ServerMGR		cServerMGR::GetInstance() // ΩÃ±€≈Ê ø¿∫Í¡ß∆Æ
@@ -120,13 +124,13 @@ struct FACE
 #include "CNetworkSession.h"
 #include "CPacketSession.h"
 #include "CIocp.h"
+#include "CTree.h"
 #include "CObject.h"
 #include "cPlayer_Info.h"
 #include "cMonster_Info.h"
 #include "cMonster_1.h"
 #include "CConnectedUser.h"
 #include "CConnectedUserManager.h"
-#include "CTree.h"
 #include "CTerrain_Server.h"
 #include "CIocpServer.h"
 #include "cMonsterMGR.h"

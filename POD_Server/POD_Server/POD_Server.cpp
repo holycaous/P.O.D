@@ -24,38 +24,32 @@ int _tmain(int argc, _TCHAR* argv[])
 	srand((unsigned)time(NULL));
 	// 서버 시작.
 	if (IocpServer.Begin())
-<<<<<<< HEAD
 	{ 
-=======
-	{
 		
->>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 		ServerMGR->Init();//서버 초기화
 		while (1)
 		{
 			DT = timeGetTime() - ET; //나중시간- 현재시간 =경과시간
 			ET = timeGetTime();  //현재시간 초기화
-			fDt = DT / 1000.0f; 
+			fDt = DT / 1000.0f;
 			fAccdt += fDt; //시간 누적량
 
-			if (fAccdt > S_FPS){ 				
-			/*	if (ServerMGR->bGame){
-					for (int i = MAX_SESSION - 1; i >= 0; --i) {
+			if (fAccdt > S_FPS){
+				/*	if (ServerMGR->bGame){
+						for (int i = MAX_SESSION - 1; i >= 0; --i) {
 						if (IocpServer.GetConnectUserManager()->GetConnectUser(i)->GetConnected())
-							IocpServer.GetConnectUserManager()->GetConnectUser(i)->Update(fAccdt);
-					}*/
-					for (int i = MAX_SESSION - 1; i >= 0; --i) {
-						if (IocpServer.GetConnectUserManager()->GetConnectUser(i)->GetUserStaus() == GAME_ING)
-							IocpServer.GetConnectUserManager()->GetConnectUser(i)->Update(fAccdt);
+						IocpServer.GetConnectUserManager()->GetConnectUser(i)->Update(fAccdt);
+						}*/
+				for (int i = MAX_SESSION - 1; i >= 0; --i) {
+					if (IocpServer.GetConnectUserManager()->GetConnectUser(i)->GetUserStaus() == GAME_ING)
+					{
+						IocpServer.GetConnectUserManager()->GetConnectUser(i)->Update(fAccdt);
+			
+
+						MonsterMGR->Update(fAccdt); //몬스터 업데이트
 					}
-					MonsterMGR->Update(fAccdt); //몬스터 업데이트
-<<<<<<< HEAD
-				 
-				fAccdt = 0.0f; 
-=======
-				
+				}
 				fAccdt = 0.0f;
->>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 			}
 		}
 		getchar();

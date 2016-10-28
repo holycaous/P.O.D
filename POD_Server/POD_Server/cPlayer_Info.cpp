@@ -10,11 +10,7 @@ void cPlayer_Info::Update(float _fDTime)
 		m_blive = FALSE;
 	// 데이터 조립.
 	int size = sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT);
-<<<<<<< HEAD
 	BYTE pData[20] = { 0, }; 
-=======
-	BYTE pData[20] = { 0, };
->>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 
 	memcpy(pData, &m_nClientID, sizeof(UINT)); //플레이어 ID
 	memcpy(pData + sizeof(UINT), &m_posx, sizeof(FLOAT));  //플레이어 위치 x좌표
@@ -23,21 +19,17 @@ void cPlayer_Info::Update(float _fDTime)
 	memcpy(pData + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT), &m_HP, sizeof(FLOAT)); //플레이어 Hp
 	
 	// 전송.
-<<<<<<< HEAD
 	for (int i = 0; i < ServerMGR->GetTerrainServer()->GetTree()->Get_Index(); i++)
 	{  
-		cout << ServerMGR->GetTerrainServer()->GetTree()->GetQudeIndex(i)->s_nNum << endl;
+		//cout << ServerMGR->GetTerrainServer()->GetTree()->GetQudeIndex(i)->s_NodeNum<< endl;
 		IocpServer.GetConnectUserManager()->WriteCulling(CPLAYER_POS, pData, size, 
-														 ServerMGR->GetTerrainServer()->GetTree()->GetQudeIndex(i)->s_nNum);
+														 ServerMGR->GetTerrainServer()->GetTree()->GetQudeIndex(i)->s_NodeNum);
 	}
-	ServerMGR->GetTerrainServer()->GetTree()->Reset_QudeIndex(); //트리노드인덱스 초기화
+	ServerMGR->GetTerrainServer()->GetTree()->Reset_QudeIndex(); //트리노드인덱스 초기화 
 	//IocpServer.GetConnectUserManager()->WriteCulling(CPLAYER_POS, pData, size, m_NodeNum);
 	//IocpServer.GetConnectUserManager()->WriteGameClientAll(CPLAYER_POS, pData, size);
-=======
 	//IocpServer.GetConnectUserManager()->WriteCulling(CPLAYER_POS, pData, size, m_NodeNum);
-	IocpServer.GetConnectUserManager()->WriteGameClientAll(CPLAYER_POS, pData, size);
->>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
-
+	//IocpServer.GetConnectUserManager()->WriteGameClientAll(CPLAYER_POS, pData, size);
 }
 void cPlayer_Info::PlayerInit(int ID, float pos_x, float pos_y, float pos_z, float hp)
 {
@@ -68,11 +60,7 @@ void cPlayer_Info::PlayerInfo()
 	if (m_HP <= 0) 
 		m_blive = FALSE;
 
-<<<<<<< HEAD
  	// 데이터 조립.
-=======
-	// 데이터 조립.
->>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
 	int size = sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT);
 	BYTE pData[20] = { 0, };
 
@@ -103,7 +91,6 @@ VOID	cPlayer_Info::Move(int state)
 		cout << "라이트키" << endl;
 		break;
 	}
-<<<<<<< HEAD
 }
 void	cPlayer_Info::PlayerCollison()
 {
@@ -113,7 +100,6 @@ void	cPlayer_Info::PlayerCollison()
 
 	float SerchRange = 10; //몬스터탐색범위
 	float AttackRange = 2; //몬스터공격범위
-
 
 	//*1.몬스터가 플레이어와의  감지거리에 들어올 경우는  MOVE상태로 변경  2.몬스터가 플레이어를 공격할수있는 거리일 경우는 ATTACK상태로 변경
 	for (int i = 0; i < MAX_MONSTER; i++)
@@ -143,6 +129,4 @@ void	cPlayer_Info::PlayerCollison()
 		
 	}
 } 
-=======
-}
->>>>>>> 708df864ff9e2a39c89366124490a9738b2d496e
+

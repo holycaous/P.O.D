@@ -19,6 +19,7 @@ public:
 	VOID WriteAllExcept(DWORD dwProtocol, BYTE *pData, DWORD dwLength, int ID);
 	VOID WriteSOLO(DWORD dwProtocol, BYTE *pData, DWORD dwLength, int ID);
 	VOID WriteCulling(DWORD dwProtocol, BYTE *pData, DWORD dwLength, int NodeNum);
+	VOID WriteCircleCulling(DWORD dwProtocol, BYTE *pData, DWORD dwLength, int NodeNum);
 	VOID WriteGameClientAll(DWORD dwProtocol, BYTE *pData, DWORD dwLength);
 
 
