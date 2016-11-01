@@ -480,13 +480,13 @@ private:
 		//	{
 		//		// 다음 파일을 읽는다.
 		//		ReadLineData(_ReadLineData);
-
+		//
 		//		// 끝을 알리는 문자가 나왔는지 확인
 		//		if (edMtrl == _ReadLineData) { mReadCurData = e_Read; break; }
-
+		//
 		//		// 원하는 내용을 옮긴다 ( 현재 리드버퍼는 읽어져있는 상태 )
 		//		sscanf_s(mReadBuf, "\t\t<Slot Index=\"%d\">\n", &_CreateMatNum);
-
+		//
 		//		// 해당 재질을 생성한다 저장한다.
 		//		// 단, 기존에 재질이 없을때 저장한다. (모든 맵 이름이 NULL이면, 따로 텍스처를 추가 안했다는 뜻)
 		//		if (strstr(mMtrl[_CreateMatNum].mDiffuseMap, "NULL") && strstr(mMtrl[_CreateMatNum].mSpecularMap, "NULL") && strstr(mMtrl[_CreateMatNum].mNoamleMap, "NULL"))
@@ -1849,6 +1849,8 @@ private:
 		// 변환
 		for (int i = 0; i < length; ++i)
 			_wstring += wchar_t(pstrSrc[i]);
+
+		_wstring += wchar_t('\0');
 
 		// 결과
 		return _wstring.c_str();

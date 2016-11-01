@@ -28,10 +28,10 @@ PS_GBUFFER_OUT PS(PCVertexOut pin)/* : SV_Target*/
 
 	// Ãâ·Â		
 	Out.Depth        = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	Out.Color = pin.Color;
+	Out.Color        = pin.Color;
 	Out.Normal       = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	Out.Position     = pin.PosH;
-	Out.Specular      = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	Out.Specular     = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	return Out;
 }

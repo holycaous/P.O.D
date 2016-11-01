@@ -49,12 +49,12 @@ public:
 		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTex);
 		CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTex);
 
-		//// 애니 추가
-		//CreateBoneAni("Model0", "Export/FinSkinning_TestBoneIdel.pod", e_ShaderPongTex);
-		//CreateBoneAni("Model1", "Export/FinAman_boyBoneIdel.pod"     , e_ShaderPongTex);
-		//CreateBoneAni("Model2", "Export/FinCat1BoneIdel.pod"         , e_ShaderPongTex);
-		//CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdel.pod"  , e_ShaderPongTex);
-		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdel.pod"      , e_ShaderPongTex);
+		// 애니 추가
+		CreateBoneAni("Model0", "Export/FinSkinning_TestBoneIdel.pod", e_ShaderPongTex);
+		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdel.pod"     , e_ShaderPongTex);
+		CreateBoneAni("Model2", "Export/FinCat1BoneIdel.pod"         , e_ShaderPongTex);
+		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdel.pod"  , e_ShaderPongTex);
+		CreateBoneAni("Model4", "Export/FinCyclopsBoneIdel.pod"      , e_ShaderPongTex);
 
 		//CreateModel("Model4", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
 		//CreateModel("Model5", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
@@ -311,16 +311,14 @@ public:
 			tSelectModelRoute = mXMLParser.mNewModleLoc[i].Data; // 선택된 모델의 루트
 
 			// 첫 모델이라면 자신의 이름으로 짓는다.
-			if (i == 0)
-			{
-				tNewName = _Name;
-			}
+			tNewName = _Name;
+			
 			// 서브 모델이 있는 모델이라면 '_번호'로 추가해서 짓는다.
-			else
+			if (i > 0)
 			{
 				memset(&_ModelNumBuf, '\0', sizeof(_ModelNumBuf));
 				itoa10(i, _ModelNumBuf);
-				tNewName = _Name + '_' + _ModelNumBuf; 
+				tNewName = tNewName + '_' + _ModelNumBuf + '\0';
 			}
 
 			// 모델 추가 생성 (생성할 이름으로 공간 확보)

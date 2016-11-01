@@ -73,7 +73,7 @@ protected:
 	ID3D11DepthStencilView* mOnlyReadDSV;
 
 	// DSV ป๓ลย
-	ID3D11DepthStencilState* m_DepthStencilState;
+	ID3D11DepthStencilState* mDepthStencilState;
 	
 	D3D11_VIEWPORT mScreenViewport;
 
@@ -83,6 +83,11 @@ protected:
 	int mClientWidth;
 	int mClientHeight;
 	bool mEnable4xMsaa;
+
+	void ClearResourceView();
+	void ClearDevice();
+	bool ReCreateDevice();
+	void CheckDeviceLost();
 };
 
 #endif // cInitD3D_H

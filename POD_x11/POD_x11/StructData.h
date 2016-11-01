@@ -567,6 +567,8 @@ public:
 		for (unsigned int i = 0; i < _string.length(); ++i)
 			_wstring += wchar_t(_string[i]);
 
+		_wstring += wchar_t('\0');
+
 		_string.clear();
 	}
 

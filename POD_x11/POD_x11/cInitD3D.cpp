@@ -41,7 +41,7 @@ mPositionRTV(0),
 mDepthRTV(0),
 mMainDSV(0),
 mOnlyReadDSV(0),
-m_DepthStencilState(0),
+mDepthStencilState(0),
 mColorRTV(0)
 {
 	ZeroMemory(&mScreenViewport, sizeof(D3D11_VIEWPORT));
@@ -51,29 +51,67 @@ mColorRTV(0)
 // 소멸자
 cInitD3D::~cInitD3D()
 {
-	ReleaseCOM(mSreenRTV);
+	// 리소스 뷰 클리어
+	ClearResourceView();
+
+	// 디바이스 클리어
+	ClearDevice();
+}
+
+// 리소스 뷰 클리어
+void cInitD3D::ClearResourceView()
+{
+	// 렌더 타겟
 	ReleaseCOM(mNomalRTV);
 	ReleaseCOM(mPositionRTV);
 	ReleaseCOM(mSpecularRTV);
-	ReleaseCOM(mMainDSV);
-	ReleaseCOM(mOnlyReadDSV);
 	ReleaseCOM(mColorRTV);
-	ReleaseCOM(mSwapChain);
-	ReleaseCOM(mDepthStencilTexture);
+	ReleaseCOM(mDepthRTV);
+
+	// 버퍼
 	ReleaseCOM(mNomalSRV);
-	ReleaseCOM(mDepthSRV);
 	ReleaseCOM(mPositionSRV);
 	ReleaseCOM(mSpecularSRV);
 	ReleaseCOM(mColorSRV);
-	ReleaseCOM(mDepthRTV);
-	ReleaseCOM(m_DepthStencilState);
+	ReleaseCOM(mDepthSRV);
 
+	ReleaseCOM(mDepthStencilState);
+	ReleaseCOM(mDepthStencilTexture);
+
+	ReleaseCOM(mSreenRTV);
+	ReleaseCOM(mOnlyReadDSV);
+	ReleaseCOM(mMainDSV);
+}
+
+// 디바이스 클리어
+void cInitD3D::ClearDevice()
+{
 	// Restore all default settings.
 	if (md3dImmediateContext)
 		md3dImmediateContext->ClearState();
 
+	ReleaseCOM(mSwapChain);
 	ReleaseCOM(md3dImmediateContext);
 	ReleaseCOM(md3dDevice);
+}
+
+// 디바이스 재 생성
+bool cInitD3D::ReCreateDevice()
+{
+	// 리소스 뷰 클리어
+	ClearResourceView();
+
+	// 디바이스 클리어
+	ClearDevice();
+
+	// 디바이스 생성
+	if (!InitDirect3D())
+		return false;
+
+	// 화면 재구성
+	OnResize();
+
+	return true;
 }
 
 // D3D 실행 (메세지 루프)
@@ -122,7 +160,6 @@ bool cInitD3D::Init()
 	if (!InitDirect3D())
 		return false;
 
-
 	return true;
 }
 
@@ -131,7 +168,6 @@ void cInitD3D::SetCoreStorage()
 	// 코어 저장소에 값 저장
 	cCoreStorage::GetInstance()->mInst = &mhAppInst;
 	cCoreStorage::GetInstance()->mhWnd = &mhMainWnd;
-	cCoreStorage::GetInstance()->md3dDevice = md3dDevice;
 
 	cCoreStorage::GetInstance()->mTimer = &mTimer;
 
@@ -160,7 +196,7 @@ void cInitD3D::SetCoreStorage()
 	cCoreStorage::GetInstance()->mOnlyReadDSV = mOnlyReadDSV;
 
 	// DSV 상태
-	cCoreStorage::GetInstance()->m_DepthStencilState = m_DepthStencilState;
+	cCoreStorage::GetInstance()->mDepthStencilState = mDepthStencilState;
 
 	// ViewPort
 	cCoreStorage::GetInstance()->mScreenViewport = &mScreenViewport;
@@ -174,25 +210,9 @@ void cInitD3D::OnResize()
 	assert(mSwapChain);
 
 	// 화면크기가 변함에 따라 사용할수 없는 기존객체를 파괴한다.
-	// 렌더 타겟
-	ReleaseCOM(mSreenRTV);
-	ReleaseCOM(mMainDSV);
-	ReleaseCOM(mOnlyReadDSV);
-	ReleaseCOM(mNomalRTV);
-	ReleaseCOM(mPositionRTV);
-	ReleaseCOM(mSpecularRTV);
-	ReleaseCOM(mColorRTV);
-	ReleaseCOM(mDepthRTV);
-	ReleaseCOM(m_DepthStencilState);
+	// 리소스 뷰 클리어
+	ClearResourceView();
 
-	// 버퍼
-	ReleaseCOM(mDepthStencilTexture);
-	ReleaseCOM(mNomalSRV);
-	ReleaseCOM(mDepthSRV);
-	ReleaseCOM(mPositionSRV);
-	ReleaseCOM(mColorSRV);
-	ReleaseCOM(mSpecularSRV);
-	
 	// 스왑 체인의 크기를 조정하고 렌더 타겟 뷰를 다시 만든다.
 	HR(mSwapChain->ResizeBuffers(1, mClientWidth, mClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
 
@@ -209,23 +229,23 @@ void cInitD3D::OnResize()
 	// Texture formats
 	static const DXGI_FORMAT depthStencilTextureFormat      = DXGI_FORMAT_R24G8_TYPELESS;
 	static const DXGI_FORMAT positionTextureFormat          = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	static const DXGI_FORMAT basicColorTextureFormat        = DXGI_FORMAT_R11G11B10_FLOAT;    // DXGI_FORMAT_R8G8B8A8_UNORM
+	static const DXGI_FORMAT basicColorTextureFormat        = DXGI_FORMAT_R8G8B8A8_UNORM;     // DXGI_FORMAT_R8G8B8A8_UNORM
 	static const DXGI_FORMAT normalTextureFormat            = DXGI_FORMAT_R11G11B10_FLOAT;    
-	static const DXGI_FORMAT SpecularTextureFormat          = DXGI_FORMAT_R11G11B10_FLOAT;    // DXGI_FORMAT_R8G8B8A8_UNORM
+	static const DXGI_FORMAT SpecularTextureFormat          = DXGI_FORMAT_R8G8B8A8_UNORM;    // DXGI_FORMAT_R8G8B8A8_UNORM
 
 	// Render view formats
 	static const DXGI_FORMAT depthStencilRenderViewFormat   = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	static const DXGI_FORMAT positionRenderViewFormat       = DXGI_FORMAT_R32G32B32A32_FLOAT; 
-	static const DXGI_FORMAT basicColorRenderViewFormat     = DXGI_FORMAT_R11G11B10_FLOAT;    // DXGI_FORMAT_R8G8B8A8_UNORM
+	static const DXGI_FORMAT basicColorRenderViewFormat     = DXGI_FORMAT_R8G8B8A8_UNORM;     // DXGI_FORMAT_R8G8B8A8_UNORM
 	static const DXGI_FORMAT normalRenderViewFormat         = DXGI_FORMAT_R11G11B10_FLOAT;    
-	static const DXGI_FORMAT SpecularRenderViewFormat       = DXGI_FORMAT_R11G11B10_FLOAT;    // DXGI_FORMAT_R8G8B8A8_UNORM
+	static const DXGI_FORMAT SpecularRenderViewFormat       = DXGI_FORMAT_R8G8B8A8_UNORM;    // DXGI_FORMAT_R8G8B8A8_UNORM
 
 	// Resource view formats
 	static const DXGI_FORMAT depthStencilResourceViewFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	static const DXGI_FORMAT positionResourceViewFormat     = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	static const DXGI_FORMAT basicColorResourceViewFormat   = DXGI_FORMAT_R11G11B10_FLOAT;    // DXGI_FORMAT_R8G8B8A8_UNORM
+	static const DXGI_FORMAT basicColorResourceViewFormat   = DXGI_FORMAT_R8G8B8A8_UNORM;     // DXGI_FORMAT_R8G8B8A8_UNORM
 	static const DXGI_FORMAT normalResourceViewFormat       = DXGI_FORMAT_R11G11B10_FLOAT;
-	static const DXGI_FORMAT SpecularResourceViewFormat     = DXGI_FORMAT_R11G11B10_FLOAT;    // DXGI_FORMAT_R8G8B8A8_UNORM
+	static const DXGI_FORMAT SpecularResourceViewFormat     = DXGI_FORMAT_R8G8B8A8_UNORM;    // DXGI_FORMAT_R8G8B8A8_UNORM
 
 	// 텍스처 뼈대 설정
 	D3D11_TEXTURE2D_DESC TextureDesc;
@@ -277,7 +297,9 @@ void cInitD3D::OnResize()
 	// 텍스처 형식 바꾸기
 	TextureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 
+	//--------------------------------------------------------------------------------------//
 	// 깊이 버퍼 텍스처 만들기 & 깊이 버퍼 연결하기
+	//--------------------------------------------------------------------------------------//
 	TextureDesc.Format = basicColorTextureFormat;
 	SRV_Desc.Format    = basicColorRenderViewFormat;
 	RTV_Desc.Format    = basicColorRenderViewFormat;
@@ -287,7 +309,9 @@ void cInitD3D::OnResize()
 	HR(md3dDevice->CreateRenderTargetView  (mDepthTex   , &RTV_Desc, &mDepthRTV));
 	HR(md3dDevice->CreateShaderResourceView(mDepthTex   , &SRV_Desc, &mDepthSRV));
 
+	//--------------------------------------------------------------------------------------//
 	// 칼라 버퍼 텍스처 만들기 & 포지션 버퍼 연결하기
+	//--------------------------------------------------------------------------------------//
 	TextureDesc.Format = basicColorTextureFormat;
 	SRV_Desc.Format    = basicColorRenderViewFormat;
 	RTV_Desc.Format    = basicColorRenderViewFormat;
@@ -297,7 +321,9 @@ void cInitD3D::OnResize()
 	HR(md3dDevice->CreateRenderTargetView  (mColorTex   , &RTV_Desc, &mColorRTV));
 	HR(md3dDevice->CreateShaderResourceView(mColorTex   , &SRV_Desc, &mColorSRV));
 
+	//--------------------------------------------------------------------------------------//
 	// 노멀 버퍼 텍스처 만들기 & 노멀 버퍼 연결하기
+	//--------------------------------------------------------------------------------------//
 	TextureDesc.Format = normalTextureFormat;
 	SRV_Desc.Format    = normalRenderViewFormat;
 	RTV_Desc.Format    = normalRenderViewFormat;
@@ -307,7 +333,9 @@ void cInitD3D::OnResize()
 	HR(md3dDevice->CreateRenderTargetView  (mNomalTex   , &RTV_Desc, &mNomalRTV));
 	HR(md3dDevice->CreateShaderResourceView(mNomalTex   , &SRV_Desc, &mNomalSRV));
 
+	//--------------------------------------------------------------------------------------//
 	// 포지션 버퍼 텍스처 만들기 & 포지션 버퍼 연결하기
+	//--------------------------------------------------------------------------------------//
 	TextureDesc.Format = positionTextureFormat;
 	SRV_Desc.Format    = positionRenderViewFormat;
 	RTV_Desc.Format    = positionRenderViewFormat;
@@ -317,7 +345,9 @@ void cInitD3D::OnResize()
 	HR(md3dDevice->CreateRenderTargetView  (mPositionTex, &RTV_Desc, &mPositionRTV));
 	HR(md3dDevice->CreateShaderResourceView(mPositionTex, &SRV_Desc, &mPositionSRV));
 
+	//--------------------------------------------------------------------------------------//
 	// 스팩큘러 버퍼 텍스처 만들기 & 스팩큘러 버퍼 연결하기
+	//--------------------------------------------------------------------------------------//
 	TextureDesc.Format = SpecularTextureFormat;
 	SRV_Desc.Format    = SpecularRenderViewFormat;
 	RTV_Desc.Format    = SpecularRenderViewFormat;
@@ -327,7 +357,9 @@ void cInitD3D::OnResize()
 	HR(md3dDevice->CreateRenderTargetView  (mSpecTex	, &RTV_Desc, &mSpecularRTV));
 	HR(md3dDevice->CreateShaderResourceView(mSpecTex	, &SRV_Desc, &mSpecularSRV));
 
+	//--------------------------------------------------------------------------------------//
 	// 텍스처 해제
+	//--------------------------------------------------------------------------------------//
 	ReleaseCOM(mDepthTex);
 	ReleaseCOM(mColorTex);
 	ReleaseCOM(mNomalTex);
@@ -348,7 +380,9 @@ void cInitD3D::OnResize()
 
 	md3dImmediateContext->RSSetViewports(1, &mScreenViewport);
 
+	//--------------------------------------------------------------------------------------//
 	// 상태
+	//--------------------------------------------------------------------------------------//
 	D3D11_DEPTH_STENCIL_DESC descDepth;
 	ZeroMemory(&descDepth, sizeof(descDepth));
 	descDepth.DepthEnable                          = TRUE;
@@ -362,7 +396,7 @@ void cInitD3D::OnResize()
 	descDepth.BackFace                             = stencilMarkOp;
 
 	// Create the depth stencil state.
-	md3dDevice->CreateDepthStencilState(&descDepth, &m_DepthStencilState);
+	md3dDevice->CreateDepthStencilState(&descDepth, &mDepthStencilState);
 
 	// 코어에 저장
 	SetCoreStorage();
@@ -374,17 +408,59 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return gcInitD3D->MsgProc(hwnd, msg, wParam, lParam);
 }
 
+// 디바이스 체크
+void cInitD3D::CheckDeviceLost()
+{
+	HRESULT hr;
+
+	// 디바이스 로스트가 일어났는지
+	hr = md3dDevice->GetDeviceRemovedReason();
+
+	switch (hr)
+	{
+	// 성공
+	case S_OK:
+		break;
+
+	// 행 아웃, 리셋
+	case DXGI_ERROR_DEVICE_HUNG:
+	case DXGI_ERROR_DEVICE_RESET:
+
+		// 실패 시 어플리케이션 종료
+		if(ReCreateDevice())
+			PostQuitMessage(0);
+
+		// 실패 시 어플리케이션 종료
+		if (FAILED(hr))
+			PostQuitMessage(0);
+
+		break;
+
+	// 실패 시 어플리케이션 종료
+	case DXGI_ERROR_DEVICE_REMOVED:
+	case DXGI_ERROR_DRIVER_INTERNAL_ERROR:
+	case DXGI_ERROR_INVALID_CALL:
+	default:
+		PostQuitMessage(0);
+		break;
+	}
+}
+
 // 메세지 프로시져
 LRESULT cInitD3D::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	// 디바이스 로스트 검사
+	if (md3dDevice)
+		CheckDeviceLost();
+
 	switch (msg)
 	{
-		// 키보드와 마우스관련된 것들을 스테이트 매니저로 넘기며,
-		// 이곳은 최상위 명령어 코드로 사용한다.
+	// 키보드와 마우스관련된 것들을 스테이트 매니저로 넘기며,
+	// 이곳은 최상위 명령어 코드로 사용한다.
 
-		//---------------------------------------------------------------------------------------
-		// 키보드
-		//---------------------------------------------------------------------------------------
+	//---------------------------------------------------------------------------------------
+	// 키보드
+	//---------------------------------------------------------------------------------------
 	// 이거때문에 3회가 눌림.
 	//case WM_CHAR:
 	//case WM_KEYUP:

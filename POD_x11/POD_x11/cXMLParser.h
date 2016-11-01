@@ -37,6 +37,7 @@ public:
 
 	void InitClass()
 	{
+		ClearPointer();
 		mMyMeshData.InitClass();
 	}
 
@@ -655,6 +656,9 @@ private:
 		// 변환
 		for (unsigned int i = 0; i < _string.length(); ++i)
 			_wstring += wchar_t(_string[i]);
+
+		// 마무리
+		_wstring += wchar_t('\0');
 
 		_string.clear();
 	}

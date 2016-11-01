@@ -20,7 +20,7 @@ public:
 
 	//// 깊이, 스텐실 테스트 설정
 	//ID3D11DepthStencilState* m_pNoDepthWriteLessStencilMaskState = nullptr;
-	//ID3D11DepthStencilState* m_DepthStencilState = nullptr;
+	//ID3D11DepthStencilState* mDepthStencilState = nullptr;
 public:
 	void Init()
 	{
@@ -65,7 +65,7 @@ public:
 		//descDepth.BackFace                             = stencilMarkOp;
 		//
 		//// Create the depth stencil state.
-		//mCoreStorage->md3dDevice->CreateDepthStencilState(&descDepth, &m_DepthStencilState);
+		//mCoreStorage->md3dDevice->CreateDepthStencilState(&descDepth, &mDepthStencilState);
 	}
 
 	void ClearClass()
@@ -74,7 +74,7 @@ public:
 		ReleaseCOM(mWireframeRS);
 		ReleaseCOM(mSolidframeRS);
 		//ReleaseCOM(m_pNoDepthWriteLessStencilMaskState);
-		//ReleaseCOM(m_DepthStencilState);
+		//ReleaseCOM(mDepthStencilState);
 	}
 		
 	// 오버로딩 할 예정

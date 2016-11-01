@@ -22,7 +22,7 @@ public:
 		//float Offset = 100.0f;
 		//for (int x = 0; x < Count; ++x)
 		//{
-		//	switch (rand() % 7)
+		//	switch (rand() % 6)
 		//	{
 		//	case 0:
 		//		mModelManager->AddModel("BOX1", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
@@ -34,15 +34,12 @@ public:
 		//		mModelManager->AddModel("BOX3", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
 		//		break;
 		//	case 3:
-		//		mModelManager->AddModel("BOX4", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	case 4:
 		//		mModelManager->AddModel("Model2", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
 		//		break;
-		//	case 5:
+		//	case 4:
 		//		mModelManager->AddModel("Model3", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
 		//		break;
-		//	case 6:
+		//	case 5:
 		//		mModelManager->AddModel("Model4", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
 		//		break;
 		//	}

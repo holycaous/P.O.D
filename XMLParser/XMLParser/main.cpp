@@ -12,8 +12,8 @@ void main()
 	mXMLParser.SetTexture("WoodCrate01_diff.dds", 100.0f, "WoodCrate01_norm.dds", "WoodCrate01_spec.dds");
 	mXMLParser.LoadXMLModel();
 
-	//mXMLParser.Init("Import/Skinning_Test.xml", "aaa", "Idel");
-	//mXMLParser.LoadXMLBone();
+	mXMLParser.Init("Import/Skinning_Test.xml", "aaa", "Idel");
+	mXMLParser.LoadXMLBone();
 
 	//-------------------------------------------------------------------------------------------------------------------//
 	// 테스트 2
@@ -21,8 +21,8 @@ void main()
 	mXMLParser.SetTexture("Aman_boy_diff.dds", 100.0f, "Aman_boy_norm.dds", "Aman_boy_spec.dds");
 	mXMLParser.LoadXMLModel();
 
-	//mXMLParser.Init("Import/Aman_boy.xml", "bbb", "Idel");
-	//mXMLParser.LoadXMLBone();
+	mXMLParser.Init("Import/Aman_boy.xml", "bbb", "Idel");
+	mXMLParser.LoadXMLBone();
 
 	//-------------------------------------------------------------------------------------------------------------------//
 	// 테스트 3
@@ -30,8 +30,8 @@ void main()
 	mXMLParser.SetTexture("Cat1_diff.dds", 100.0f, "Cat1_norm.dds", "Cat1_spec.dds");
 	mXMLParser.LoadXMLModel();
 
-	//mXMLParser.Init("Import/Cat1.xml", "ccc", "Idel");
-	//mXMLParser.LoadXMLBone();
+	mXMLParser.Init("Import/Cat1.xml", "ccc", "Idel");
+	mXMLParser.LoadXMLBone();
 	
 	//-------------------------------------------------------------------------------------------------------------------//
 	// 테스트 4
@@ -39,8 +39,8 @@ void main()
 	mXMLParser.SetTexture("AnonSoldier_diff.dds", 100.0f, "AnonSoldier_norm.dds", "AnonSoldier_spec.dds");
 	mXMLParser.LoadXMLModel();
 
-	//mXMLParser.Init("Import/AnonSoldier.xml", "ddd", "Idel");
-	//mXMLParser.LoadXMLBone();
+	mXMLParser.Init("Import/AnonSoldier.xml", "ddd", "Idel");
+	mXMLParser.LoadXMLBone();
 
 	//-------------------------------------------------------------------------------------------------------------------//
 	// 테스트 5
@@ -49,8 +49,8 @@ void main()
 	mXMLParser.SetTexture("Cyclops02_diff.dds", 100.0f, "Cyclops02_norm.dds", "Cyclops02_spec.dds");
 	mXMLParser.LoadXMLModel();
 
-	//mXMLParser.Init("Import/Cyclops.xml", "eee", "Idel");
-	//mXMLParser.LoadXMLBone();
+	mXMLParser.Init("Import/Cyclops.xml", "eee", "Idel");
+	mXMLParser.LoadXMLBone();
 	
 	//-------------------------------------------------------------------------------------------------------------------//
 

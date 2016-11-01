@@ -35,7 +35,7 @@ public:
 	ID3D11DepthStencilView* mOnlyReadDSV;
 
 	// DSV »óÅÂ
-	ID3D11DepthStencilState* m_DepthStencilState;
+	ID3D11DepthStencilState* mDepthStencilState;
 	
 	// ºä Æ÷Æ®
 	D3D11_VIEWPORT* mScreenViewport;
@@ -64,7 +64,7 @@ public:
 		md3dImmediateContext->ClearRenderTargetView(mPositionRTV, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
 		md3dImmediateContext->ClearRenderTargetView(mSpecularRTV, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
 		
-		md3dImmediateContext->OMSetDepthStencilState(m_DepthStencilState, 1);
+		md3dImmediateContext->OMSetDepthStencilState(mDepthStencilState, 1);
 
 		ID3D11RenderTargetView* rt[5] = { mDepthRTV, mColorRTV, mNomalRTV, mPositionRTV, mSpecularRTV };
 		md3dImmediateContext->OMSetRenderTargets(5, rt, mMainDSV);
@@ -75,7 +75,6 @@ public:
 	{
 		// ·»´õ Å¸°Ù Å¬¸®¾î
 		md3dImmediateContext->ClearDepthStencilView(mMainDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
 
 		ID3D11RenderTargetView* rt[5] = { NULL, NULL, NULL, NULL, NULL };
 		md3dImmediateContext->OMSetRenderTargets(5, rt, NULL); //mOnlyReadDSV
@@ -91,6 +90,12 @@ public:
 	void ReleaseRenderTaget()
 	{
 		md3dImmediateContext->ClearRenderTargetView(mSreenRTV, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
+	}
+
+	void ClearClass()
+	{
+		PostRender();
+		ReleaseRenderTaget();
 	}
 };
 
