@@ -23,6 +23,7 @@ public:
 public:
 	int ClientCnt;//현재 클라이언트 접속 인원 
 	int PlayerID; //플레이어 ID
+	int UniqueCode; //유니크 Code (클라이언트 객체번호)
 	float TerrainWidth; //맵가로길이
 	float TerrainDepth; //맵세로길이
 	bool bGame; //게임 시작 토큰

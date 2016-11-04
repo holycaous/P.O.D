@@ -16,6 +16,7 @@ public:
 
 	/*void SetMonsterInitFlag(bool i) { m_Monster_Initflag = i; }
 	bool GetMonsterInitFlag() { return m_Monster_Initflag; }*/
+
 private:
 	// 생성된 cMonster_Info개체의 포인터를 관리하는 Vector
 	std::vector<cMonster_Info*> m_vMonster;
@@ -30,6 +31,4 @@ public:
 
 	// m_Monster_Initflag; //몬스터가 벡터에 입력되었는지 확인하는 변수
 	int MonsterCount; //몬스터 할당 변수
-	
-
 };

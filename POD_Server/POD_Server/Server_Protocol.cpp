@@ -55,6 +55,7 @@ namespace ServerProtocol_Func{
 	void Player_Push_W(BYTE* _pPacket, DWORD& _Length)
 	{
 		UINT Player_ID = *(UINT*)(_pPacket);
+		cout << Player_ID << "--플레이어가 전진" << endl;
 		IocpServer.GetConnectUserManager()->GetConnectUser(Player_ID)->Get_Playerinfo()->Move(PlayerMoveType::UP);
 		//PlayerMGR->GetPlayerInfo(Player_ID)->Move(PlayerMoveType::UP);
 	}

@@ -44,7 +44,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					if (IocpServer.GetConnectUserManager()->GetConnectUser(i)->GetUserStaus() == GAME_ING)
 					{
 						IocpServer.GetConnectUserManager()->GetConnectUser(i)->Update(fAccdt);
-			
+
 
 						MonsterMGR->Update(fAccdt); //몬스터 업데이트
 					}

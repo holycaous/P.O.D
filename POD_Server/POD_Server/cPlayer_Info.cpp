@@ -9,14 +9,15 @@ void cPlayer_Info::Update(float _fDTime)
 	if (m_HP <= 0)
 		m_blive = FALSE;
 	// 데이터 조립.
-	int size = sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT);
-	BYTE pData[20] = { 0, }; 
+	int size = sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT);
+	BYTE pData[24] = { 0, };
 
 	memcpy(pData, &m_nClientID, sizeof(UINT)); //플레이어 ID
-	memcpy(pData + sizeof(UINT), &m_posx, sizeof(FLOAT));  //플레이어 위치 x좌표
-	memcpy(pData + sizeof(UINT)+sizeof(FLOAT), &m_posy, sizeof(FLOAT));  //플레이어 위치 y좌표
-	memcpy(pData + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT), &m_posz, sizeof(FLOAT)); //플레이어 위치 z좌표
-	memcpy(pData + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT), &m_HP, sizeof(FLOAT)); //플레이어 Hp
+	memcpy(pData + sizeof(UINT), &m_UniqueCode, sizeof(UINT)); //플레이어 Code
+	memcpy(pData + sizeof(UINT)+sizeof(UINT), &m_posx, sizeof(FLOAT));  //플레이어 위치 x좌표 
+	memcpy(pData + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT), &m_posy, sizeof(FLOAT));  //플레이어 위치 y좌표
+	memcpy(pData + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT), &m_posz, sizeof(FLOAT)); //플레이어 위치 z좌표
+	memcpy(pData + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT), &m_HP, sizeof(FLOAT)); //플레이어 Hp
 	
 	// 전송.
 	for (int i = 0; i < ServerMGR->GetTerrainServer()->GetTree()->Get_Index(); i++)
@@ -31,7 +32,7 @@ void cPlayer_Info::Update(float _fDTime)
 	//IocpServer.GetConnectUserManager()->WriteCulling(CPLAYER_POS, pData, size, m_NodeNum);
 	//IocpServer.GetConnectUserManager()->WriteGameClientAll(CPLAYER_POS, pData, size);
 }
-void cPlayer_Info::PlayerInit(int ID, float pos_x, float pos_y, float pos_z, float hp)
+void cPlayer_Info::PlayerInit(int ID, int code, float pos_x, float pos_y, float pos_z, float hp)
 {
 	m_posx = pos_x;
 	//m_posx = pos_x + (rand() % 100);
@@ -40,16 +41,17 @@ void cPlayer_Info::PlayerInit(int ID, float pos_x, float pos_y, float pos_z, flo
 	//m_posz = pos_z +(rand() % 200);
 	m_HP = hp;
 	m_nClientID = ID;
-	
+	m_UniqueCode = code;
 	 //데이터 조립.
-	int size = sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT);
-	BYTE pData[20] = { 0, };
+	int size = sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT);
+	BYTE pData[24] = { 0, };
 
 	memcpy(pData, &m_nClientID, sizeof(UINT)); //플레이어 ID
-	memcpy(pData + sizeof(UINT), &m_posx, sizeof(FLOAT));  //플레이어 위치 x좌표
-	memcpy(pData + sizeof(UINT)+sizeof(FLOAT), &m_posy, sizeof(FLOAT));  //플레이어 위치 y좌표
-	memcpy(pData + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT), &m_posz, sizeof(FLOAT)); //플레이어 위치 z좌표
-	memcpy(pData + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT), &m_HP, sizeof(FLOAT)); //플레이어 Hp
+	memcpy(pData + sizeof(UINT), &m_UniqueCode, sizeof(UINT)); //플레이어 Code
+	memcpy(pData + sizeof(UINT)+sizeof(UINT), &m_posx, sizeof(FLOAT));  //플레이어 위치 x좌표
+	memcpy(pData + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT), &m_posy, sizeof(FLOAT));  //플레이어 위치 y좌표
+	memcpy(pData + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT), &m_posz, sizeof(FLOAT)); //플레이어 위치 z좌표
+	memcpy(pData + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT), &m_HP, sizeof(FLOAT)); //플레이어 Hp
 
 	IocpServer.GetConnectUserManager()->WriteSOLO(CSTART_INFO, pData, size, m_nClientID);
 	//IocpServer.GetConnectUserManager()->WriteGameClientAll(CSTART_INFO, pData, size);
@@ -61,14 +63,24 @@ void cPlayer_Info::PlayerInfo()
 		m_blive = FALSE;
 
  	// 데이터 조립.
-	int size = sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT);
-	BYTE pData[20] = { 0, };
+	//int size = sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT);
+	//BYTE pData[20] = { 0, };
+
+	//memcpy(pData, &m_nClientID, sizeof(UINT)); //플레이어 ID
+	//memcpy(pData + sizeof(UINT), &m_posx, sizeof(FLOAT));  //플레이어 위치 x좌표
+	//memcpy(pData + sizeof(UINT)+sizeof(FLOAT), &m_posy, sizeof(FLOAT));  //플레이어 위치 y좌표
+	//memcpy(pData + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT), &m_posz, sizeof(FLOAT)); //플레이어 위치 z좌표
+	//memcpy(pData + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT), &m_HP, sizeof(FLOAT)); //플레이어 Hp
+	int size = sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT);
+	BYTE pData[24] = { 0, };
 
 	memcpy(pData, &m_nClientID, sizeof(UINT)); //플레이어 ID
-	memcpy(pData + sizeof(UINT), &m_posx, sizeof(FLOAT));  //플레이어 위치 x좌표
-	memcpy(pData + sizeof(UINT)+sizeof(FLOAT), &m_posy, sizeof(FLOAT));  //플레이어 위치 y좌표
-	memcpy(pData + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT), &m_posz, sizeof(FLOAT)); //플레이어 위치 z좌표
-	memcpy(pData + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT), &m_HP, sizeof(FLOAT)); //플레이어 Hp
+	memcpy(pData + sizeof(UINT), &m_UniqueCode, sizeof(UINT)); //플레이어 Code
+	memcpy(pData + sizeof(UINT)+sizeof(UINT), &m_posx, sizeof(FLOAT));  //플레이어 위치 x좌표
+	memcpy(pData + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT), &m_posy, sizeof(FLOAT));  //플레이어 위치 y좌표
+	memcpy(pData + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT), &m_posz, sizeof(FLOAT)); //플레이어 위치 z좌표
+	memcpy(pData + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT), &m_HP, sizeof(FLOAT)); //플레이어 Hp
+
 
 	// 전송.
 	IocpServer.GetConnectUserManager()->WriteGameClientAll(CPLAYER_INFO, pData, size);
@@ -99,7 +111,7 @@ void	cPlayer_Info::PlayerCollison()
 	float Monster_z;
 
 	float SerchRange = 10; //몬스터탐색범위
-	float AttackRange = 2; //몬스터공격범위
+	float AttackRange = 1; //몬스터공격범위
 
 	//*1.몬스터가 플레이어와의  감지거리에 들어올 경우는  MOVE상태로 변경  2.몬스터가 플레이어를 공격할수있는 거리일 경우는 ATTACK상태로 변경
 	for (int i = 0; i < MAX_MONSTER; i++)
@@ -112,19 +124,21 @@ void	cPlayer_Info::PlayerCollison()
 		
 		 if (AttackRange >= Distance)
 		{
+			 cout << "어택" << endl;
 			//몬스터의 상태를 ATTACK 상태로 변경하여 플레이어를 공격하게 만든다.
-			MonsterMGR->GetMonsterInfo(i)->SetMonsterState(MonsterState::ATTACK);
+			 MonsterMGR->GetMonsterInfo(i)->SetMonsterState(MonsterState::ATTACK, m_nClientID);
 		}
 		 else if (SerchRange >= Distance)
 		 {
-			 cout << "몬스터 감지" << endl;
+			// cout << m_nClientID <<"-플레이어  "<< "몬스터 감지" << endl;
+			 
 			 //몬스터의 상태를 MOVE로 변경하여 플레이어를 쫒아가게 만든다.
-			 MonsterMGR->GetMonsterInfo(i)->SetMonsterState(MonsterState::MOVE);
+			 MonsterMGR->GetMonsterInfo(i)->SetMonsterState(MonsterState::MOVE, m_nClientID);
 		 }
 		else
 		{
 			//몬스터의 상태를 IDLE 상태로 변경
-			MonsterMGR->GetMonsterInfo(i)->SetMonsterState(MonsterState::IDLE);
+			MonsterMGR->GetMonsterInfo(i)->SetMonsterState(MonsterState::IDLE, m_nClientID);
 		}
 		
 	}

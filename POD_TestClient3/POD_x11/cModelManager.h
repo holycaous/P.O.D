@@ -98,7 +98,7 @@ public:
 	void SetPos(int _uniqueCode, string _Name, float _x, float _y, float _z)
 	{
 		string _SlectModel;
-
+		 
 		// 모델의 체인만큼 (서브 모델)
 		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
 		{

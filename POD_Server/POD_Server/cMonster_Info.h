@@ -26,15 +26,16 @@ public :
 protected :
 	UINT m_Type;
 	UINT m_State;
-	UINT m_MonsterCode; //몬스터 번호
-
+	//UINT m_MonsterCode; //몬스터 번호
+	UINT m_ColisonPlayer;
 public :
 	virtual void Monster_Init(int num) = 0;
 	virtual void Update(float dt,int num) = 0;
-	virtual void AI_Update(float dt, QUAD* p) = 0;
+	virtual void AI_Update(float dt, int num, QUAD* p) = 0;
 	void SetMonsterType(UINT _mType) { m_Type = _mType; }
 	UINT GetMonsterType() { return m_Type; }
-	void SetMonsterState(UINT _mState) { m_State = _mState; }
+	void SetMonsterState(UINT _mState, int ClientID) { m_State = _mState; m_ColisonPlayer = ClientID; }
 	UINT GetMonsterState() { return m_State; }
+
 
 };

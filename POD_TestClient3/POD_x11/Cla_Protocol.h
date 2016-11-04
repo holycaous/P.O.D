@@ -13,4 +13,5 @@ namespace ClientProtocol_Func
 	void Player_Pos(BYTE* _pPacket, DWORD& _Length);
 	void Monster_Init(BYTE* _pPacket, DWORD& _Length);
 	void Monster_Pos(BYTE* _pPacket, DWORD& _Length);
+	void Monster_Move(BYTE* _pPacket, DWORD& _Length);
 }

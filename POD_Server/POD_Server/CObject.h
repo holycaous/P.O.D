@@ -11,6 +11,7 @@ public:
 	virtual ~CObject() {};
 protected:
 	UINT m_nClientID;
+	UINT m_UniqueCode;
 
 	FLOAT m_posx;
 	FLOAT m_posy;

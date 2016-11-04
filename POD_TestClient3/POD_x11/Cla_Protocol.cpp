@@ -20,6 +20,7 @@ namespace ClientProtocol_Func{
 		ClientProtocol_Func::Player_Pos,
 		ClientProtocol_Func::Monster_Init,
 		ClientProtocol_Func::Monster_Pos,
+		ClientProtocol_Func::Monster_Move,
 	};
 	void Connect_Complete_Func(BYTE* _pPacket, DWORD& _Length)
 	{
@@ -41,28 +42,36 @@ namespace ClientProtocol_Func{
 	void Loading_Start_Func(BYTE* _pPacket, DWORD& _Length)
 	{
 
-		//CHAR* Player_ID = (CHAR*)_pPacket;
-		UINT Player_ID = *(UINT*)(_pPacket);
+		/*UINT Player_ID = *(UINT*)(_pPacket);
 		FLOAT Player_x = *(FLOAT*)(_pPacket + sizeof(UINT));
 		FLOAT Player_y = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT));
 		FLOAT Player_z = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT));
-		FLOAT Player_HP = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT));
+		FLOAT Player_HP = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT));*/
+		
 
-		cout << Player_ID<<" -- [플레이어 접속]" << endl;
+		UINT Player_ID = *(UINT*)(_pPacket);
+		UINT Unique_Code = *(UINT*)(_pPacket + sizeof(UINT));
+		FLOAT Player_x = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT));
+		FLOAT Player_y = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT));
+		FLOAT Player_z = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT));
+		FLOAT Player_HP = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT));
 
+
+		cout << Player_ID<<" -- [플레이어 접속]  ";
+		cout << "유니크 코드--" << Unique_Code << endl;
 	
 		if (Player_MGR->MyID == 0) Player_MGR->MyID = Player_ID; //나의 플레이어 ID 지정 
 		       		
 		//PlayerInfo[] 벡터에 플레이어 정보 입력
 		Player_MGR->GetConnectUser(Player_ID)->SetClientID(Player_ID);//플레이어 ID 입력
+		Player_MGR->GetConnectUser(Player_ID)->Set_UniqueCode(Unique_Code);//플레이어 Code 입력
 		Player_MGR->GetConnectUser(Player_ID)->Set_Posx(Player_x);//플레이어 x좌표 입력
 		Player_MGR->GetConnectUser(Player_ID)->Set_Posy(Player_y);//플레이어 y좌표 입력
 		Player_MGR->GetConnectUser(Player_ID)->Set_Posz(Player_z);//플레이어 z좌표 입력
-		Player_MGR->GetConnectUser(Player_ID)->Set_HP(Player_HP);//플레이어 HP입력 
+		Player_MGR->GetConnectUser(Player_ID)->Set_HP(Player_HP);//플레이어 HP입력
 	
-		Player_MGR->GetConnectUser(Player_ID)->SetObjectInitFlag(true); //플레이어패킷을 플레이어백터에 집어넣었다는 플래그 ON
+		//Player_MGR->GetConnectUser(Player_ID)->SetObjectInitFlag(true); //플레이어패킷을 플레이어백터에 집어넣었다는 플래그 ON
 		Player_MGR->GetConnectUser(Player_ID)->SetDrawFlag(true); //플레이어를 클라이언트에게 그리라고 명령하는 플래그 ON
-
 
 		return;
 	}
@@ -75,17 +84,22 @@ namespace ClientProtocol_Func{
 	}
 	void Player_Info(BYTE* _pPacket, DWORD& _Length)
 	{
-	
-			
-			UINT Player_ID = *(UINT*)(_pPacket);
+		/*	UINT Player_ID = *(UINT*)(_pPacket);
 			FLOAT Player_x = *(FLOAT*)(_pPacket + sizeof(UINT));
 			FLOAT Player_y = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT));
 			FLOAT Player_z = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT));
-			FLOAT Player_HP = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT));
-
+			FLOAT Player_HP = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT));*/
+		
+		    UINT Player_ID = *(UINT*)(_pPacket);
+		    UINT Unique_Code = *(UINT*)(_pPacket + sizeof(UINT));
+		    FLOAT Player_x = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT));
+		    FLOAT Player_y = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT));
+	     	FLOAT Player_z = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT));
+	     	FLOAT Player_HP = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT));
 			
 			//PlayerInfo[] 벡터에 플레이어 정보 입력
 			Player_MGR->GetConnectUser(Player_ID)->SetClientID(Player_ID);//플레이어 ID 입력
+			Player_MGR->GetConnectUser(Player_ID)->Set_UniqueCode(Unique_Code);//플레이어 Code 입력
 			Player_MGR->GetConnectUser(Player_ID)->Set_Posx(Player_x);//플레이어 x좌표 입력
 			Player_MGR->GetConnectUser(Player_ID)->Set_Posy(Player_y);//플레이어 y좌표 입력
 			Player_MGR->GetConnectUser(Player_ID)->Set_Posz(Player_z);//플레이어 z좌표 입력
@@ -100,28 +114,37 @@ namespace ClientProtocol_Func{
 	}
 	void Player_Pos(BYTE* _pPacket, DWORD& _Length)
 	{
-		UINT Player_ID = *(UINT*)(_pPacket);
+		/*UINT Player_ID = *(UINT*)(_pPacket);
 		FLOAT Player_x = *(FLOAT*)(_pPacket + sizeof(UINT)); 
 		FLOAT Player_y = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT));
 		FLOAT Player_z = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT));
-		FLOAT Player_HP = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT));
+		FLOAT Player_HP = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT));*/
+
+		UINT Player_ID = *(UINT*)(_pPacket);
+		UINT Unique_Code = *(UINT*)(_pPacket + sizeof(UINT));
+		FLOAT Player_x = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT));
+		FLOAT Player_y = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT));
+		FLOAT Player_z = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT));
+		FLOAT Player_HP = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT)+sizeof(FLOAT)+sizeof(FLOAT)+sizeof(FLOAT));
 		
-		cout << Player_ID << " -- [플레이어 정보]" << "X좌표 --" << Player_x << endl;
+		//cout << Player_ID << " -- [플레이어 정보]" << "X좌표 --" << Player_x << endl;
 		if (Player_MGR->GetConnectUser(Player_ID)->GetObjectInitFlag() != TRUE) //아직 플레이어 벡터에 집어넣기 전이라면
 		{
 			cout << Player_ID<< "번째 플레이어 데이터 벡터에 입력" << endl;
 			Player_MGR->GetConnectUser(Player_ID)->SetClientID(Player_ID);
+			Player_MGR->GetConnectUser(Player_ID)->Set_UniqueCode(Unique_Code);
 			Player_MGR->GetConnectUser(Player_ID)->Set_Posx(Player_x);
 			Player_MGR->GetConnectUser(Player_ID)->Set_Posy(Player_y);
 			Player_MGR->GetConnectUser(Player_ID)->Set_Posz(Player_z);
 			Player_MGR->GetConnectUser(Player_ID)->Set_HP(Player_HP);
 
-			Player_MGR->GetConnectUser(Player_ID)->SetObjectInitFlag(true); //플레이어패킷을 플레이어백터에 집어넣었다는 플래그 ON
+			//Player_MGR->GetConnectUser(Player_ID)->SetObjectInitFlag(true); //플레이어패킷을 플레이어백터에 집어넣었다는 플래그 ON
 			Player_MGR->GetConnectUser(Player_ID)->SetDrawFlag(true); //플레이어를 클라이언트에게 그리라고 명령하는 플래그 ON
 		}
 		else //플레이어백터에 있는 플레이어라면 데이터를 입력해준다.
 		{
 			Player_MGR->GetConnectUser(Player_ID)->SetClientID(Player_ID);
+			Player_MGR->GetConnectUser(Player_ID)->Set_UniqueCode(Unique_Code);
 			Player_MGR->GetConnectUser(Player_ID)->Set_Posx(Player_x);
 			Player_MGR->GetConnectUser(Player_ID)->Set_Posy(Player_y);
 			Player_MGR->GetConnectUser(Player_ID)->Set_Posz(Player_z);
@@ -146,7 +169,6 @@ namespace ClientProtocol_Func{
 	}
 	void Monster_Pos(BYTE* _pPacket, DWORD& _Length)
 	{
-		//cout << "몬스터 POS 데이터" << endl;
 		UINT Monster_Type = *(UINT*)(_pPacket);
 		UINT Monster_Num = *(UINT*)(_pPacket + sizeof(UINT));
 		FLOAT Monster_ID_x = *(FLOAT*)(_pPacket + sizeof(UINT)+sizeof(UINT));
@@ -157,6 +179,15 @@ namespace ClientProtocol_Func{
 		//몬스터 정보 입력
 		Monster_MGR->Init(Monster_Type, Monster_Num, Monster_ID_x, Monster_ID_y, Monster_ID_z, Monster_ID_HP);
 	
+		
+	}
+	void Monster_Move(BYTE* _pPacket, DWORD& _Length)
+	{
+		//cout << "몬스터 무브"<<endl;
+		UINT Player_Num = *(UINT*)(_pPacket); //따라갈 플레이어 번호
+		UINT Monster_Num = *(UINT*)(_pPacket + sizeof(UINT)); //몬스터 번호
+
+		Monster_MGR->GetConnectMonster(Monster_Num)->SetMonsterState(MonsterState::MOVE, Player_Num);
 		
 	}
 

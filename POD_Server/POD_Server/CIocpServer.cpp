@@ -48,6 +48,7 @@ VOID CIocpServer::OnIoConnected(VOID *pObject)
 	printf("클라이언트가 접속 %x \n", pConnectedSession);
 
 	ServerMGR->ClientCnt++; //클라이언트 접속 인원 증가
+	ServerMGR->UniqueCode++; //유니크코드 증가
 	ServerMGR->PlayerID--; //플레이어 아이디 설정 [이유- 커넥트백터가 거꾸로부터 들어감]
 	pConnectedSession->SetUserID(ServerMGR->PlayerID);//클라이언트 ID설정
 	
@@ -85,6 +86,7 @@ VOID CIocpServer::OnIoDisconnected(VOID *pObject)
 	m_oConnectedSessionManager.WriteAllExcept(SONIODISCONNECT, (BYTE*)&ID, sizeof(int), ID);
 	// 접속한 유저 정보 초기화	
 	ServerMGR->ClientCnt--; //클라이언트 접속 인원 차감
+	ServerMGR->UniqueCode--; //유니크코드 차감
 	ServerMGR->PlayerID++; //컨넥트유저 벡터공간을 만들어준다.
 	//*클라이언트 접속차감 문제:{1,2,3}유저가있을 때 1번ID클라유저가 나가고  새로클라이언트가 접속하면 ID중복현상 일어남
 	//이를 위해 int[]배열로 선언하고 ID를 이용해 삭제하고 삽입을 시킬것.

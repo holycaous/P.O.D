@@ -38,7 +38,7 @@ BOOL	cMonsterMGR::Begin(void)
 		int num = 0;
 		int sum = num + 20;
 		//cMonster_1(UINT Type, float HP, float posX, float posY, float posZ);
-		cMonster_1 *pMonster_1 = new cMonster_1(MonsterType::MONSTER_1, 100 + sum, 100, 150 + sum,100,0,0,1);
+		cMonster_1 *pMonster_1 = new cMonster_1(MonsterType::MONSTER_1, 100 + sum, 100, 150,100,0,0,1);
 		//생성한 몬스터 백터에 집어넣기 
 		m_vMonsterInfo.push_back(pMonster_1);
 		//생성한 몬스터 위치값 지정 (랜덤으로 지정)
@@ -90,8 +90,6 @@ VOID	cMonsterMGR::Update(float dt)
 		////cout << pQuad->s_NodeNum << endl; 
 		//m_vMonsterInfo[i]->SetNodeNum(pQuad->s_NodeNum); //현재 몬스터위치의 트리노드번호를 입력
 
-		
-		
 		POINT p;
 		for (int i = 0; i < MAX_MONSTER; i++)
 		{
@@ -103,8 +101,8 @@ VOID	cMonsterMGR::Update(float dt)
 			//GetMonsterInfo(i)->AI_Update(dt);
 			
 			ServerMGR->GetTerrainServer()->GetTree()->GetTopNode()->IsCollision(p, radius);//캐릭터와 인접한 (충돌된) 노드들을 배열에 담는다.
-				
-			GetMonsterInfo(i)->AI_Update(dt,pQuad);
+			
+			GetMonsterInfo(i)->AI_Update(dt,i,pQuad);
 			GetMonsterInfo(i)->Update(dt, i);
 		}
 

@@ -33,7 +33,7 @@ void cMonster_InfoManger::Destroy(void)
 VOID cMonster_InfoManger::Begin(VOID)
 {
 	// 몬스터1 최대수 만큼 생성
-	for (DWORD i = 0; i<MAX_SESSION; i++)
+	for (DWORD i = 0; i<MAX_MONSTER; i++)
 	{
 		cMonster_1 *pMonster_1 = new cMonster_1(MONSTER_1,0,0,0,0);
 		// 생성된 개체를 개체를 관리하는 m_vMonster 벡터에 입력.

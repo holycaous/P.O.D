@@ -11,7 +11,10 @@ public:
 	virtual ~CObject() {};
 protected:
 	UINT m_nClientID;
+	UINT m_UniqueCode;//객체를 그릴떄 사용되는 코드.
 	bool m_blive;
+	 
+
 
 	UINT m_State;
 	float m_HP;
@@ -25,6 +28,8 @@ protected:
 
 	bool m_DrawFlag; //클라에서 몬스터를 그리는 플래그
 	bool m_Object_Initflag; //오브젝트가 벡터에 입력되었는지 확인하는 변수
+
+	
 
 public:
 	virtual void Update(float _fDTime){};
@@ -45,6 +50,9 @@ public:
 
 	void Set_HP(FLOAT Hp) { m_HP = Hp; }
 	FLOAT Get_HP() { return m_HP; }
+
+	void Set_UniqueCode(UINT num) { m_UniqueCode = num; }
+	UINT Get_UniqueCode() { return m_UniqueCode; }
 
 	void SetDrawFlag(bool i) { m_DrawFlag = i; }
 	bool GetDrawFlag() { return m_DrawFlag; }

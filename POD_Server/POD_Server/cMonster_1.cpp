@@ -91,7 +91,7 @@ VOID cMonster_1::Update(float dt, int num)
 	//IocpServer.GetConnectUserManager()->WriteGameClientAll(CMONSTER_POS, pData, size);
 }
 
-VOID cMonster_1::AI_Update(float dt, QUAD* p)
+VOID cMonster_1::AI_Update(float dt, int num, QUAD* p)
 {
 	//POINT p;
 	//p.x = m_posx;
@@ -105,15 +105,19 @@ VOID cMonster_1::AI_Update(float dt, QUAD* p)
 		BYTE pData[4] = { 0, };
 		int size = sizeof(UINT);
 		// 클라이언트에게 공격하라는 포지션 전송.
-		IocpServer.GetConnectUserManager()->WriteCulling(CMONSTER_MOVE, pData, size, m_NodeNum);
+		//IocpServer.GetConnectUserManager()->WriteCulling(CMONSTER_ATTACK, pData, size, m_NodeNum);
 	}
 
 	if (GetMonsterState() == MOVE) //몬스터가 플레이어를 식별하여 이동
 	{
-		BYTE pData[4] = { 0, };
-		int size = sizeof(UINT);
+		cout << "몬스터가  " << m_ColisonPlayer<<"-플레이어를 따라감"<<endl;
+		
+		BYTE pData[8] = { 0, };
+		memcpy(pData, &m_ColisonPlayer, sizeof(UINT)); //따라갈 플레이어 넘버
+		memcpy(pData + sizeof(UINT), &num, sizeof(UINT)); //몬스터 배열넘버
+		int size = sizeof(UINT)+sizeof(UINT);
 		// 전송. 
-		IocpServer.GetConnectUserManager()->WriteCulling(CMONSTER_ATTACK, pData, size, m_NodeNum);
+		IocpServer.GetConnectUserManager()->WriteCulling(CMONSTER_MOVE, pData, size, m_NodeNum);
 	}
 	if (GetMonsterState() == IDLE) //몬스터 주변에 플레이어가 없을경우 랜덤으로 이동.
 	{
@@ -127,7 +131,7 @@ VOID cMonster_1::AI_Update(float dt, QUAD* p)
 				  //if (m_posx > 0 || m_posx < 256)
 				  {
 					  //cout << "m_posx++" << endl;
-					  m_posx++;
+					  //m_posx++;
 				  }
 				  break;
 		}
@@ -138,7 +142,7 @@ VOID cMonster_1::AI_Update(float dt, QUAD* p)
 				 //if (m_posx > 0 || m_posx < 256)
 				  {
 					  //cout << "m_posx--" << endl;
-					  m_posx--;
+					  //m_posx--;
 				  }
 				  break;
 		}
@@ -150,7 +154,7 @@ VOID cMonster_1::AI_Update(float dt, QUAD* p)
 				  //if (m_posx > 0 || m_posx < 256)
 				  {
 					 // cout << "m_posz++" << endl;
-					  m_posz++;
+					  //m_posz++;
 				  }
 				  break;
 		}
@@ -161,7 +165,7 @@ VOID cMonster_1::AI_Update(float dt, QUAD* p)
 				  //if (m_posx > 0 || m_posx < 256)
 				  {
 					 // cout << "m_posz--" << endl;
-					  m_posz--;
+					  //m_posz--;
 				  }
 				  break;
 		}

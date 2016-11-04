@@ -31,6 +31,7 @@ void		cServerMGR::Init(void)
 {
 	ClientCnt = 0; //클라이언트수 초기화
 	PlayerID = MAX_SESSION;
+	UniqueCode = 0; //유니크 코드 초기화
 	bGame = FALSE;
 }
 void		cServerMGR::TerrainInit(CTerrain_Server::InitInfo* Terrain_info)

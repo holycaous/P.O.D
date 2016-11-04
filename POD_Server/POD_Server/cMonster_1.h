@@ -14,7 +14,7 @@ private:
 
 public:
 	virtual void Update(float dt,int num);
-	virtual void AI_Update(float dt, QUAD* p);
+	virtual void AI_Update(float dt,int num, QUAD* p);
 	virtual void Monster_Init(int num);
 	VOID Skill1(float dt);
 	VOID Skill2(float dt);

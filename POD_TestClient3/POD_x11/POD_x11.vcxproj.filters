@@ -213,9 +213,6 @@
     <ClInclude Include="CObject.h">
       <Filter>Client_ServerObject</Filter>
     </ClInclude>
-    <ClInclude Include="Cla_Protocol.h">
-      <Filter>Client_Server</Filter>
-    </ClInclude>
     <ClInclude Include="cMonster_1.h">
       <Filter>Client_ServerObject</Filter>
     </ClInclude>
@@ -224,6 +221,9 @@
     </ClInclude>
     <ClInclude Include="cMonster_Info.h">
       <Filter>Client_ServerObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Cla_Protocol.h">
+      <Filter>Client_Server</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

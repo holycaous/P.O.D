@@ -59,11 +59,11 @@ void CConnectedUser::Update(float _fDTime)
 int sum_X=100;
 void CConnectedUser::Player_Init()
 {
-	CThreadSync Sync;
+	CThreadSync Sync; 
 	int z=100;
 	sum_X = sum_X+20;
 
-	m_PlayerInfo->PlayerInit(ServerMGR->PlayerID, sum_X, 150, 200, 100);
+	m_PlayerInfo->PlayerInit(ServerMGR->PlayerID, ServerMGR->UniqueCode, sum_X, 150, 200, 100);
 
 }
 

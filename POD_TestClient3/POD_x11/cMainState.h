@@ -78,19 +78,16 @@ public:
 
 		
 		// 단일 객체 테스트용
-		mModelManager->AddModel("Model0", 100.0f, 100.0f, 100.0f );
+		//mModelManager->AddModel("Model0", 100.0f, 100.0f, 100.0f );
 		mModelManager->AddModel("Model1", 100.0f, 100.0f, 200.0f );
 		mModelManager->AddModel("Model2", 100.0f, 100.0f, 250.0f );
-
 		mModelManager->AddModel("Model3", 100.0f, 100.0f, 350.0f ); // <-- 모든 모델의 유니크코드는 0번부터 시작
-		mModelManager->AddModel("Model3", 100.0f, 100.0f, 470.0f ); //     동일한 모델을 또 만들면 유니크 코드가 1씩 증가함 
-		mModelManager->AddModel("Model4", 100.0f, 100.0f, 470.0f );
-		
-
+		//mModelManager->AddModel("Model3", 100.0f, 100.0f, 470.0f ); //     동일한 모델을 또 만들면 유니크 코드가 1씩 증가함 
+		//mModelManager->AddModel("Model4", 100.0f, 100.0f, 470.0f );
 		
 		// 스크린 추가
 		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);
-
+		 
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
 	}
@@ -108,18 +105,34 @@ public:
 		{
 			if (Player_MGR->GetConnectUser(i)->GetDrawFlag()==true) //플레이어가 접속했을 경우 
 			{
-				//접속한 플레이어 캐릭터를 생성 
-				mModelManager->AddModel("Model1", Player_MGR->GetConnectUser(i)->Get_Posx(),
-					Player_MGR->GetConnectUser(i)->Get_Posy(),
-					Player_MGR->GetConnectUser(i)->Get_Posz());
-				cout << "플레이어 생성--" << "x좌표" << Player_MGR->GetConnectUser(i)->Get_Posx() <<
-					"  Y좌표 " << Player_MGR->GetConnectUser(i)->Get_Posy() <<
-					"  Z좌표 " << Player_MGR->GetConnectUser(i)->Get_Posz() << endl;
+				if (Player_MGR->MyID <= Player_MGR->GetConnectUser(i)->GetClientID())
+				{
+					for (int j = 0; j < Player_MGR->GetConnectUser(i)->Get_UniqueCode(); j++)
+					{
+						//접속한 플레이어 캐릭터를 생성 
+						mModelManager->AddModel("Model3", Player_MGR->GetConnectUser(i)->Get_Posx(),
+							Player_MGR->GetConnectUser(i)->Get_Posy(),
+							Player_MGR->GetConnectUser(i)->Get_Posz());
+					}
+				}
+				else
+				{
+					//접속한 플레이어 캐릭터를 생성 
+					mModelManager->AddModel("Model3", Player_MGR->GetConnectUser(i)->Get_Posx(),
+						Player_MGR->GetConnectUser(i)->Get_Posy(),
+						Player_MGR->GetConnectUser(i)->Get_Posz());
+				}
+				cout << "플레이어 생성--" << Player_MGR->GetConnectUser(i)->GetClientID() << "  x좌표  " << Player_MGR->GetConnectUser(i)->Get_Posx() <<
+						"  Y좌표 " << Player_MGR->GetConnectUser(i)->Get_Posy() <<
+						"  Z좌표 " << Player_MGR->GetConnectUser(i)->Get_Posz() << endl;
+				
+				Player_MGR->GetConnectUser(i)->SetObjectInitFlag(true);
 				Player_MGR->GetConnectUser(i)->SetDrawFlag(false);
 			}
 			if (Player_MGR->GetConnectUser(i)->GetObjectInitFlag() == true)
 			{
-				mModelManager->SetPos(0, "Model1", Player_MGR->GetConnectUser(i)->Get_Posx(),
+				mModelManager->SetPos(Player_MGR->GetConnectUser(i)->Get_UniqueCode(),
+					"Model3", Player_MGR->GetConnectUser(i)->Get_Posx(),
 					Player_MGR->GetConnectUser(i)->Get_Posy(),
 					Player_MGR->GetConnectUser(i)->Get_Posz());
 
@@ -131,7 +144,7 @@ public:
 			if (Monster_MGR->GetConnectMonster(i)->GetDrawFlag() == true)
 			{
 				cout << "몬스터 생성--" << i << endl;
-				mModelManager->AddModel("Model2", Monster_MGR->GetConnectMonster(i)->Get_Posx(), Monster_MGR->GetConnectMonster(i)->Get_Posy(),
+				mModelManager->AddModel("Model1", Monster_MGR->GetConnectMonster(i)->Get_Posx(), Monster_MGR->GetConnectMonster(i)->Get_Posy(),
 								Monster_MGR->GetConnectMonster(i)->Get_Posz());
 				cout << "몬스터 생성--" << "x좌표" << Monster_MGR->GetConnectMonster(i)->Get_Posx() <<
 					"  Y좌표 " << Monster_MGR->GetConnectMonster(i)->Get_Posy() <<
@@ -139,6 +152,21 @@ public:
 
 				Monster_MGR->GetConnectMonster(i)->SetDrawFlag(false); //그렸으니 false로 바꿔 다시는 그리지 않게 만든다.
 			}
+			if (Monster_MGR->GetConnectMonster(i)->GetObjectInitFlag() == true)
+			{
+				if (Monster_MGR->GetConnectMonster(i)->GetMonsterState() == IDLE)
+				{
+					mModelManager->SetPos(i, "Model1", Monster_MGR->GetConnectMonster(i)->Get_Posx(),
+						Monster_MGR->GetConnectMonster(i)->Get_Posy(),
+						Monster_MGR->GetConnectMonster(i)->Get_Posz());
+				}
+				else if (Monster_MGR->GetConnectMonster(i)->GetMonsterState() == MOVE)
+				{
+					//cout << i<<"--몬스터가 플레이어를 따라감" << endl;
+					Monster_MGR->GetConnectMonster(i)->GetCollisonPlayer();//몬스터가 따라갈 플레이어 유니크 코드
+				}
+			}
+
 		}
 
 		

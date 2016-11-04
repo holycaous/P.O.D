@@ -37,7 +37,7 @@ protected:
 
 public:
 	virtual void Update(float _fDTime);
-	void PlayerInit(int ID,float pos_x,float pos_y,float pos_z,float hp);
+	void PlayerInit(int ID,int code, float pos_x,float pos_y,float pos_z,float hp);
 	void PlayerInfo();
 	void PlayerCollison();
 
