@@ -392,7 +392,6 @@ public:
 
 	~InitMetaData()
 	{
-<<<<<<< HEAD:POD_x11/POD_x11/StructData.h
 #ifdef DEBUG_MODE
 		printf("클리어 객체명: %17s ---> 생성명: %12s, 이름: %12s\n", mObjName, mCreateName.c_str(), mMainName);
 #endif
@@ -434,9 +433,6 @@ public:
 		for (unsigned int i = 0; i < weightVtx.size(); ++i)
 			weightVtx[i].Bone.clear();
 		weightVtx.clear();
-
-=======
->>>>>>> 051cc9b971ed9121d0d4d86d04233c72f1433687:POD_TestClient3/POD_x11/StructData.h
 		Vertices   .clear();
 		Indices    .clear();
 		TexIndices .clear();
@@ -470,18 +466,6 @@ public:
 		}
 	}
 
-	// 파싱 데이터
-	void ParsingData()
-	{
-
-<<<<<<< HEAD:POD_x11/POD_x11/StructData.h
-		_wstring += wchar_t('\0');
-
-		_string.clear();
-=======
-
->>>>>>> 051cc9b971ed9121d0d4d86d04233c72f1433687:POD_TestClient3/POD_x11/StructData.h
-	}
 
 	// 모델 (월드 매트릭스) 추가하기
 	void AddModel(ObjData _ObjData)
@@ -519,66 +503,6 @@ public:
 		mObjData[_uniqueCode].mWdMtx._43 = _z;
 	}
 
-<<<<<<< HEAD:POD_x11/POD_x11/StructData.h
-	// 해당 위치로 가는 벡터를 얻는다
-	XMVECTOR GetPointDir(int _uniqueCode, float _x, float _y, float _z)
-	{
-		// 위치가 주어진다.
-		XMVECTOR tPoint  = XMLoadFloat3(&XMFLOAT3(_x, 0.0f, _z));
-		XMVECTOR tObjPos = XMLoadFloat3(&mObjData[_uniqueCode].getPosXZ());
-
-		// 위치로 향하는 벡터를 얻는다.
-		return XMVECTOR(XMVector3Normalize(tPoint - tObjPos));
-	}
-	
-	// 오브젝트 회전
-	void SetRotate(int _uniqueCode, float _x, float _y, float _z)
-	{
-		// 회전 보간 양
-		float InterpolationAmount = 12;
-
-		// 회전 범위제한
-		float Rotatelimit = 0.05f;
-
-		// 위치로 향하는 벡터를 얻는다.
-		XMVECTOR tfromPointLookDir = GetPointDir(_uniqueCode, _x, _y, _z);
-
-		// 오브젝트 각도를 얻는다.
-		XMVECTOR tObjLook  = XMLoadFloat3(&mObjData[_uniqueCode].getLookDir());
-		XMVECTOR tObjUp    = XMLoadFloat3(&mObjData[_uniqueCode].getUpDir());
-		XMVECTOR tObjRight = XMLoadFloat3(&mObjData[_uniqueCode].getRightDir());
-
-		// 회전 방향을 얻는다(좌, 우) - 스칼라 삼중적
-		float tRadius = XMVectorGetX(XMVector3Dot(tObjUp, XMVector3Cross(tObjLook, tfromPointLookDir)));
-
-		// 회전할만한 가치가 있는가?
-		if (tRadius > Rotatelimit || tRadius < -Rotatelimit)
-		{
-			// 빠른쪽을 기준으로 회전 행렬을 만든다.
-			XMMATRIX tRotMtx;
-			tRotMtx = XMMatrixRotationAxis(tObjUp, tRadius / InterpolationAmount);
-
-			// 회전 행렬 곱
-			XMFLOAT3 tFinLookDir;
-			XMStoreFloat3(&tFinLookDir, XMVector3TransformNormal(tObjLook, tRotMtx));
-
-			XMFLOAT3 tFiRightDir;
-			XMStoreFloat3(&tFiRightDir, XMVector3TransformNormal(tObjRight, tRotMtx));
-
-			// 각 방향벡터에 적용한다.
-			mObjData[_uniqueCode].setLookDir(tFinLookDir.x, tFinLookDir.y, tFinLookDir.z);
-			mObjData[_uniqueCode].setRightDir(tFiRightDir.x, tFiRightDir.y, tFiRightDir.z);
-		}
-	}
-
-	// 오브젝트 스케일
-	void SetScale(int _uniqueCode, float _x, float _y, float _z)
-	{
-		// 오브젝트 이동
-		mObjData[_uniqueCode].setScale(_x, _y, _z);
-	}
-=======
->>>>>>> 051cc9b971ed9121d0d4d86d04233c72f1433687:POD_TestClient3/POD_x11/StructData.h
 
 	// 오브젝트 삭제
 	void ClearWdMtx()

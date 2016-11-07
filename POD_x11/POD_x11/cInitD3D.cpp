@@ -93,6 +93,8 @@ void cInitD3D::ClearDevice()
 	ReleaseCOM(mSwapChain);
 	ReleaseCOM(md3dImmediateContext);
 	ReleaseCOM(md3dDevice);
+
+	ZeroMemory(&mScreenViewport, sizeof(D3D11_VIEWPORT));
 }
 
 // 디바이스 재 생성

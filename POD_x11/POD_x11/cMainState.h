@@ -54,12 +54,15 @@ public:
 		//mModelManager->AddModel("Model3", 100.0f, 100.0f, 470.0f ); //     동일한 모델을 또 만들면 유니크 코드가 1씩 증가함 
 		//mModelManager->AddModel("Model4", 100.0f, 100.0f, 470.0f );
 
-
 		// 테스트용
 		mModelManager->AddModel("Model4",  100.0f, 100.0f,  300.0f);
 		mModelManager->AddModel("Model2",  100.0f, 100.0f,  200.0f);
 		mModelManager->AddModel("Model1",  100.0f, 100.0f,  100.0f);
-		
+		mModelManager->AddModel("Model5",  100.0f, 100.0f,  500.0f);
+
+		// 본 그려보기 추가
+		mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 100.0f);
+
 		// 스크린 추가 (풀 스크린쿼드)
 		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);
 

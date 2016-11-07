@@ -9,6 +9,7 @@ class cGameState
 protected:
 	cCoreStorage*     mCoreStorage     = cCoreStorage	 ::GetInstance(); // 다이렉트 COM 저장소
 	cModelManager*    mModelManager    = cModelManager   ::GetInstance(); // 각 스테이트에 모델을 사용 가능하게끔
+	cAniManager *     mAniManager      = cAniManager     ::GetInstance(); // 각 스테이트에 애니메이션 테스트가 가능하게끔
 	cDrawManager*     mDrawManager     = cDrawManager    ::GetInstance(); // 각 스테이트에 렌더링이 가능하게끔
 
 	//cShaderManager*   mShaderManager   = cShaderManager  ::GetInstance();

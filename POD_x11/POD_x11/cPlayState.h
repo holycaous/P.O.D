@@ -29,6 +29,9 @@ public:
 			}
 		}
 
+		// 스크린 추가 (풀 스크린쿼드)
+		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);
+
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
 	}

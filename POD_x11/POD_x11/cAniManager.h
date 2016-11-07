@@ -2,6 +2,7 @@
 class cAniManager : public cSingleton<cAniManager>
 {
 public:
+	// 이름, 모델 본 데이터
 	map<string, map<string, MyBoneData> > mData;
 
 public:

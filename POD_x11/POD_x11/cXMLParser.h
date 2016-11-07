@@ -400,57 +400,57 @@ public:
 
 		// 본 데이터 사이즈
 		fread(&len, sizeof(int), 1, mFilePointer);
-		_MyBoneData->mBoneData.resize(len);
+		_MyBoneData->mSaveBoneData.resize(len);
 
 		// 본 데이터에 등룩된 만큼
-		for (unsigned int i = 0; i < _MyBoneData->mBoneData.size(); ++i)
+		for (unsigned int i = 0; i < _MyBoneData->mSaveBoneData.size(); ++i)
 		{
 			// TM 행렬
-			fread(&_MyBoneData->mBoneData[i].mTMLocalMtx, sizeof(XMFLOAT4X4), 1, mFilePointer);
-			fread(&_MyBoneData->mBoneData[i].mTMWorldMtx, sizeof(XMFLOAT4X4), 1, mFilePointer);
+			fread(&_MyBoneData->mSaveBoneData[i].mTMLocalMtx, sizeof(XMFLOAT4X4), 1, mFilePointer);
+			fread(&_MyBoneData->mSaveBoneData[i].mTMWorldMtx, sizeof(XMFLOAT4X4), 1, mFilePointer);
 
 			// 애니데이터
 
 			// 위치
 			fread(&len, sizeof(int), 1, mFilePointer);
-			_MyBoneData->mBoneData[i].aniData.Position.resize(len);
+			_MyBoneData->mSaveBoneData[i].aniData.Position.resize(len);
 			for (int idx = 0; idx < len; ++idx)
-				fread(&_MyBoneData->mBoneData[i].aniData.Position[idx], sizeof(KeyVtx), 1, mFilePointer);
+				fread(&_MyBoneData->mSaveBoneData[i].aniData.Position[idx], sizeof(KeyVtx), 1, mFilePointer);
 
 			// 회전
 			fread(&len, sizeof(int), 1, mFilePointer);
-			_MyBoneData->mBoneData[i].aniData.Quaternion.resize(len);
+			_MyBoneData->mSaveBoneData[i].aniData.Quaternion.resize(len);
 			for (int idx = 0; idx < len; ++idx)
-				fread(&_MyBoneData->mBoneData[i].aniData.Quaternion[idx], sizeof(KeyVtx), 1, mFilePointer);
+				fread(&_MyBoneData->mSaveBoneData[i].aniData.Quaternion[idx], sizeof(KeyVtx), 1, mFilePointer);
 
 			// 스케일
 			fread(&len, sizeof(int), 1, mFilePointer);
-			_MyBoneData->mBoneData[i].aniData.Scale.resize(len);
+			_MyBoneData->mSaveBoneData[i].aniData.Scale.resize(len);
 			for (int idx = 0; idx < len; ++idx)
-				fread(&_MyBoneData->mBoneData[i].aniData.Scale[idx], sizeof(KeyVtx), 1, mFilePointer);
+				fread(&_MyBoneData->mSaveBoneData[i].aniData.Scale[idx], sizeof(KeyVtx), 1, mFilePointer);
 
 
 			// 바운딩 박스
-			fread(&_MyBoneData->mBoneData[i].mBoundingBox, sizeof(BoundBox), 1, mFilePointer);
+			fread(&_MyBoneData->mSaveBoneData[i].mBoundingBox, sizeof(BoundBox), 1, mFilePointer);
 
 			//--------------------------------------------------//
 			// 오브젝트 식별 정보
 			//--------------------------------------------------//
 
 			// 오브젝트이름
-			fread(&_MyBoneData->mBoneData[i].mObjID, sizeof(int), 1, mFilePointer);
+			fread(&_MyBoneData->mSaveBoneData[i].mObjID, sizeof(int), 1, mFilePointer);
 
 			fread(&len, sizeof(int), 1, mFilePointer);
-			fread(&_MyBoneData->mBoneData[i].mObjName, sizeof(char), len, mFilePointer);
+			fread(&_MyBoneData->mSaveBoneData[i].mObjName, sizeof(char), len, mFilePointer);
 
 			fread(&len, sizeof(int), 1, mFilePointer);
-			fread(&_MyBoneData->mBoneData[i].mObjClass, sizeof(char), len, mFilePointer);
+			fread(&_MyBoneData->mSaveBoneData[i].mObjClass, sizeof(char), len, mFilePointer);
 
 			// 상위 클래스 이름
-			fread(&_MyBoneData->mBoneData[i].mParentID, sizeof(int), 1, mFilePointer);
+			fread(&_MyBoneData->mSaveBoneData[i].mParentID, sizeof(int), 1, mFilePointer);
 
 			fread(&len, sizeof(int), 1, mFilePointer);
-			fread(&_MyBoneData->mBoneData[i].mParentName, sizeof(char), len, mFilePointer);
+			fread(&_MyBoneData->mSaveBoneData[i].mParentName, sizeof(char), len, mFilePointer);
 		}
 
 		// 본 하이라이키 사이즈

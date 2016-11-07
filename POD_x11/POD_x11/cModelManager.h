@@ -21,7 +21,7 @@ public:
 	// 파서
 	cXMLParser mXMLParser;
 	
-	// 카메라
+	// 애니 매니저
 	cAniManager* mAniManager = cAniManager::GetInstance();
 public:
 	void Init()
@@ -30,7 +30,7 @@ public:
 		CreateScreen();
 
 		// 모델 등록 (다른 종류의 모델만 1개씩)
-		CreateBoxModel("BOX1", e_ShaderColor, D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
+		CreateBoxModel("BOX1", e_ShaderColor, 0.7f, D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
 		
 		CreateBoxModel("BOX2", e_ShaderLight);
 		
@@ -48,13 +48,15 @@ public:
 		CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTex);
 		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTex);
 		CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTex);
+		CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTex);
 
 		// 애니 추가
-		CreateBoneAni("Model0", "Export/FinSkinning_TestBoneIdel.pod", e_ShaderPongTex);
-		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdel.pod"     , e_ShaderPongTex);
-		CreateBoneAni("Model2", "Export/FinCat1BoneIdel.pod"         , e_ShaderPongTex);
-		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdel.pod"  , e_ShaderPongTex);
-		CreateBoneAni("Model4", "Export/FinCyclopsBoneIdel.pod"      , e_ShaderPongTex);
+		CreateBoneAni("Model0", "Export/FinSkinning_TestBoneIdle.pod", e_ShaderPongTex);
+		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdle.pod"     , e_ShaderPongTex);
+		CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"         , e_ShaderPongTex);
+		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"  , e_ShaderPongTex);
+		CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"      , e_ShaderPongTex);
+		CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod"     , e_ShaderPongTex);
 
 		//CreateModel("Model4", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
 		//CreateModel("Model5", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
@@ -63,6 +65,30 @@ public:
 	
 		// 만들어진 모델 등록
 		ModelRegistration();
+	}
+
+	// 특정 모델의 본 그리기
+	void DrawBone(string _modelName, string _aniName)
+	{
+		auto Stroage = mAniManager->mData[_modelName][_aniName].GetLapStorage();
+		for (unsigned int i = 0; i < Stroage.size(); ++i)
+		{
+			AddModel("BOX1", Stroage[i]);
+		}
+	}
+
+	// 특정 모델의 본 그리기
+	void DrawBone(string _modelName, string _aniName, float _x, float _y, float _z)
+	{
+		auto Stroage = mAniManager->mData[_modelName][_aniName].GetLapStorage();
+		for (unsigned int i = 0; i < Stroage.size(); ++i)
+		{
+			Stroage[i]._41 += _x;
+			Stroage[i]._42 += _y;
+			Stroage[i]._43 += _z;
+
+			AddModel("BOX1", Stroage[i]);
+		}
 	}
 
 	// 스크린 만들기
@@ -85,9 +111,11 @@ public:
 	// 스크린 삭제
 	void ClearScreen()
 	{
-		SafeDelete(mScreen);
+		mScreen->ClearWdMtx();
 		mScreenBuffer->ClearInsBuf();
+
 		SafeDelete(mScreenBuffer);
+		SafeDelete(mScreen);
 	}
 
 	// 모델 등록
@@ -205,7 +233,7 @@ public:
 	// 모델 월드 매트릭스 삭제
 	void ClearModel()
 	{
-		//// 모델 데이터 삭제
+		// 모델 데이터 삭제
 		for (map<string, InitMetaData*>::iterator itor = mAllModelData.begin(); itor != mAllModelData.end(); ++itor)
 		{
 			// 모델 내부 객체 삭제
@@ -213,23 +241,28 @@ public:
 		}
 
 		// 모델 인스턴스 버퍼 삭제
-		for (map<int, BufferType*>::iterator itor = mBufferType.begin(); itor != mBufferType.end(); ++itor)
-		{
-			for (auto itor2 = itor->second->mInstancedBuffer.begin(); itor2 != itor->second->mInstancedBuffer.end(); ++itor2)
-			{
-				ReleaseCOM(itor2->second);
-			}
-		}
-
-		// 스크린 인스턴스 제거
-		mScreenBuffer->ClearInsBuf();
+		ClearModelInsBuf();
 
 		// 모델에 사용되었던 쉐이더 제거
 		mUseAllShader.clear();
-		mUseShader   .clear();
+		mUseShader.clear();
 
 		// 모델 이름 제거
 		mUseModel.clear();
+
+		// 스크린 클리어
+		mScreen->ClearWdMtx();
+		mScreenBuffer->ClearInsBuf();
+	}
+
+	// 모델 인스턴스 버퍼만 삭제
+	void ClearModelInsBuf()
+	{
+		// 모델 인스턴스 버퍼 삭제
+		for (map<int, BufferType*>::iterator itor = mBufferType.begin(); itor != mBufferType.end(); ++itor)
+		{
+			itor->second->ClearInsBuf();
+		}
 	}
 
 	void ClearClass()
@@ -362,8 +395,11 @@ public:
 		// 본은 데이터당 하나씩이기에 이런식으로 저장해도 됨.
 		MyBoneData mMyBoneData;
 
-		// 본 파싱
+		// 1개 모델의 본 파싱
 		mXMLParser.ReadDataMyFormat_Bone(_BoneRoute, &mMyBoneData);
+
+		// 데이터 계산
+		mMyBoneData.CalData();
 
 		// 저장
 		mAniManager->mData[_Name][mMyBoneData.mAniName] = mMyBoneData;
@@ -390,6 +426,29 @@ public:
 
 		// 파싱 시작
 		mXMLParser.LoadBox(*_nowModel, 10.0f, 10.0f, 10.0f);
+
+		// 쉐이더, 모델 등록 (필터링 용)
+		UseAllShaderModel(_ShaderMode);
+		UsingModel(_Name);
+	}
+
+	void CreateBoxModel(string _Name, SHADER_TYPE _ShaderMode, float _Size, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	{
+		// 모델 체인에 이름 등록
+		mModelChain[_Name].push_back(_Name);
+
+		// 모델 생성
+		mAllModelData[_Name] = new InitMetaData(_Name.c_str(), _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
+
+		// 현재 모델 정보 얻기
+		InitMetaData* _nowModel = mAllModelData[_Name];
+
+		// 모델의 종류
+		_nowModel->mModelType = e_BasicModel;
+		_nowModel->mCreateName = _Name;
+
+		// 파싱 시작
+		mXMLParser.LoadBox(*_nowModel, _Size, _Size, _Size);
 
 		// 쉐이더, 모델 등록 (필터링 용)
 		UseAllShaderModel(_ShaderMode);
@@ -459,6 +518,44 @@ public:
 	}
 
 	// 모델 추가하기
+	void AddUpdateModel(string _Name, float _x, float _y, float _z, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 기존 인스턴스 버퍼 삭제
+		ClearModelInsBuf();
+
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(mModelChain[_Name][i], _x, _y, _z, _moveAble);
+		}
+
+		_Name.clear();
+
+		// 다시 만들기
+		MakeModelInsBuf();
+	}	
+
+	// 모델 추가하기
+	void AddUpdateModel(string _Name, XMFLOAT4X4 _Mtx, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 기존 인스턴스 버퍼 삭제
+		ClearModelInsBuf();
+
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(mModelChain[_Name][i], _Mtx, _moveAble);
+		}
+
+		_Name.clear();
+
+		// 다시 만들기
+		MakeModelInsBuf();
+	}
+
+	// 모델 추가하기
 	void AddModel(string _Name, float _x, float _y, float _z, OBJ_MOVEABLE _moveAble = e_StaticObj)
 	{
 		// 모델 파일에 있는 서브 모델 수 만큼
@@ -467,13 +564,38 @@ public:
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _x, _y, _z, _moveAble);
 		}
-	}	
 
-	// 서브 모델들 모두 추가 @@@@@@
+		_Name.clear();
+	}
+
+	// 모델 추가하기
+	void AddModel(string _Name, XMFLOAT4X4 _Mtx, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(mModelChain[_Name][i], _Mtx, _moveAble);
+		}
+
+		_Name.clear();
+	}
+
+	// 서브 모델들 모두 추가
 	void addSubModel(string& _SlectModel, float& _x, float& _y, float& _z, OBJ_MOVEABLE& _moveAble)
 	{
 		// 체인에 있는 모델 모두 월드매트릭스에 추가
 		mAllModelData[_SlectModel]->AddModel(_x, _y, _z, _moveAble);
+
+		// 쉐이더 추가
+		addUseShader(_SlectModel);
+	}
+
+	// 서브 모델들 모두 추가
+	void addSubModel(string& _SlectModel, XMFLOAT4X4 _Mtx, OBJ_MOVEABLE& _moveAble)
+	{
+		// 체인에 있는 모델 모두 월드매트릭스에 추가
+		mAllModelData[_SlectModel]->AddModel(_Mtx, _moveAble);
 
 		// 쉐이더 추가
 		addUseShader(_SlectModel);
@@ -530,13 +652,20 @@ public:
 	void MakeInsbuf()
 	{
 		// 일반 모델 인스턴스 버퍼 생성
+		MakeModelInsBuf();
+
+		// 스크린 인스턴스 버퍼 생성
+		mScreenBuffer->MakeScreenInsBuf(mScreen);
+	}
+
+	// 모델 인스턴스 버퍼 만들기
+	void MakeModelInsBuf()
+	{
+		// 일반 모델 인스턴스 버퍼 생성
 		for (unsigned int i = 0; i < mUseShader.size(); ++i)
 		{
 			mBufferType[mUseShader[i]]->MakeInsBuf();
 		}
-
-		// 스크린 인스턴스 버퍼 생성
-		mScreenBuffer->MakeScreenInsBuf(mScreen);
 	}
 
 	// 인스턴스 버퍼 업데이트

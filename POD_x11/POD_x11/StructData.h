@@ -599,6 +599,26 @@ public:
 		mObjData.push_back(_ObjData);
 	}
 
+	// 모델 (월드 매트릭스) 추가하기
+	void AddModel(XMFLOAT4X4 _mWdMtx, OBJ_MOVEABLE _moveAble)
+	{
+		// 오브젝트 초기화
+		ObjData _ObjData;
+
+		// 유니크 코드 부여
+		_ObjData.mUniqueCode = mObjData.size();
+
+		// 좌표 저장
+		_ObjData.mWdMtx = _mWdMtx;
+
+		// 오브젝트 이동 가능한가
+		_ObjData.mObjMoveAble = _moveAble;
+
+		// 오브젝트 저장
+		mObjData.push_back(_ObjData);
+	}
+
+
 	// 오브젝트 이동
 	void SetPos(int _uniqueCode, float _x, float _y, float _z)
 	{
@@ -1877,6 +1897,33 @@ public:
 	}
 };
 
+// 부모 정보를 가지고 있는 값
+class BoneParentData
+{
+public:
+	string mName;
+	XMFLOAT4X4 mParentMtx;
+public:
+	BoneParentData()
+	{
+		ClearClass();
+	}
+
+	~BoneParentData()
+	{
+		ClearClass();
+	}
+
+private:
+	void ClearClass()
+	{
+		XMMATRIX I = XMMatrixIdentity();
+		XMStoreFloat4x4(&mParentMtx, I);
+
+		mName.clear();
+	}
+};
+
 
 // 본 데이터
 class NodeBone
@@ -1903,18 +1950,58 @@ public:
 	// 상위 클래스 이름
 	int  mParentID;
 	char mParentName[BUF_SIZE];
+public:
+	NodeBone()
+	{
+		mParentID = mObjID = -1;
+
+		memset(&mObjName   , '\0', sizeof(mObjName));
+		memset(&mObjClass  , '\0', sizeof(mObjClass));
+		memset(&mParentName, '\0', sizeof(mParentName));
+
+		XMMATRIX I = XMMatrixIdentity();
+		XMStoreFloat4x4(&mTMLocalMtx, I);
+		XMStoreFloat4x4(&mTMWorldMtx, I);
+	}
+
+	// 애니 데이터
+	XMFLOAT4X4 getAniMtx()
+	{
+		XMFLOAT4X4 mAniMtx;
+		
+		XMMATRIX I = XMMatrixIdentity();
+		XMStoreFloat4x4(&mAniMtx, I);
+
+		// 애니메이션 데이터 계산
+		// aniData
+
+
+		return mAniMtx;
+	}
 };
 
-// 본들의 정보를 담아둠
+// 각 모델들의 본, 애니메이션 정보를 담아둠
 class MyBoneData
 {
 public:
-	// 계층 구조를 담은 본 정보
-	vector<NodeBone> mBoneData;
+	// 계층 구조를 담은 본 정보(파싱용)
+	vector<NodeBone> mSaveBoneData;
+
+	// 계층 구조를 담은 본 정보(실제 사용)
+	map<string, NodeBone> mBoneData;
 
 	// 계층 구조를 실질적으로 찾아가는 정보
 	// 일종의 해쉬맵
 	vector<vector<KeyString> > mBoneHierarchy;
+
+	// 하향식 P 만들기 (프레임당 다르기에, 매 프레임당 만들어야 한다.)
+	map<string, BoneParentData> mBoneParentData;
+
+	// 본 LAP
+	vector<XMFLOAT4X4> mLAPMtx;
+
+	// 본 SKin
+	vector<XMFLOAT4X4> mSkinMtx;
 
 	// 이름
 	char mMainName[BUF_SIZE];
@@ -1927,14 +2014,169 @@ public:
 		ClearClass();
 	}
 
+	// LAP 얻기
+	vector<XMFLOAT4X4> GetLapStorage()
+	{
+		return mLAPMtx;
+	}
+
+	// Skin 얻기
+	vector<XMFLOAT4X4> GetSkinStorage()
+	{
+		return mSkinMtx;
+	}
+
+
+	// 데이터 계산
+	void CalData(/*XMFLOAT4X4& _CharMtx*/)
+	{
+		// 테스트 용도
+		XMFLOAT4X4 mTestMtx;
+		XMMATRIX I = XMMatrixIdentity();
+		XMStoreFloat4x4(&mTestMtx, I);
+
+		// 데이터 옮기기
+		RelocationData();
+
+		// 하향식 P 데이터 만들기
+		MakeParentData(mTestMtx);
+
+		// Skin 계산
+		CalSkinMtx();
+	}
+
 	void ClearClass()
 	{
 		// 본 데이터 삭제
+		mSaveBoneData.clear();
 		mBoneData.clear();
+		mLAPMtx.clear();
+		mSkinMtx.clear();
 
 		// 하이라이키 삭제
 		for (unsigned int i = 0; i < mBoneHierarchy.size(); ++i)
 			mBoneHierarchy[i].clear();
 		mBoneHierarchy.clear();
+
+		// 하향식 P 삭제
+		mBoneParentData.clear();
+	}
+
+private:
+	// 스킨 계산
+	void CalSkinMtx()
+	{
+		// 비우기
+		mLAPMtx.clear();
+		mSkinMtx.clear();
+
+		XMFLOAT4X4 tSaveMtx;
+
+		// LAP 행렬 계산
+		for (auto itor = mBoneParentData.begin(); itor != mBoneParentData.end(); ++itor)
+		{
+			auto tBoneData = mBoneData[itor->second.mName];
+			XMMATRIX tLoclMtx = XMLoadFloat4x4(&tBoneData.mTMLocalMtx);
+			XMMATRIX tWdMtx   = XMLoadFloat4x4(&tBoneData.mTMWorldMtx);
+			XMMATRIX tAniMtx  = XMLoadFloat4x4(&tBoneData.getAniMtx());
+			XMMATRIX tParMtx  = XMLoadFloat4x4(&itor->second.mParentMtx);
+			XMMATRIX tResultMtx;
+
+			tResultMtx = XMMatrixMultiply(tLoclMtx, tAniMtx);
+			XMStoreFloat4x4(&tSaveMtx, XMMatrixMultiply(tResultMtx, tParMtx));
+			mLAPMtx.push_back(tSaveMtx);
+
+			// 스킨 행렬 계산
+			// 행렬식 & 역행렬 구하기
+			XMVECTOR tDet = XMMatrixDeterminant(tWdMtx);
+			XMMATRIX tInvMtx = XMMatrixInverse(&tDet, tWdMtx);
+
+			tResultMtx = XMMatrixMultiply(tInvMtx, tResultMtx);
+			XMStoreFloat4x4(&tSaveMtx, XMMatrixMultiply(tResultMtx, tParMtx));
+			mSkinMtx.push_back(tSaveMtx);
+		}
+	}
+
+	// 데이터 재배치
+	void RelocationData()
+	{
+		// map으로 옮김
+		for (unsigned int i = 0; i < mSaveBoneData.size(); ++i)
+		{
+			string tString = mSaveBoneData[i].mObjName;
+
+			// 키에 맞게 재배치
+			mBoneData[tString] = mSaveBoneData[i];
+		}
+	}
+
+	// 부모 데이터 계산
+	void MakeParentData(XMFLOAT4X4& _CharMtx)
+	{
+		// 기존 데이터를 없앤다.
+		mBoneParentData.clear();
+
+		// 객체의 캐릭터 매트릭스를 가져온다.
+		XMMATRIX tCharMtx = XMLoadFloat4x4(&_CharMtx);
+
+		// 하이라이키 0번부터 순서대로 순회
+		for (unsigned int y = 0; y < mBoneHierarchy.size(); ++y)
+		{
+			// 데이터를 임시적으로 저장할 값, 하이라이키 값마다 초기화, 저장 된다.
+			BoneParentData tParentData;
+
+			// 해당 키에 도달하기 위한 루트
+			for (unsigned int x = 0; x < mBoneHierarchy[y].size(); ++x)
+			{
+				// 현재 키를 꺼낸다.
+				string tKey;
+				tKey = mBoneHierarchy[y][x].Name;
+
+				// mBoneParentData에 해당키가 있는지 검사한다.
+				if (mBoneParentData.find(tKey) != mBoneParentData.end())
+				{
+					// 있다면, 그 값을 꺼낸다.
+					XMMATRIX tResultPMtx = XMLoadFloat4x4(&tParentData.mParentMtx);
+					XMMATRIX tParentMtx  = XMLoadFloat4x4(&mBoneParentData[tKey].mParentMtx);
+
+					// 곱셈 후 값 저장하기
+					XMStoreFloat4x4(&tParentData.mParentMtx, XMMatrixMultiply(tResultPMtx, tParentMtx));
+				}
+				else
+				{
+					// 없다면, 계산 시작
+					XMMATRIX tBParentMtx, tBAniMtx, tResultPMtx;
+
+					// 현재 키가 최상위 루트가 아닐때, 내 위의 매트릭스 값을 가져온다.
+					string tBeforeKey;
+					int tBeforeX = x - 1;
+					if (tBeforeX >= 0)
+					{
+						// 내 상위의 키를 가져온다.
+						tBeforeKey = mBoneHierarchy[y][tBeforeX].Name;
+
+						// 해당 키로 가는 루트가 하이라이키에 이미 정렬되어있으므로, 
+						// 내 상위에 있는 월드 매트릭스의 정보와, 애니메이션 데이터를 가져온다.
+						tBParentMtx = XMLoadFloat4x4(&mBoneData[tBeforeKey].mTMWorldMtx);
+						tBAniMtx    = XMLoadFloat4x4(&mBoneData[tBeforeKey].getAniMtx());
+
+						// 곱셈 후 저장한다.
+						tResultPMtx = XMMatrixMultiply(tBAniMtx, tBParentMtx);
+						XMStoreFloat4x4(&tParentData.mParentMtx, XMMatrixMultiply(tResultPMtx, tCharMtx));
+					}
+					else
+					{
+						XMMATRIX tResultPMtx = XMLoadFloat4x4(&tParentData.mParentMtx);
+
+						// 최상위 루트라면 캐릭터 매트릭스를 곱한다. (월드 매트릭스)
+						XMStoreFloat4x4(&tParentData.mParentMtx, XMMatrixMultiply(tResultPMtx, tCharMtx));
+					}
+				}
+				// 값 저장
+				tParentData.mName = tKey;
+				mBoneParentData[tKey] = tParentData;
+				tKey.clear();
+			}
+		}
 	}
 };
