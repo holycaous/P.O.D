@@ -55,7 +55,7 @@ public:
 		//mModelManager->AddModel("Model4", 100.0f, 100.0f, 470.0f );
 
 		// 테스트용
-		mModelManager->AddModel("Model4",  100.0f, 100.0f,  300.0f);
+		//mModelManager->AddModel("Model4",  100.0f, 100.0f,  300.0f);
 		mModelManager->AddModel("Model2",  100.0f, 100.0f,  200.0f);
 		mModelManager->AddModel("Model1",  100.0f, 100.0f,  100.0f);
 		mModelManager->AddModel("Model5",  100.0f, 100.0f,  500.0f);

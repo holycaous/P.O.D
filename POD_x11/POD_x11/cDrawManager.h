@@ -8,6 +8,7 @@ class cDrawManager : public cSingleton<cDrawManager>
 	cShaderManager*   mShaderManager   = cShaderManager  ::GetInstance();
 	cMaterialManager* mMaterialManager = cMaterialManager::GetInstance();
 	cModelManager*    mModelManager    = cModelManager   ::GetInstance();
+	cAniManager*      mAniManager      = cAniManager     ::GetInstance();
 
 
 	// 어떻게 그릴 것인가
@@ -422,24 +423,26 @@ private:
 		static D3DX11_TECHNIQUE_DESC TechDesc;
 		static SHADER_TYPE _ShaderMode;
 
+
 		// 이터레이터 내부에 있는 모든 모델을 그리자
 		for (map<string, InitMetaData*>::iterator itor = mModelManager->mAllModelData.begin(); itor != mModelManager->mAllModelData.end(); ++itor)
 		{
 			// 현재 쉐이더 모드를 가져온다.
-			_ShaderMode = itor->second->mShaderMode;
+			InitMetaData* _CurrentModel = itor->second;
+			_ShaderMode = _CurrentModel->mShaderMode;
 
 			// 해당 모델의 인스턴싱 버퍼가 활성화 되어있으면, 그린다.
-			if (mModelManager->GetBuffer(_ShaderMode)->mInstancedBuffer[itor->second->mCreateName] != nullptr)
+			if (mModelManager->GetBuffer(_ShaderMode)->mInstancedBuffer[_CurrentModel->mCreateName] != nullptr)
 			{
 				// 쉐이더 모드 갱신
 				// 쉐이더 모드나, 모델 이름이 같으면 버퍼를 갱신할 필요가 없음.
-				if (itor->second->mShaderMode != _BeforeShaderMode || itor->second->mCreateName != _BeforeModelName)
+				if (_CurrentModel->mShaderMode != _BeforeShaderMode || _CurrentModel->mCreateName != _BeforeModelName)
 				{
 					// 기본 쉐이더 업데이트
 					mShaderManager->SetBasicShaderValueIns();
 
 					// 개별 쉐이더 업데이트
-					mShaderManager->SetModelShaderMode(itor->second, _ShaderMode);
+					mShaderManager->SetModelShaderMode(_CurrentModel, _ShaderMode);
 
 					// 쉐이더 모드에 셋팅된 값 가져오기
 					UINT offset[2] = { 0, 0 };
@@ -447,18 +450,18 @@ private:
 
 					// 쉐이더 입력조립기 세팅 (Set)
 					mCoreStorage->md3dImmediateContext->IASetInputLayout(mShaderManager->GetInputLayout());
-					mCoreStorage->md3dImmediateContext->IASetPrimitiveTopology(itor->second->_PRIMITIVE_TOPOLOGY);
+					mCoreStorage->md3dImmediateContext->IASetPrimitiveTopology(_CurrentModel->_PRIMITIVE_TOPOLOGY);
 
 					// 버퍼 생성
-					ID3D11Buffer* VBs[2] = { mModelManager->GetBuffer(_ShaderMode)->mVB, mModelManager->GetBuffer(_ShaderMode)->mInstancedBuffer[itor->second->mCreateName] };
+					ID3D11Buffer* VBs[2] = { mModelManager->GetBuffer(_ShaderMode)->mVB, mModelManager->GetBuffer(_ShaderMode)->mInstancedBuffer[_CurrentModel->mCreateName] };
 
 					// 입력조립기에 버퍼 할당 <-- 일단 밖으로 뺐는데.. 현재 패스가 0이라 밑에꺼와 차이점이 없음.. 패스를 늘려봐야 알 듯
 					mCoreStorage->md3dImmediateContext->IASetVertexBuffers(0, 2, VBs, stride, offset);
 					mCoreStorage->md3dImmediateContext->IASetIndexBuffer(mModelManager->GetBuffer(_ShaderMode)->mIB, _ForMat, 0);
 
 					// 현재 쉐이더 모드 갱신
-					_BeforeShaderMode = itor->second->mShaderMode;
-					_BeforeModelName = itor->second->mCreateName;
+					_BeforeShaderMode = _CurrentModel->mShaderMode;
+					_BeforeModelName = _CurrentModel->mCreateName;
 
 					// 쉐이더 정보 얻기
 					mShaderManager->GetDesc(&TechDesc);
@@ -475,10 +478,10 @@ private:
 
 					// 모델 그리기
 					mCoreStorage->md3dImmediateContext->DrawIndexedInstanced
-						(itor->second->mIndexCount,
-						itor->second->mObjData.size(),
-						itor->second->mIndexOffset,
-						itor->second->mVertexOffset,
+						(_CurrentModel->mIndexCount,
+						_CurrentModel->mObjData.size(),
+						_CurrentModel->mIndexOffset,
+						_CurrentModel->mVertexOffset,
 						0);
 				}
 			}

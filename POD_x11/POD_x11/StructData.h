@@ -37,7 +37,8 @@ typedef enum
 	e_ShaderValMtx      = 0,
 	e_ShaderValVtx      = 1,
 	e_ShaderVal         = 2,
-	e_ShaderValResource = 3
+	e_ShaderValResource = 3,
+	e_ShaderValMtxArray = 4
 }SHADER_VAL_TYPE;
 
 // 어떤 텍스처를 로드할 것인가
@@ -393,6 +394,13 @@ public:
 	XMFLOAT4X4    mLocTMMtx;
 	XMFLOAT4X4    mWdTMMtx;
 
+	// 현재 선택된 최종 스킨 행렬
+	// 본 SKin (최종 행렬)
+	vector<XMFLOAT4X4> mSkinMtx;
+
+	// 현재 모델의 애니상태
+	string mAniName;
+
 	// 리소스 뷰 (재질정보)
 	ID3D11ShaderResourceView* mDiffuseSRV;
 	ID3D11ShaderResourceView* mSpecularSRV;
@@ -532,6 +540,15 @@ public:
 		TexVertices.clear();
 		mObjData   .clear();
 		mCreateName.clear();
+		mSkinMtx   .clear();
+		mAniName   .clear();
+	}
+
+	// 스킨 행렬 업데이트
+	void updateSkinMtx(vector<XMFLOAT4X4>& _SkinMtx)
+	{
+		mSkinMtx.clear();
+		mSkinMtx = _SkinMtx;
 	}
 
 	// 텍스처 로드
@@ -792,7 +809,7 @@ public:
 	map<string, ID3DX11EffectVariable*>     mfxValue; // 변수
 
 	map<string, ID3DX11EffectShaderResourceVariable*>  mfxResource; // 리소스
-
+	
 	ID3D11InputLayout* mInputLayout;
 public:
 	EffectStorage()
@@ -815,7 +832,7 @@ public:
 
 		for (auto itor = mfxResource.begin(); itor != mfxResource.end(); ++itor)
 			ReleaseCOM(itor->second);
-
+		
 		mfxMtx.clear();
 		mfxVtx.clear();
 		mfxValue.clear();
@@ -1911,7 +1928,7 @@ public:
 
 	~BoneParentData()
 	{
-		ClearClass();
+		mName.clear();
 	}
 
 private:
@@ -1965,7 +1982,7 @@ public:
 	}
 
 	// 애니 데이터
-	XMFLOAT4X4 getAniMtx()
+	XMFLOAT4X4 getAniMtx(/*int _key*/)
 	{
 		XMFLOAT4X4 mAniMtx;
 		
@@ -1973,7 +1990,7 @@ public:
 		XMStoreFloat4x4(&mAniMtx, I);
 
 		// 애니메이션 데이터 계산
-		// aniData
+		// aniData, _key
 
 
 		return mAniMtx;
@@ -2023,6 +2040,7 @@ public:
 	// Skin 얻기
 	vector<XMFLOAT4X4> GetSkinStorage()
 	{
+		ReCalData();
 		return mSkinMtx;
 	}
 
@@ -2037,6 +2055,21 @@ public:
 
 		// 데이터 옮기기
 		RelocationData();
+
+		// 하향식 P 데이터 만들기
+		MakeParentData(mTestMtx);
+
+		// Skin 계산
+		CalSkinMtx();
+	}
+
+	// 데이터 재계산
+	void ReCalData(/*XMFLOAT4X4& _CharMtx*/)
+	{
+		// 테스트 용도
+		XMFLOAT4X4 mTestMtx;
+		XMMATRIX I = XMMatrixIdentity();
+		XMStoreFloat4x4(&mTestMtx, I);
 
 		// 하향식 P 데이터 만들기
 		MakeParentData(mTestMtx);
@@ -2111,7 +2144,7 @@ private:
 	}
 
 	// 부모 데이터 계산
-	void MakeParentData(XMFLOAT4X4& _CharMtx)
+	void MakeParentData(XMFLOAT4X4& _CharMtx/*, int _key*/)
 	{
 		// 기존 데이터를 없앤다.
 		mBoneParentData.clear();
@@ -2158,7 +2191,7 @@ private:
 						// 해당 키로 가는 루트가 하이라이키에 이미 정렬되어있으므로, 
 						// 내 상위에 있는 월드 매트릭스의 정보와, 애니메이션 데이터를 가져온다.
 						tBParentMtx = XMLoadFloat4x4(&mBoneData[tBeforeKey].mTMWorldMtx);
-						tBAniMtx    = XMLoadFloat4x4(&mBoneData[tBeforeKey].getAniMtx());
+						tBAniMtx    = XMLoadFloat4x4(&mBoneData[tBeforeKey].getAniMtx(/*_key*/));
 
 						// 곱셈 후 저장한다.
 						tResultPMtx = XMMatrixMultiply(tBAniMtx, tBParentMtx);

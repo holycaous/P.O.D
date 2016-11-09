@@ -9,6 +9,7 @@ class cShaderManager : public cSingleton<cShaderManager>
 {
 	cCoreStorage*  mCoreStorage  = cCoreStorage ::GetInstance();
 	cLightManager* mLightManager = cLightManager::GetInstance();
+	cAniManager*   mAniManager   = cAniManager  ::GetInstance();
 
 	// 렌더링 모드
 	SHADER_TYPE mShaderMode;
@@ -43,6 +44,18 @@ public:
 	void SetShaderValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, ID3D11ShaderResourceView* _value)
 	{
 		mShader[mShaderMode]->mfxResource[_Name]->SetResource(_value);
+	}
+
+	// 스킨 행렬 저장
+	void SetShaderMtxArray(SHADER_VAL_TYPE _ValueEnum, char* _Name, XMFLOAT4X4* _Mtx, int _MtxSize)
+	{
+		mShader[mShaderMode]->mfxMtx[_Name]->SetMatrixArray(reinterpret_cast<float*>(_Mtx), 0, _MtxSize);
+	}
+
+	// 스킨 행렬 저장
+	void SetCommonShaderMtxArray(SHADER_VAL_TYPE _ValueEnum, char* _Name, XMFLOAT4X4* _Mtx, int _MtxSize)
+	{
+		mShader[e_ShaderDeferred]->mfxMtx[_Name]->SetMatrixArray(reinterpret_cast<float*>(_Mtx), 0, _MtxSize);
 	}
 
 	// '기본' 쉐이더 변수 업데이트
@@ -112,6 +125,14 @@ public:
 		SetShaderValue(e_ShaderValMtx,      "gTexTFMtx"   , mNowModel->mTexMtx);
 		SetShaderValue(e_ShaderValMtx,      "gLocTMMtx"   , mNowModel->mLocTMMtx);
 		SetShaderValue(e_ShaderValMtx,      "gWdTMMtx"    , mNowModel->mWdTMMtx);
+
+		// 모델의 현재 스킨행렬
+		if (!mNowModel->mAniName.empty())
+		{
+			MyBoneData* tAniData = &mAniManager->mData[mNowModel->mCreateName][mNowModel->mAniName];
+			mNowModel->updateSkinMtx(tAniData->GetSkinStorage());
+			SetShaderMtxArray(e_ShaderValMtxArray, "gBoneTransforms", &mNowModel->mSkinMtx[0], mNowModel->mSkinMtx.size());
+		}
 
 		// 모델 리소스
 		SetShaderValue(e_ShaderValResource, "gDiffuseTex" , mNowModel->mDiffuseSRV);
@@ -376,6 +397,8 @@ private:
 		GetShaderValue(tEffectStorage, "gDiffuseTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gSpecularTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gNormalTex"		   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gBoneTransforms"   , e_ShaderValMtxArray);
+
 
 		// IA 생성
 		CreateIA(tEffectStorage);
@@ -388,110 +411,6 @@ private:
 		tMat.Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 		// 기본 재질 적용
-		tEffectStorage->mfxValue["gMaterial"]->SetRawValue(&tMat, 0, sizeof(tMat));
-
-		// 저장
-		mShader[mShaderMode] = tEffectStorage;
-	}
-
-	// FXO 로드 샘플 코드
-	void SampleFXO(SHADER_TYPE _ShaderMode)
-	{
-		// 쉐이더 셋
-		mShaderMode = _ShaderMode;
-
-		// 저장공간
-		EffectStorage* tEffectStorage = new EffectStorage(); // <- ClearClass() 에서 삭제함.
-
-		// fxo 컴파일
-		std::ifstream fin("Lighting.fxo", std::ios::binary);
-
-		fin.seekg(0, std::ios_base::end);
-		int size = (int)fin.tellg();
-		fin.seekg(0, std::ios_base::beg);
-		std::vector<char> compiledShader(size);
-
-		fin.read(&compiledShader[0], size);
-		fin.close();
-
-		// 이펙트 생성
-		HR(D3DX11CreateEffectFromMemory(&compiledShader[0], size,
-			0, cCoreStorage::GetInstance()->md3dDevice, &tEffectStorage->mFX));
-
-		// 테크닉 사용할 수 있게끔 값 얻기
-		GetTech(tEffectStorage, "LightTech");
-
-		// 상수버퍼 수정할 수 있게끔 값 얻기 (Get)
-		// 매트릭스
-		GetShaderValue(tEffectStorage, "gWorldViewProj"    , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gViewProj"         , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gWorld"            , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gWorldInvTranspose", e_ShaderValMtx);
-
-		// 벡터
-		GetShaderValue(tEffectStorage, "gEyePosW", e_ShaderValVtx);
-
-		// 변수
-		GetShaderValue(tEffectStorage, "gDirLight"     , e_ShaderVal);
-		GetShaderValue(tEffectStorage, "gPointLight"   , e_ShaderVal);
-		GetShaderValue(tEffectStorage, "gSpotLight"    , e_ShaderVal);
-		GetShaderValue(tEffectStorage, "gMaterial"	   , e_ShaderVal);
-
-		// IA 생성
-		CreateIA(tEffectStorage);
-
-		// 기본 재질 설정
-		// 흰색
-		Material tMat;
-		tMat.Ambient  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		tMat.Diffuse  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		tMat.Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		tEffectStorage->mfxValue["gMaterial"]->SetRawValue(&tMat, 0, sizeof(tMat));
-
-		// 저장
-		mShader[mShaderMode] = tEffectStorage;
-	}
-
-	// FX 로드 샘플 코드
-	void SampleFX(SHADER_TYPE _ShaderMode)
-	{
-		// 쉐이더 셋
-		mShaderMode = _ShaderMode;
-
-		// 저장공간
-		EffectStorage* tEffectStorage = new EffectStorage();
-
-		// FX 파일 로드
-		LoadFX(tEffectStorage, L"Lighting.fx");
-
-		// 테크닉 사용할 수 있게끔 값 얻기
-		GetTech(tEffectStorage, "LightTech");
-
-		// 상수버퍼 수정할 수 있게끔 값 얻기 (Get)
-		// 매트릭스
-		GetShaderValue(tEffectStorage, "gWorldViewProj"    , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gViewProj"		   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gWorld"			   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gWorldInvTranspose", e_ShaderValMtx);
-
-		// 벡터
-		GetShaderValue(tEffectStorage, "gEyePosW", e_ShaderValVtx);
-
-		// 변수
-		GetShaderValue(tEffectStorage, "gDirLight"  , e_ShaderVal);
-		GetShaderValue(tEffectStorage, "gPointLight", e_ShaderVal);
-		GetShaderValue(tEffectStorage, "gSpotLight" , e_ShaderVal);
-		GetShaderValue(tEffectStorage, "gMaterial"  , e_ShaderVal);
-
-		// IA 생성
-		CreateIA(tEffectStorage);
-
-		// 기본 재질 설정
-		// 흰색
-		Material tMat;
-		tMat.Ambient  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		tMat.Diffuse  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		tMat.Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 		tEffectStorage->mfxValue["gMaterial"]->SetRawValue(&tMat, 0, sizeof(tMat));
 
 		// 저장
@@ -627,6 +546,7 @@ private:
 		switch (_ValueEnum)
 		{
 			// 매트릭스
+		case e_ShaderValMtxArray:
 		case e_ShaderValMtx:
 			tEffectStorage->mfxMtx[_Name] = tEffectStorage->mFX->GetVariableByName(_Name)->AsMatrix();
 			break;

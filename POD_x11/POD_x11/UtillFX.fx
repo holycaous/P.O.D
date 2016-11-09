@@ -131,6 +131,11 @@ struct SURFACE_DATA
 	float4 PositionTex;
 };
 
+cbuffer cbSkinned
+{
+	float4x4 gBoneTransforms[96];
+};
+
 
 // ∂Û¿Ã∆Æ
 DirectionalLight gDirLight;

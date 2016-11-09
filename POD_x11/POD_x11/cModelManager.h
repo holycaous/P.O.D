@@ -47,7 +47,7 @@ public:
 		CreateModel("Model1", "Export/FinAman_boyLoc.pod"     , e_ShaderPongTex);
 		CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTex);
 		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTex);
-		CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTex);
+		//CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTex);
 		CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTex);
 
 		// 애니 추가
@@ -55,7 +55,7 @@ public:
 		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdle.pod"     , e_ShaderPongTex);
 		CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"         , e_ShaderPongTex);
 		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"  , e_ShaderPongTex);
-		CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"      , e_ShaderPongTex);
+		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"      , e_ShaderPongTex);
 		CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod"     , e_ShaderPongTex);
 
 		//CreateModel("Model4", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
@@ -401,8 +401,14 @@ public:
 		// 데이터 계산
 		mMyBoneData.CalData();
 
-		// 저장
-		mAniManager->mData[_Name][mMyBoneData.mAniName] = mMyBoneData;
+		// 체인에 연결된 모델에 저장
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			string SelectName = mModelChain[_Name][i];
+			mAllModelData[SelectName]->mAniName = "Idle";
+			mAniManager->mData[SelectName][mMyBoneData.mAniName] = mMyBoneData;
+			SelectName.clear();
+		}
 
 		// 파서 버퍼 초기화 ( 다음 모델을 받기 위해 ) 
 		mXMLParser.ClearClass();

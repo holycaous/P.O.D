@@ -443,6 +443,7 @@ void cInitD3D::CheckDeviceLost()
 	case DXGI_ERROR_DRIVER_INTERNAL_ERROR:
 	case DXGI_ERROR_INVALID_CALL:
 	default:
+		cout << "디바이스 로스트" << endl;
 		PostQuitMessage(0);
 		break;
 	}
