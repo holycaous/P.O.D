@@ -3,6 +3,7 @@
 
 class cMainState : public cGameState
 {
+	XMFLOAT3 testPos;
 public:
 	// 초기화
 	void Init()
@@ -83,6 +84,10 @@ public:
 	{
 		// 렌더링 매니저 업데이트
 		mDrawManager->Update(dt);
+
+		mModelManager->MovePoint(0, "Model2", testPos, 10.0f * dt);
+		mModelManager->MovePoint(0, "Model1", testPos, 10.0f * dt);
+		mModelManager->MovePoint(0, "Model5", testPos, 10.0f * dt);
 	}
 
 	// 그리기
@@ -100,19 +105,35 @@ public:
 		{
 		// 이동 테스트
 		case 'W':
-			mModelManager->SetPos(0, "Model3", 200.0f         , 100.0f, 200.0f + 100.0f);
+			testPos.x = 200.0f;
+			testPos.y = 100.0f;
+			testPos.z = 300.0f;
+
+			mModelManager->SetPos(0, "Model3", testPos);
 			break;
 
 		case 'A':
-			mModelManager->SetPos(0, "Model3", 200.0f + 100.0f, 100.0f, 150.0f);
+			testPos.x = 300.0f;
+			testPos.y = 100.0f;
+			testPos.z = 150.0f;
+
+			mModelManager->SetPos(0, "Model3", testPos);
 			break;
 
 		case 'S':
-			mModelManager->SetPos(0, "Model3", 200.0f	      , 100.0f, 200.0f - 100.0f);
+			testPos.x = 200.0f;
+			testPos.y = 100.0f;
+			testPos.z = 100.0f;
+
+			mModelManager->SetPos(0, "Model3", testPos);
 			break;
 
 		case 'D':
-			mModelManager->SetPos(0, "Model3", 200.0f - 100.0f, 100.0f, 150.0f);
+			testPos.x = 100.0f;
+			testPos.y = 100.0f;
+			testPos.z = 150.0f;
+
+			mModelManager->SetPos(0, "Model3", testPos);
 			break;
 
 		case 'Z':

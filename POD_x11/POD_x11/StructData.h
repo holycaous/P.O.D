@@ -729,7 +729,7 @@ public:
 
 	XMFLOAT3 getPos(int _uniqueCode) const
 	{
-		XMFLOAT3 XMFLOAT3(mObjData[_uniqueCode].mWdMtx._41, mObjData[_uniqueCode].mWdMtx._42, mObjData[_uniqueCode].mWdMtx._43);
+		return mObjData[_uniqueCode].getPos();
 	}
 	
 
@@ -2040,7 +2040,7 @@ public:
 	// Skin ¾ò±â
 	vector<XMFLOAT4X4> GetSkinStorage()
 	{
-		ReCalData();
+		//ReCalData();
 		return mSkinMtx;
 	}
 

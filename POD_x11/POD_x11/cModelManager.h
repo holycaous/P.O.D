@@ -145,6 +145,23 @@ public:
 		}
 	}	
 
+	// 모델 이동하기
+	void SetPos(int _uniqueCode, string _Name, XMFLOAT3 _pos)
+	{
+		string _SlectModel;
+
+		// 모델의 체인만큼 (서브 모델)
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델을 순차적으로 선택
+			_SlectModel = mModelChain[_Name][i];
+
+			// 체인에 있는 모델 모두 이동
+			mAllModelData[_SlectModel]->SetPos(_uniqueCode, _pos.x, _pos.y, _pos.z);
+			_SlectModel.clear();
+		}
+	}
+
 	// 모델 회전하기
 	void SetRotate(int _uniqueCode, string _Name, float _x, float _y, float _z)
 	{
@@ -162,6 +179,23 @@ public:
 		}
 	}
 
+	// 모델 회전하기
+	void SetRotate(int _uniqueCode, string _Name, XMFLOAT3 _pos)
+	{
+		string _SlectModel;
+
+		// 모델의 체인만큼 (서브 모델)
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델을 순차적으로 선택
+			_SlectModel = mModelChain[_Name][i];
+
+			// 체인에 있는 모델 모두 회전
+			mAllModelData[_SlectModel]->SetRotate(_uniqueCode, _pos.x, _pos.y, _pos.z);
+			_SlectModel.clear();
+		}
+	}
+
 	// 해당 위치로가는 벡터
 	XMFLOAT3 GetPointDir(int _uniqueCode, string _Name, float _x, float _y, float _z)
 	{
@@ -171,6 +205,57 @@ public:
 
 		return ptDir;
 	}
+
+	XMFLOAT3 GetPointDir(int _uniqueCode, string _Name, XMFLOAT3 _pos)
+	{
+		// 체인에 있는 모델 하나만 선택해서 방향 보냄
+		XMFLOAT3 ptDir;
+		XMStoreFloat3(&ptDir, mAllModelData[mModelChain[_Name][0]]->GetPointDir(_uniqueCode, _pos.x, _pos.y, _pos.z));
+
+		return ptDir;
+	}
+
+	// 해당 위치로 이동
+	void MovePoint(int _uniqueCode, string _Name, XMFLOAT3 _pos, float _speed)
+	{
+		// 체인에 있는 모델 하나만 선택해서 방향 보냄
+		XMFLOAT3 ptDir;
+		XMStoreFloat3(&ptDir, mAllModelData[mModelChain[_Name][0]]->GetPointDir(_uniqueCode, _pos.x, _pos.y, _pos.z));
+
+		XMFLOAT3 tPos = GetPos(_uniqueCode, _Name);
+
+		tPos.x = tPos.x + ptDir.x * _speed;
+		tPos.y = tPos.y + ptDir.y * _speed;
+		tPos.z = tPos.z + ptDir.z * _speed;
+
+		SetRotate(_uniqueCode, _Name, tPos);
+		SetPos   (_uniqueCode, _Name, tPos);
+	}
+
+	// 해당 위치로 이동
+	void MovePoint(int _uniqueCode, string _Name, float _x, float _y, float _z, float _speed)
+	{
+		// 체인에 있는 모델 하나만 선택해서 방향 보냄
+		XMFLOAT3 ptDir;
+		XMStoreFloat3(&ptDir, mAllModelData[mModelChain[_Name][0]]->GetPointDir(_uniqueCode, _x, _y, _z));
+
+		XMFLOAT3 tPos = GetPos(_uniqueCode, _Name);
+
+		tPos.x = tPos.x + ptDir.x * _speed;
+		tPos.y = tPos.y + ptDir.x * _speed;
+		tPos.z = tPos.z + ptDir.x * _speed;
+
+		SetRotate(_uniqueCode, _Name, tPos);
+		SetPos   (_uniqueCode, _Name, tPos);
+	}
+
+
+	// 모델 위치 값
+	XMFLOAT3 GetPos(int _uniqueCode, string _Name)
+	{
+		return mAllModelData[mModelChain[_Name][0]]->getPos(_uniqueCode);
+	}
+
 
 	// 모델 크기 키우기
 	void SetScale(int _uniqueCode, string _Name, float _x, float _y, float _z)
