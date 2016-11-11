@@ -756,6 +756,7 @@ public:
 	// 오브젝트 삭제
 	void ClearWdMtx()
 	{
+		_inputcode = -1;
 		mObjData.clear();
 	}
 

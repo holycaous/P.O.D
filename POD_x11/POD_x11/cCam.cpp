@@ -8,7 +8,7 @@ mRight(1.0f, 0.0f, 0.0f),
 mUp(0.0f, 1.0f, 0.0f),
 mLook(0.0f, 0.0f, 1.0f)
 {
-	SetLens(0.25f * cMathHelper::Pi, 1.0f, 1.0f, 1000.0f);
+	SetLens(0.25f * cMathHelper::Pi, 1.0f, 1.0f, CAM_FAR);
 
 	// 3인칭 모드 기본 카메라 거리 설정
 	m3PersonPosition.x = 0.0f;

@@ -66,7 +66,7 @@ void main()
 
 	// ¸Ê Å×½ºÆ® ¿ë
 	mXMLParser.Init("Import/TestMap.xml", "fff");
-	mXMLParser.SetTexture("WoodCrate011_diff.dds", 100.0f, "WoodCrate011_norm.dds", "WoodCrate011_spec.dds");
+	mXMLParser.SetTexture("ground_diff.dds", 100.0f, "ground_norm.dds", "ground_spec.dds");
 	mXMLParser.LoadXMLModel();
 
 
