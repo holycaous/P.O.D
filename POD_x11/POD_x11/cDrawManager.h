@@ -398,10 +398,12 @@ private:
 				//mShaderManager->SetGbuffer();
 
 				// 모델 내부에 있는 매트릭스 만큼, 반복
-				for (unsigned int i = 0; i < itor->second->mObjData.size(); ++i)
+				auto tobjMtx = itor->second->mObjData;
+				UINT i = -1;
+				for (auto itor2 = tobjMtx.begin(); itor2 != tobjMtx.end(); ++itor2)
 				{
 					// 쉐이더 패스 적용
-					mShaderManager->SetBasicShaderValue(itor->second, i);
+					mShaderManager->SetBasicShaderValue(itor->second, ++i);
 					mShaderManager->GetPassByIndex(p);
 
 					// 모델 그리기

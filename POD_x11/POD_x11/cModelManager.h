@@ -242,8 +242,8 @@ public:
 		XMFLOAT3 tPos = GetPos(_uniqueCode, _Name);
 
 		tPos.x = tPos.x + ptDir.x * _speed;
-		tPos.y = tPos.y + ptDir.x * _speed;
-		tPos.z = tPos.z + ptDir.x * _speed;
+		tPos.y = tPos.y + ptDir.y * _speed;
+		tPos.z = tPos.z + ptDir.z * _speed;
 
 		SetRotate(_uniqueCode, _Name, tPos);
 		SetPos   (_uniqueCode, _Name, tPos);
@@ -303,7 +303,7 @@ public:
 			_SlectModel = mModelChain[_Name][i];
 
 			// 오브젝트 데이터 모두 가져오기
-			vector<ObjData> t_ObjDataStorage = mAllModelData[_SlectModel]->getAllObj();
+			map<int, ObjData> t_ObjDataStorage = mAllModelData[_SlectModel]->getAllObj();
 			for (unsigned int x = 0; x < t_ObjDataStorage.size(); ++x)
 			{
 				// 체인에 있는 모델 모두 반환
@@ -340,15 +340,6 @@ public:
 		mScreenBuffer->ClearInsBuf();
 	}
 
-	// 모델 인스턴스 버퍼만 삭제
-	void ClearModelInsBuf()
-	{
-		// 모델 인스턴스 버퍼 삭제
-		for (map<int, BufferType*>::iterator itor = mBufferType.begin(); itor != mBufferType.end(); ++itor)
-		{
-			itor->second->ClearInsBuf();
-		}
-	}
 
 	void ClearClass()
 	{
@@ -611,9 +602,6 @@ public:
 	// 모델 추가하기
 	void AddUpdateModel(string _Name, float _x, float _y, float _z, OBJ_MOVEABLE _moveAble = e_StaticObj)
 	{
-		// 기존 인스턴스 버퍼 삭제
-		ClearModelInsBuf();
-
 		// 모델 파일에 있는 서브 모델 수 만큼
 		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
 		{
@@ -621,18 +609,15 @@ public:
 			addSubModel(mModelChain[_Name][i], _x, _y, _z, _moveAble);
 		}
 
-		_Name.clear();
-
 		// 다시 만들기
-		MakeModelInsBuf();
+		MakeModelInsBuf(_Name);
+
+		_Name.clear();
 	}	
 
 	// 모델 추가하기
 	void AddUpdateModel(string _Name, XMFLOAT4X4 _Mtx, OBJ_MOVEABLE _moveAble = e_StaticObj)
 	{
-		// 기존 인스턴스 버퍼 삭제
-		ClearModelInsBuf();
-
 		// 모델 파일에 있는 서브 모델 수 만큼
 		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
 		{
@@ -640,10 +625,58 @@ public:
 			addSubModel(mModelChain[_Name][i], _Mtx, _moveAble);
 		}
 
+		// 다시 만들기
+		MakeModelInsBuf(_Name);
+
 		_Name.clear();
+	}
+
+	// 모델 추가하기
+	void AddUpdateModel(int _key, string _Name, float _x, float _y, float _z, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _moveAble);
+		}
 
 		// 다시 만들기
-		MakeModelInsBuf();
+		MakeModelInsBuf(_Name);
+
+		_Name.clear();
+	}
+
+	// 모델 추가하기
+	void AddUpdateModel(int _key, string _Name, XMFLOAT4X4 _Mtx, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _Mtx, _moveAble);
+		}
+
+		// 다시 만들기
+		MakeModelInsBuf(_Name);
+
+		_Name.clear();
+	}
+
+	// 모델 제거하기
+	void EraseUpdateModel(int _key, string _Name)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 삭제
+			EraseSubModel(_key, _Name);
+		}
+
+		// 다시 만들기
+		MakeModelInsBuf(_Name);
+
+		_Name.clear();
 	}
 
 	// 모델 추가하기
@@ -672,6 +705,60 @@ public:
 		_Name.clear();
 	}
 
+	// 모델 추가하기
+	void AddScreen(float _x, float _y, float _z)
+	{
+		mScreen->AddModel(_x, _y, _z, e_StaticObj);
+	}
+
+	// 인스턴스 버퍼 만들기
+	void MakeInsbuf()
+	{
+		// 일반 모델 인스턴스 버퍼 생성
+		MakeModelInsBuf();
+
+		// 스크린 인스턴스 버퍼 생성
+		mScreenBuffer->MakeScreenInsBuf(mScreen);
+	}
+
+
+	// 버퍼 얻기
+	BufferType* GetBuffer(SHADER_TYPE _ShaderMode)
+	{
+		return mBufferType[_ShaderMode];
+	}
+
+	// 버퍼내부 모델 불러오기
+	InitMetaData* GetBufferInModel(SHADER_TYPE _ShaderMode, string _ModelName)
+	{
+		return mBufferType[_ShaderMode]->mModelList[_ModelName];
+	}
+
+	// 업데이트
+	void Update(float& dt)
+	{
+		// 모든 모델들에게 일괄적인 명령을 내린다.
+		for (map<string, InitMetaData*>::iterator itor = mAllModelData.begin(); itor != mAllModelData.end(); ++itor)
+		{
+
+
+		}
+	}
+
+	// 인스턴스 버퍼 업데이트
+	void UpdateIns()
+	{
+		for (unsigned int i = 0; i < mUseShader.size(); ++i)
+		{
+			mBufferType[mUseShader[i]]->UpdateIns();
+		}
+
+		// 스크린 인스턴스 버퍼 업데이트
+		mScreenBuffer->UpdateScreenIns(mScreen);
+	}
+
+private:
+
 	// 서브 모델들 모두 추가
 	void addSubModel(string& _SlectModel, float& _x, float& _y, float& _z, OBJ_MOVEABLE& _moveAble)
 	{
@@ -692,6 +779,34 @@ public:
 		addUseShader(_SlectModel);
 	}
 
+	// 서브 모델들 모두 추가
+	void addSubModel(int _key, string& _SlectModel, float& _x, float& _y, float& _z, OBJ_MOVEABLE& _moveAble)
+	{
+		// 체인에 있는 모델 모두 월드매트릭스에 추가
+		mAllModelData[_SlectModel]->AddModel(_key, _x, _y, _z, _moveAble);
+
+		// 쉐이더 추가
+		addUseShader(_SlectModel);
+	}
+
+	// 서브 모델들 모두 추가
+	void addSubModel(int _key, string& _SlectModel, XMFLOAT4X4 _Mtx, OBJ_MOVEABLE& _moveAble)
+	{
+		// 체인에 있는 모델 모두 월드매트릭스에 추가
+		mAllModelData[_SlectModel]->AddModel(_key, _Mtx, _moveAble);
+
+		// 쉐이더 추가
+		addUseShader(_SlectModel);
+	}
+
+	// 서브 모델들 삭제
+	void EraseSubModel(int _key, string& _SlectModel)
+	{
+		// 체인에 있는 모델 모두 월드매트릭스에 추가
+		mAllModelData[_SlectModel]->EraseModel(_key);
+	}
+
+
 	// 사용한 쉐이더 추가
 	void addUseShader(string& _SlectModel)
 	{
@@ -699,12 +814,6 @@ public:
 		_UseShader = mAllModelData[_SlectModel]->mShaderMode;
 		UsingShaderModel(_UseShader);
 	}
-
-	// 모델 추가하기
-	void AddScreen(float _x, float _y, float _z)
-	{
-		mScreen->AddModel(_x, _y, _z, e_StaticObj);
-	}	
 
 	// 모델 계산하기
 	void CalModel()
@@ -739,14 +848,16 @@ public:
 		}
 	}
 
-	// 인스턴스 버퍼 만들기
-	void MakeInsbuf()
-	{
-		// 일반 모델 인스턴스 버퍼 생성
-		MakeModelInsBuf();
 
-		// 스크린 인스턴스 버퍼 생성
-		mScreenBuffer->MakeScreenInsBuf(mScreen);
+	// 모델 인스턴스 버퍼만 삭제
+	void ClearModelInsBuf()
+	{
+		// 모델 인스턴스 버퍼 삭제
+		for (unsigned int i = 0; i < mUseShader.size(); ++i)
+		{
+			// 버퍼 빌드
+			mBufferType[mUseShader[i]]->ClearInsBuf();
+		}
 	}
 
 	// 모델 인스턴스 버퍼 만들기
@@ -759,16 +870,12 @@ public:
 		}
 	}
 
-	// 인스턴스 버퍼 업데이트
-	void UpdateIns()
+	// 모델 인스턴스 버퍼 만들기
+	void MakeModelInsBuf(string& _name)
 	{
-		for (unsigned int i = 0; i < mUseShader.size(); ++i)
-		{
-			mBufferType[mUseShader[i]]->UpdateIns();
-		}
-
-		// 스크린 인스턴스 버퍼 업데이트
-		mScreenBuffer->UpdateScreenIns(mScreen);
+		// 일반 모델 인스턴스 버퍼 생성
+		SHADER_TYPE _sdType = mAllModelData[_name]->mShaderMode;
+		mBufferType[_sdType]->ReMakeBuf(_name);
 	}
 
 	// 버퍼에 모델 추가하기
@@ -779,29 +886,6 @@ public:
 			// 쉐이더 모드가 같다면, 추가한다.
 			if (_ShaderMode == itor->second->mShaderMode)
 				mBufferType[_ShaderMode]->AddModel(itor->second->mCreateName, itor->second);
-		}
-	}
-
-	// 버퍼 얻기
-	BufferType* GetBuffer(SHADER_TYPE _ShaderMode)
-	{
-		return mBufferType[_ShaderMode];
-	}
-	
-	// 버퍼내부 모델 불러오기
-	InitMetaData* GetBufferInModel(SHADER_TYPE _ShaderMode, string _ModelName)
-	{
-		return mBufferType[_ShaderMode]->mModelList[_ModelName];
-	}
-
-	// 업데이트
-	void Update(float& dt)
-	{
-		// 모든 모델들에게 일괄적인 명령을 내린다.
-		for (map<string, InitMetaData*>::iterator itor = mAllModelData.begin(); itor != mAllModelData.end(); ++itor)
-		{
-			
-
 		}
 	}
 

@@ -23,7 +23,7 @@ public:
 		//float Offset = 100.0f;
 		//for (int x = 0; x < Count; ++x)
 		//{
-		//	switch (rand() % 6)
+		//	switch (rand() % 5)
 		//	{
 		//	case 0:
 		//		mModelManager->AddModel("BOX1", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
@@ -41,7 +41,7 @@ public:
 		//		mModelManager->AddModel("Model3", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
 		//		break;
 		//	case 5:
-		//		mModelManager->AddModel("Model4", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
+		//		//mModelManager->AddModel("Model5", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
 		//		break;
 		//	}
 		//}
@@ -60,7 +60,6 @@ public:
 		mModelManager->AddModel("Model2",  100.0f, 100.0f,  200.0f);
 		mModelManager->AddModel("Model1",  100.0f, 100.0f,  100.0f);
 		mModelManager->AddModel("Model5",  100.0f, 100.0f,  500.0f);
-
 		// 본 그려보기 추가
 		mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 100.0f);
 
@@ -154,11 +153,22 @@ public:
 			mModelManager->SetRotate(0, "Model3", 100.0f, 100.0f, 100.0f);
 			break;
 
-		// 스케일 테스트
+		// 지우기 테스트
 		case 'T':
+			{
+				static int i = 0;
+				mModelManager->EraseUpdateModel(++i, "Model5");
+			}
 			break;
 
+			// 번호 선택, 추가하기
+		case 'Y':
+			mModelManager->AddUpdateModel(1, "Model5", 100, 100, 500);
+			break;
+
+			// 그냥 모델 추가하기
 		case 'G':
+			mModelManager->AddUpdateModel("Model5", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f);
 			break;
 		
 		// 기타 테스트

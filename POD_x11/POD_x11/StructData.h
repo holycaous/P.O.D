@@ -384,8 +384,8 @@ public:
 	vector<UINT>     TexIndices;
 	vector<XMFLOAT3> TexVertices;
 
-	// 월드 매트릭스 (각 캐릭터 구분용) @@@@@@@@ (벡터가 유니코드 였었군.. -_-;)
-	vector<ObjData> mObjData;
+	// 월드 매트릭스 (각 캐릭터 구분용)
+	map<int, ObjData> mObjData;
 
 	// 텍스처 변환 매트릭스
 	XMFLOAT4X4    mTexMtx;
@@ -452,6 +452,10 @@ public:
 	// 상위 클래스 이름
 	int  mParentID;
 	char mParentName[BUF_SIZE];
+	
+private:
+	// 유니크코드 할당용.
+	int _inputcode;
 
 private:
 	cCoreStorage* mCoreStorage = cCoreStorage::GetInstance();
@@ -508,6 +512,9 @@ public:
 		// 아이디 값
 		mObjID    = -1;
 		mParentID = -1;
+
+		// 유니크 코드 할당용
+		_inputcode = -1;
 
 		// 리소스
 		mDiffuseSRV = mSpecularSRV = mNomalSRV = nullptr;
@@ -592,7 +599,7 @@ public:
 	// 모델 (월드 매트릭스) 추가하기
 	void AddModel(ObjData _ObjData)
 	{
-		mObjData.push_back(_ObjData);
+		mObjData[_ObjData.mUniqueCode] = _ObjData;
 	}
 
 	// 모델 (월드 매트릭스) 추가하기
@@ -602,7 +609,7 @@ public:
 		ObjData _ObjData;
 
 		// 유니크 코드 부여
-		_ObjData.mUniqueCode = mObjData.size();
+		_ObjData.mUniqueCode = ++_inputcode;
 
 		// 좌표 저장
 		_ObjData.mWdMtx._41 = _x;
@@ -613,7 +620,7 @@ public:
 		_ObjData.mObjMoveAble = _moveAble;
 
 		// 오브젝트 저장
-		mObjData.push_back(_ObjData);
+		mObjData[_ObjData.mUniqueCode] = _ObjData;
 	}
 
 	// 모델 (월드 매트릭스) 추가하기
@@ -623,7 +630,7 @@ public:
 		ObjData _ObjData;
 
 		// 유니크 코드 부여
-		_ObjData.mUniqueCode = mObjData.size();
+		_ObjData.mUniqueCode = ++_inputcode;
 
 		// 좌표 저장
 		_ObjData.mWdMtx = _mWdMtx;
@@ -632,9 +639,54 @@ public:
 		_ObjData.mObjMoveAble = _moveAble;
 
 		// 오브젝트 저장
-		mObjData.push_back(_ObjData);
+		mObjData[_ObjData.mUniqueCode] = _ObjData;
 	}
 
+	// 모델 (월드 매트릭스) 추가하기
+	void AddModel(int _key, float _x, float _y, float _z, OBJ_MOVEABLE _moveAble)
+	{
+		// 오브젝트 초기화
+		ObjData _ObjData;
+
+		// 유니크 코드 부여
+		_ObjData.mUniqueCode = _key;
+
+		// 좌표 저장
+		_ObjData.mWdMtx._41 = _x;
+		_ObjData.mWdMtx._42 = _y;
+		_ObjData.mWdMtx._43 = _z;
+
+		// 오브젝트 이동 가능한가
+		_ObjData.mObjMoveAble = _moveAble;
+
+		// 오브젝트 저장
+		mObjData[_ObjData.mUniqueCode] = _ObjData;
+	}
+
+	// 모델 (월드 매트릭스) 추가하기
+	void AddModel(int _key, XMFLOAT4X4 _mWdMtx, OBJ_MOVEABLE _moveAble)
+	{
+		// 오브젝트 초기화
+		ObjData _ObjData;
+
+		// 유니크 코드 부여
+		_ObjData.mUniqueCode = _key;
+
+		// 좌표 저장
+		_ObjData.mWdMtx = _mWdMtx;
+
+		// 오브젝트 이동 가능한가
+		_ObjData.mObjMoveAble = _moveAble;
+
+		// 오브젝트 저장
+		mObjData[_ObjData.mUniqueCode] = _ObjData;
+	}
+
+	// 모델 (월드 매트릭스) 제거하기
+	void EraseModel(int _key)
+	{
+		mObjData.erase(_key);
+	}
 
 	// 오브젝트 이동
 	void SetPos(int _uniqueCode, float _x, float _y, float _z)
@@ -722,12 +774,12 @@ public:
 	}
 
 	// 오브젝트 데이터 모두 가져오기
-	vector<ObjData>& getAllObj()
+	map<int, ObjData>& getAllObj()
 	{
 		return mObjData;
 	}
 
-	XMFLOAT3 getPos(int _uniqueCode) const
+	XMFLOAT3 getPos(int _uniqueCode)
 	{
 		return mObjData[_uniqueCode].getPos();
 	}
@@ -913,6 +965,23 @@ public:
 		}
 	}
 
+	void ClearInsBuf(string& _name)
+	{
+		// 인스턴스 버퍼가 있다면
+		if (mInstancedBuffer[_name])
+		{
+			// 인스턴스 버퍼 삭제
+			ReleaseCOM(mInstancedBuffer[_name]);
+		}
+	}
+
+	// 버퍼 다시만들기
+	void ReMakeBuf(string& _name)
+	{
+		ClearInsBuf(_name);
+		MakeInsBuf(_name);
+	}
+
 	// 빌드
 	void Build()
 	{
@@ -1008,7 +1077,7 @@ public:
 		{
 			D3D11_BUFFER_DESC vbd;
 			vbd.Usage               = D3D11_USAGE_DYNAMIC;
-			vbd.ByteWidth           = sizeof(XMFLOAT4X4)* _Screen->mObjData.size();
+			vbd.ByteWidth           = sizeof(XMFLOAT4X4) * _Screen->mObjData.size();
 			vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
 			vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
 			vbd.MiscFlags           = 0;
@@ -1036,9 +1105,12 @@ public:
 
 			// 컬링 안함
 			// 매트릭스 수만큼 등록
-			for (UINT i = 0; i < _Screen->mObjData.size(); ++i)
-				dataView[i] = _Screen->mObjData[i].mWdMtx;
-
+			auto tobjMtx = _Screen->mObjData;
+			UINT i = -1;
+			for (auto itor = tobjMtx.begin(); itor != tobjMtx.end(); ++itor)
+			{
+				dataView[++i] = itor->second.mWdMtx;
+			}
 			// 인스턴스 버퍼 닫기
 			mCoreStorage->md3dImmediateContext->Unmap(mInstancedBuffer[_Screen->mCreateName], 0);
 		}
@@ -1061,7 +1133,7 @@ public:
 			{
 				D3D11_BUFFER_DESC vbd;
 				vbd.Usage               = D3D11_USAGE_DYNAMIC;
-				vbd.ByteWidth           = sizeof(XMFLOAT4X4)* itor->second->mObjData.size();
+				vbd.ByteWidth           = sizeof(XMFLOAT4X4) * itor->second->mObjData.size();
 				vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
 				vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
 				vbd.MiscFlags           = 0;
@@ -1071,6 +1143,29 @@ public:
 				//mInstancedBuffer[itor->second->mCreateName] = NULL;
 				HR(mCoreStorage->md3dDevice->CreateBuffer(&vbd, 0, &mInstancedBuffer[itor->second->mCreateName]));
 			}
+		}
+	}
+
+	// 인스턴스 버퍼 생성
+	void MakeInsBuf(string& _name)
+	{
+		// 모델 선택
+		auto _selectModel = mModelList[_name];
+
+		// 월드 매트릭스가 있어야만 생성
+		if (_selectModel->mObjData.size())
+		{
+			D3D11_BUFFER_DESC vbd;
+			vbd.Usage               = D3D11_USAGE_DYNAMIC;
+			vbd.ByteWidth           = sizeof(XMFLOAT4X4) * _selectModel->mObjData.size();
+			vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+			vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+			vbd.MiscFlags           = 0;
+			vbd.StructureByteStride = 0;
+
+			// 공간할당
+			//mInstancedBuffer[itor->second->mCreateName] = NULL;
+			HR(mCoreStorage->md3dDevice->CreateBuffer(&vbd, 0, &mInstancedBuffer[_selectModel->mCreateName]));
 		}
 	}
 
@@ -1093,15 +1188,18 @@ public:
 
 				// 컬링 안함
 				// 매트릭스 수만큼 등록
-				for (UINT i = 0; i < itor->second->mObjData.size(); ++i)
-					dataView[i] = itor->second->mObjData[i].mWdMtx;
+				auto tModelMtx = itor->second->mObjData;
+				UINT i = -1;
+				for (auto itor2 = tModelMtx.begin(); itor2 != tModelMtx.end(); ++itor2)
+				{
+					dataView[++i] = itor2->second.mWdMtx;
+				}
 
 				// 인스턴스 버퍼 닫기
 				mCoreStorage->md3dImmediateContext->Unmap(mInstancedBuffer[itor->second->mCreateName], 0);
 			}
 		}
 	}
-
 
 
 private:
