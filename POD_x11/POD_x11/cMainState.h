@@ -1,6 +1,8 @@
 #pragma once
 #include "cGameState.h"
 
+extern cCam gCam;
+
 class cMainState : public cGameState
 {
 	XMFLOAT3 testPos;
@@ -12,8 +14,10 @@ public:
 		mModelManager->ClearModel();
 
 		// 맵 테스트용
-		mModelManager->AddModel("Map1", 0.0f, 100.0f, 0.0f);
-		mModelManager->SetScale(0, "Map1", 5.0f, 1.0f, 5.0f);
+		float tSzie = 10.0f;
+		float tItp  = (100.0f * tSzie / 2.0f) + 100.0f;  
+		mModelManager->AddModel("Map1", tItp, 100.0f, tItp);
+		mModelManager->SetScale(0, "Map1", tSzie, 1.0f, tSzie);
 
 
 		//// 모델 추가
@@ -56,18 +60,26 @@ public:
 		//mModelManager->AddModel("Model4", 100.0f, 100.0f, 470.0f );
 
 		// 테스트용
-		//mModelManager->AddModel("Model4",  100.0f, 100.0f,  300.0f);
+		//mModelManager->AddModel("Model4",  100.0f, 0.0f,  300.0f);
 		mModelManager->AddModel("Model2",  100.0f, 100.0f,  200.0f);
 		mModelManager->AddModel("Model1",  100.0f, 100.0f,  100.0f);
 		mModelManager->AddModel("Model5",  100.0f, 100.0f,  500.0f);
+		
 		// 본 그려보기 추가
 		mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 100.0f);
+		mModelManager->DrawBone("Model5", "Idle", 100.0f, 100.0f, 500.0f);
 
 		// 스크린 추가 (풀 스크린쿼드)
 		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);
 
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
+
+		// 카메라 세팅
+		gCam.Change3PersonCam();
+		testPos = gCam.GetThirdPosition();
+		mModelManager->SetRotate(0, "Model3", testPos);
+		mModelManager->SetPos   (0, "Model3", testPos);
 	}
 
 	// 제거
@@ -85,8 +97,78 @@ public:
 		mDrawManager->Update(dt);
 
 		mModelManager->MovePoint(0, "Model2", testPos, 10.0f * dt);
-		mModelManager->MovePoint(0, "Model1", testPos, 10.0f * dt);
-		mModelManager->MovePoint(0, "Model5", testPos, 10.0f * dt);
+		//mModelManager->MovePoint(0, "Model5", testPos, 10.0f * dt);
+
+		// 플레이어 이동
+		PlayerMove(dt);
+	}
+
+	// 플레이어 이동
+	void PlayerMove(float& dt)
+	{
+		// 카메라 컨트롤
+		if (GetAsyncKeyState('W') & 0x8000)
+		{
+			//----------------------------------//
+			// 상 키 눌렀음을 서버에 보내기
+			//----------------------------------//
+
+
+			//----------------------------------//
+			gCam.Walk(100.0f*dt);
+
+			testPos = gCam.GetThirdPosition();
+			mModelManager->SetRotate(0, "Model3", testPos);
+			mModelManager->SetPos   (0, "Model3", testPos);
+		}
+
+		if (GetAsyncKeyState('S') & 0x8000)
+		{
+			//----------------------------------//
+			// 히 키 눌렀음을 서버에 보내기
+			//----------------------------------//
+
+
+			//----------------------------------//
+			gCam.Walk(-100.0f*dt);
+
+			testPos = gCam.GetThirdPosition();
+			mModelManager->SetRotate(0, "Model3", testPos);
+			mModelManager->SetPos   (0, "Model3", testPos);
+		}
+
+		if (GetAsyncKeyState('A') & 0x8000)
+		{
+			//----------------------------------//
+			// 좌 키 눌렀음을 서버에 보내기
+			//----------------------------------//
+
+			//----------------------------------//
+			gCam.Strafe(-100.0f*dt);
+
+			testPos = gCam.GetThirdPosition();
+			mModelManager->SetRotate(0, "Model3", testPos);
+			mModelManager->SetPos   (0, "Model3", testPos);
+		}
+
+		if (GetAsyncKeyState('D') & 0x8000)
+		{
+			//----------------------------------//
+			// 우 키 눌렀음을 서버에 보내기
+			//----------------------------------//
+
+
+			// 서버에서 위치를 받아, 플레이어 위치를 갱신하는 함수.
+			// 해당 부분 이곳이 아닌, 다른 곳에서 구현해야함.
+			// 서버에서 데이터 받는 곳
+			//mModelManager->SetPlayerPos(_x, _y, _z);
+			//----------------------------------//
+			gCam.Strafe(100.0f*dt);
+
+			testPos = gCam.GetThirdPosition();
+			mModelManager->SetRotate(0, "Model3", testPos);
+			mModelManager->SetPos   (0, "Model3", testPos);
+		}
 	}
 
 	// 그리기
@@ -102,37 +184,12 @@ public:
 		// 렌더링 제어
 		switch (wParam)
 		{
-		// 이동 테스트
-		case 'W':
-			testPos.x = 200.0f;
-			testPos.y = 100.0f;
-			testPos.z = 300.0f;
-
-			mModelManager->SetPos(0, "Model3", testPos);
+		case 'R':
+			gCam.Change3PersonCam();
 			break;
 
-		case 'A':
-			testPos.x = 300.0f;
-			testPos.y = 100.0f;
-			testPos.z = 150.0f;
-
-			mModelManager->SetPos(0, "Model3", testPos);
-			break;
-
-		case 'S':
-			testPos.x = 200.0f;
-			testPos.y = 100.0f;
-			testPos.z = 100.0f;
-
-			mModelManager->SetPos(0, "Model3", testPos);
-			break;
-
-		case 'D':
-			testPos.x = 100.0f;
-			testPos.y = 100.0f;
-			testPos.z = 150.0f;
-
-			mModelManager->SetPos(0, "Model3", testPos);
+		case 'T':
+			gCam.Change1PersonCam();
 			break;
 
 		case 'Z':
@@ -144,17 +201,21 @@ public:
 			mDrawManager->mSolidDraw = false;
 			break;
 
-		// 회전 테스트
 		case 'Q':
-			mModelManager->SetRotate(0, "Model3", 100.0f, 100.0f, 300.0f);
+			
 			break;
 
 		case 'E':
-			mModelManager->SetRotate(0, "Model3", 100.0f, 100.0f, 100.0f);
+
+			break;
+
+			// 그냥 모델 추가하기
+		case 'G':
+			mModelManager->AddUpdateModel("Model5", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f);
 			break;
 
 		// 지우기 테스트
-		case 'T':
+		case 'H':
 			{
 				static int i = 0;
 				mModelManager->EraseUpdateModel(++i, "Model5");
@@ -162,17 +223,12 @@ public:
 			break;
 
 			// 번호 선택, 추가하기
-		case 'Y':
+		case 'O':
 			mModelManager->AddUpdateModel(1, "Model5", 100, 100, 500);
-			break;
-
-			// 그냥 모델 추가하기
-		case 'G':
-			mModelManager->AddUpdateModel("Model5", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f);
 			break;
 		
 		// 기타 테스트
-		case 'H':
+		case 'I':
 			{
 				//--------------------------------------------------------//
 				// 테스트 1

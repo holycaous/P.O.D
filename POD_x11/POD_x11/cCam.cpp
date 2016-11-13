@@ -11,9 +11,9 @@ mLook(0.0f, 0.0f, 1.0f)
 	SetLens(0.25f * cMathHelper::Pi, 1.0f, 1.0f, CAM_FAR);
 
 	// 3인칭 모드 기본 카메라 거리 설정
-	m3PersonPosition.x = 0.0f;
-	m3PersonPosition.y = 0.0f;
-	m3PersonPosition.z = 175.0f;
+	m3PersonLength.x = 0.0f;
+	m3PersonLength.y = 0.0f;
+	m3PersonLength.z = CAM_3PERSON_LENGTH;
 }
 
 cCam::~cCam()
@@ -37,12 +37,13 @@ void cCam::SetLens(float fovY, float aspect, float zn, float zf)
 	mNearWindowHeight = 2.0f * mNearZ * tanf(0.5f * mFovY);
 	mFarWindowHeight  = 2.0f * mFarZ  * tanf(0.5f * mFovY);
 
+	XMMATRIX P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
+	XMStoreFloat4x4(&mProj, P);
+
+	// 카메라 초기 위치
 	mPosition.x = 275.0f;
 	mPosition.y = 125.0f;
 	mPosition.z = 200.0f;
-
-	XMMATRIX P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
-	XMStoreFloat4x4(&mProj, P);
 }
 
 void cCam::LookAt(FXMVECTOR pos, FXMVECTOR target, FXMVECTOR worldUp)
@@ -112,7 +113,7 @@ void cCam::Pitch(float angle)
 		XMFLOAT3 temp_dir, length;
 
 		// 길이
-		temp_vtx = XMLoadFloat3(&m3PersonPosition);
+		temp_vtx = XMLoadFloat3(&m3PersonLength);
 		length_vtx = XMVector3Length(temp_vtx);
 		XMStoreFloat3(&length, length_vtx);
 
@@ -157,7 +158,7 @@ void cCam::RotateY(float angle)
 		XMFLOAT3 temp_dir, length;
 
 		// 길이
-		temp_vtx   = XMLoadFloat3(&m3PersonPosition);
+		temp_vtx   = XMLoadFloat3(&m3PersonLength);
 		length_vtx = XMVector3Length(temp_vtx);
 		XMStoreFloat3(&length, length_vtx);
 
@@ -254,6 +255,15 @@ XMVECTOR cCam::GetPositionXM()const
 XMFLOAT3 cCam::GetPosition()const
 {
 	return mPosition;
+}
+
+XMFLOAT3 cCam::GetThirdPosition() const
+{
+	XMFLOAT3 tPos;
+	tPos.x = mPosition.x + mLook.x * m3PersonLength.z;
+	tPos.y = 100.0f;
+	tPos.z = mPosition.z + mLook.z * m3PersonLength.z;
+	return tPos;
 }
 
 void cCam::SetPosition(float x, float y, float z)

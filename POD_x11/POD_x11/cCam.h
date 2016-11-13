@@ -27,6 +27,7 @@ public:
 	XMFLOAT3 GetUp()const;
 	XMVECTOR GetLookXM()const;
 	XMFLOAT3 GetLook()const;
+	XMFLOAT3 GetThirdPosition()const;
 
 	// Get frustum properties.
 	float GetNearZ()const;
@@ -80,6 +81,7 @@ private:
 	XMFLOAT3 mUp;
 	XMFLOAT3 mLook;
 	XMFLOAT3 m3PersonLook;
+	XMFLOAT3 m3PersonLength;
 	XMFLOAT3 m3PersonPosition;
 
 	// Cache frustum properties.

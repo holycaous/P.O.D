@@ -393,7 +393,7 @@ public:
 	// TM 매트릭스
 	XMFLOAT4X4    mLocTMMtx;
 	XMFLOAT4X4    mWdTMMtx;
-
+	
 	// 현재 선택된 최종 스킨 행렬
 	// 본 SKin (최종 행렬)
 	vector<XMFLOAT4X4> mSkinMtx;
@@ -2017,8 +2017,8 @@ public:
 class BoneParentData
 {
 public:
-	string mName;
-	XMFLOAT4X4 mParentMtx;
+	string mName;          // 내 부모의 이름
+	XMFLOAT4X4 mParentMtx; // 내가 아래 자식에게 보낼 매트릭스
 public:
 	BoneParentData()
 	{
@@ -2049,6 +2049,9 @@ public:
 	XMFLOAT4X4 mTMLocalMtx;
 	XMFLOAT4X4 mTMWorldMtx;
 
+	// 역 월드(B역)
+	XMFLOAT4X4 mInvWorldTMMtx;
+
 	// 애니 데이터
 	AniData aniData;
 
@@ -2078,6 +2081,7 @@ public:
 		XMMATRIX I = XMMatrixIdentity();
 		XMStoreFloat4x4(&mTMLocalMtx, I);
 		XMStoreFloat4x4(&mTMWorldMtx, I);
+		XMStoreFloat4x4(&mInvWorldTMMtx, I);
 	}
 
 	// 애니 데이터
@@ -2096,6 +2100,187 @@ public:
 	}
 };
 
+// 스키닝 트리
+class SkinTree
+{
+public:
+	// 부모 데이터 (가변 데이터 / 행렬만)
+	BoneParentData mParentData;
+
+	// 내 데이터 (변하지 않음)
+	map<string, NodeBone> mData;
+
+	// 자식 데이터 (변하지 않음)
+	map<string, SkinTree> mChildData;
+
+public:
+	SkinTree()
+	{
+	}
+	~SkinTree()
+	{
+		mData.clear();
+		mChildData.clear();
+	}
+
+	// 스킨행렬 만들기, 하향 계산하기 (자식 본)
+	void MakeSkin(int _AniPoint, SkinTree& _SkinTree, vector<XMFLOAT4X4>& _LAPMtx, vector<XMFLOAT4X4>& _SkinMtx)
+	{
+		auto itor = _SkinTree.mData.begin();
+
+		XMMATRIX tLoclMtx = XMLoadFloat4x4(&itor->second.mTMLocalMtx);
+		XMMATRIX tAniMtx  = XMLoadFloat4x4(&itor->second.getAniMtx(/*_AniPoint*/));
+		XMMATRIX tParMtx, tResultMtx, tResult;
+
+		// 현 본의 LA 처리
+		tResultMtx = XMMatrixMultiply(tLoclMtx, tAniMtx);
+
+		// 부모가 있는가?
+		if (!_SkinTree.mParentData.mName.empty())
+		{
+			// P처리
+			tParMtx = XMLoadFloat4x4(&_SkinTree.mParentData.mParentMtx);				
+			tResult = XMMatrixMultiply(tResultMtx, tParMtx);
+			XMStoreFloat4x4(&_SkinTree.mParentData.mParentMtx, tResult);
+		}
+		else
+		{
+			tResult = tResultMtx;
+			XMStoreFloat4x4(&_SkinTree.mParentData.mParentMtx, tResult);
+		}
+
+		// 테스트 (LAP 에 저장)
+		_LAPMtx.push_back(_SkinTree.mParentData.mParentMtx);
+
+		// 테스트 (SKIN 에 저장)
+		XMFLOAT4X4 tSkinMtx;
+		XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
+		XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
+
+		_SkinMtx.push_back(tSkinMtx);
+
+		// 자식갯수만큼 반복
+		for (auto itorChild = _SkinTree.mChildData.begin(); itorChild != _SkinTree.mChildData.end(); ++itorChild)
+		{
+			// 만든 데이터 넘기기
+			itorChild->second.mParentData.mParentMtx = _SkinTree.mParentData.mParentMtx;
+
+			// 함수(자식본번지) 애니 키와, AP 넘기기
+			MakeSkin(_AniPoint, itorChild->second, _LAPMtx, _SkinMtx);
+		}
+	}
+
+	// 스킨행렬 만들기, 하향 계산하기 (루트 본)
+	void MakeSkin(int _AniPoint, vector<XMFLOAT4X4>& _LAPMtx, vector<XMFLOAT4X4>& _SkinMtx)
+	{
+		_LAPMtx.clear();
+		_SkinMtx.clear();
+
+		// 데이터가 다수일 경우.. (루트 빼곤 없을 듯..)
+		//for (auto itor = mData.begin(); itor != mData.end(); ++itor)
+		{
+			auto itor = mData.begin();   // BONE1
+			auto itor2 = ++itor; --itor; // 루트본
+
+			// BONE1
+			XMMATRIX tLoclMtx = XMLoadFloat4x4(&itor->second.mTMLocalMtx);
+			XMMATRIX tAniMtx  = XMLoadFloat4x4(&itor->second.getAniMtx(/*_AniPoint*/));
+
+			// 루트 본(NULL)
+			XMMATRIX tLoclMtx2 = XMLoadFloat4x4(&itor2->second.mTMLocalMtx);
+			XMMATRIX tAniMtx2  = XMLoadFloat4x4(&itor2->second.getAniMtx(/*_AniPoint*/));
+			
+			XMMATRIX tResultMtx, tResultMtx2, tResult;
+
+			// 현 본의 LA 처리
+			tResultMtx  = XMMatrixMultiply(tLoclMtx , tAniMtx);
+			tResultMtx2 = XMMatrixMultiply(tLoclMtx2, tAniMtx2);				
+			tResult = XMMatrixMultiply(tResultMtx2, tResultMtx);
+
+			XMStoreFloat4x4(&mParentData.mParentMtx, tResult);
+
+			// 테스트 (LAP 에 저장)
+			_LAPMtx.push_back(mParentData.mParentMtx);
+
+			// 테스트 (SKIN 에 저장)
+			XMFLOAT4X4 tSkinMtx;
+			XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
+			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
+
+			_SkinMtx.push_back(tSkinMtx);
+
+			// 자식갯수만큼 반복
+			for (auto itorChild = mChildData.begin(); itorChild != mChildData.end(); ++itorChild)
+			{
+				// 만든 데이터 넘기기
+				itorChild->second.mParentData.mParentMtx = mParentData.mParentMtx;
+
+				// 함수(자식본번지) 애니 키와, AP 넘기기
+				MakeSkin(_AniPoint, itorChild->second, _LAPMtx, _SkinMtx);
+			}
+		}
+	}
+
+	// 키 추가하기 (트리 만들때 사용)
+	void AddKey(map<string, NodeBone>& _BoneData, vector<KeyString>& _KeyRoute, int _MaxSize, int _Count)
+	{
+		// 끝까지 순회했는가
+		int tMaxSize = _MaxSize - 1;
+		if (tMaxSize == _Count)
+		{
+			// 부모 이름 넣기
+			int tParCount = _Count - 1;
+			if (tParCount > 0)
+				mParentData.mName = _KeyRoute[tParCount].Name;
+
+			// 선택된 본 이름
+			string tSelctBone = _KeyRoute[_Count].Name;
+
+			// 해당 데이터를 찾아 넣는다
+			mData[tSelctBone] = _BoneData[tSelctBone];
+
+			// 이름 삭제
+			tSelctBone.clear();
+		}
+		// 다음키가 있다면
+		else
+		{
+			int tCount = _Count + 1;
+			string _selectName = _KeyRoute[tCount].Name;
+
+			if (mChildData.size() == 0)
+				mChildData[_selectName] = SkinTree();
+
+			// 부모 이름 넣기
+			mChildData[_selectName].mParentData.mName = _KeyRoute[_Count].Name;
+
+			mChildData[_selectName].AddKey(_BoneData, _KeyRoute, _MaxSize, tCount);
+			_selectName.clear();
+		}
+	}
+
+	// 키 찾아가기 (그냥 만들어둠)
+	NodeBone* FindKey(string _key)
+	{
+		// 키가 일치하는 가
+		if (mData[_key].mObjName == _key)
+		{
+			// 일치한 키
+			return &mData[_key];
+		}
+		else
+		{
+			// 자식을 순서대로 찾아간다.
+			for (auto itor = mChildData.begin(); itor != mChildData.end(); ++itor)
+			{
+				itor->second.FindKey(_key);
+			}
+		}
+		_key.clear();
+		return nullptr;
+	}
+};
+
 // 각 모델들의 본, 애니메이션 정보를 담아둠
 class MyBoneData
 {
@@ -2110,14 +2295,14 @@ public:
 	// 일종의 해쉬맵
 	vector<vector<KeyString> > mBoneHierarchy;
 
-	// 하향식 P 만들기 (프레임당 다르기에, 매 프레임당 만들어야 한다.)
-	map<string, BoneParentData> mBoneParentData;
-
 	// 본 LAP
 	vector<XMFLOAT4X4> mLAPMtx;
 
 	// 본 SKin
 	vector<XMFLOAT4X4> mSkinMtx;
+
+	// 스킨 트리
+	SkinTree mSkinTree;
 
 	// 이름
 	char mMainName[BUF_SIZE];
@@ -2139,7 +2324,9 @@ public:
 	// Skin 얻기
 	vector<XMFLOAT4X4> GetSkinStorage()
 	{
-		//ReCalData();
+		// 스킨 데이터만들기
+		mSkinTree.MakeSkin(0, mLAPMtx, mSkinMtx);
+
 		return mSkinMtx;
 	}
 
@@ -2154,12 +2341,23 @@ public:
 
 		// 데이터 옮기기
 		RelocationData();
+		
+		//트리 만들기
+		MakeTree();
 
-		// 하향식 P 데이터 만들기
-		MakeParentData(mTestMtx);
+		// 스킨 데이터만들기
+		mSkinTree.MakeSkin(0, mLAPMtx, mSkinMtx);
+	}
 
-		// Skin 계산
-		CalSkinMtx();
+	// 트리 만들기
+	void MakeTree()
+	{
+		// 각 본마다 순회
+		for (unsigned int y = 0; y < mBoneHierarchy.size(); ++y)
+		{
+			// 키를 추가한다.
+			mSkinTree.AddKey(mBoneData, mBoneHierarchy[y], mBoneHierarchy[y].size(), 0);
+		}
 	}
 
 	// 데이터 재계산
@@ -2170,11 +2368,7 @@ public:
 		XMMATRIX I = XMMatrixIdentity();
 		XMStoreFloat4x4(&mTestMtx, I);
 
-		// 하향식 P 데이터 만들기
-		MakeParentData(mTestMtx);
 
-		// Skin 계산
-		CalSkinMtx();
 	}
 
 	void ClearClass()
@@ -2189,126 +2383,29 @@ public:
 		for (unsigned int i = 0; i < mBoneHierarchy.size(); ++i)
 			mBoneHierarchy[i].clear();
 		mBoneHierarchy.clear();
-
-		// 하향식 P 삭제
-		mBoneParentData.clear();
 	}
 
 private:
-	// 스킨 계산
-	void CalSkinMtx()
-	{
-		// 비우기
-		mLAPMtx.clear();
-		mSkinMtx.clear();
-
-		XMFLOAT4X4 tSaveMtx;
-
-		// LAP 행렬 계산
-		for (auto itor = mBoneParentData.begin(); itor != mBoneParentData.end(); ++itor)
-		{
-			auto tBoneData = mBoneData[itor->second.mName];
-			XMMATRIX tLoclMtx = XMLoadFloat4x4(&tBoneData.mTMLocalMtx);
-			XMMATRIX tWdMtx   = XMLoadFloat4x4(&tBoneData.mTMWorldMtx);
-			XMMATRIX tAniMtx  = XMLoadFloat4x4(&tBoneData.getAniMtx());
-			XMMATRIX tParMtx  = XMLoadFloat4x4(&itor->second.mParentMtx);
-			XMMATRIX tResultMtx;
-
-			tResultMtx = XMMatrixMultiply(tLoclMtx, tAniMtx);
-			XMStoreFloat4x4(&tSaveMtx, XMMatrixMultiply(tResultMtx, tParMtx));
-			mLAPMtx.push_back(tSaveMtx);
-
-			// 스킨 행렬 계산
-			// 행렬식 & 역행렬 구하기
-			XMVECTOR tDet = XMMatrixDeterminant(tWdMtx);
-			XMMATRIX tInvMtx = XMMatrixInverse(&tDet, tWdMtx);
-
-			tResultMtx = XMMatrixMultiply(tInvMtx, tResultMtx);
-			XMStoreFloat4x4(&tSaveMtx, XMMatrixMultiply(tResultMtx, tParMtx));
-			mSkinMtx.push_back(tSaveMtx);
-		}
-	}
-
 	// 데이터 재배치
 	void RelocationData()
 	{
 		// map으로 옮김
 		for (unsigned int i = 0; i < mSaveBoneData.size(); ++i)
 		{
-			string tString = mSaveBoneData[i].mObjName;
+			// 역행렬 만들기 및 저장
+			XMMATRIX tWdMtx = XMLoadFloat4x4(&mSaveBoneData[i].mTMWorldMtx);
+			XMMATRIX tResultMtx;
+
+			XMVECTOR tDet = XMMatrixDeterminant(tWdMtx);
+			XMMATRIX tInvMtx = XMMatrixInverse(&tDet, tWdMtx);
+
+			tResultMtx = XMMatrixMultiply(tInvMtx, tResultMtx);
+			XMStoreFloat4x4(&mSaveBoneData[i].mInvWorldTMMtx, tResultMtx);
 
 			// 키에 맞게 재배치
+			string tString = mSaveBoneData[i].mObjName;
 			mBoneData[tString] = mSaveBoneData[i];
-		}
-	}
-
-	// 부모 데이터 계산
-	void MakeParentData(XMFLOAT4X4& _CharMtx/*, int _key*/)
-	{
-		// 기존 데이터를 없앤다.
-		mBoneParentData.clear();
-
-		// 객체의 캐릭터 매트릭스를 가져온다.
-		XMMATRIX tCharMtx = XMLoadFloat4x4(&_CharMtx);
-
-		// 하이라이키 0번부터 순서대로 순회
-		for (unsigned int y = 0; y < mBoneHierarchy.size(); ++y)
-		{
-			// 데이터를 임시적으로 저장할 값, 하이라이키 값마다 초기화, 저장 된다.
-			BoneParentData tParentData;
-
-			// 해당 키에 도달하기 위한 루트
-			for (unsigned int x = 0; x < mBoneHierarchy[y].size(); ++x)
-			{
-				// 현재 키를 꺼낸다.
-				string tKey;
-				tKey = mBoneHierarchy[y][x].Name;
-
-				// mBoneParentData에 해당키가 있는지 검사한다.
-				if (mBoneParentData.find(tKey) != mBoneParentData.end())
-				{
-					// 있다면, 그 값을 꺼낸다.
-					XMMATRIX tResultPMtx = XMLoadFloat4x4(&tParentData.mParentMtx);
-					XMMATRIX tParentMtx  = XMLoadFloat4x4(&mBoneParentData[tKey].mParentMtx);
-
-					// 곱셈 후 값 저장하기
-					XMStoreFloat4x4(&tParentData.mParentMtx, XMMatrixMultiply(tResultPMtx, tParentMtx));
-				}
-				else
-				{
-					// 없다면, 계산 시작
-					XMMATRIX tBParentMtx, tBAniMtx, tResultPMtx;
-
-					// 현재 키가 최상위 루트가 아닐때, 내 위의 매트릭스 값을 가져온다.
-					string tBeforeKey;
-					int tBeforeX = x - 1;
-					if (tBeforeX >= 0)
-					{
-						// 내 상위의 키를 가져온다.
-						tBeforeKey = mBoneHierarchy[y][tBeforeX].Name;
-
-						// 해당 키로 가는 루트가 하이라이키에 이미 정렬되어있으므로, 
-						// 내 상위에 있는 월드 매트릭스의 정보와, 애니메이션 데이터를 가져온다.
-						tBParentMtx = XMLoadFloat4x4(&mBoneData[tBeforeKey].mTMWorldMtx);
-						tBAniMtx    = XMLoadFloat4x4(&mBoneData[tBeforeKey].getAniMtx(/*_key*/));
-
-						// 곱셈 후 저장한다.
-						tResultPMtx = XMMatrixMultiply(tBAniMtx, tBParentMtx);
-						XMStoreFloat4x4(&tParentData.mParentMtx, XMMatrixMultiply(tResultPMtx, tCharMtx));
-					}
-					else
-					{
-						XMMATRIX tResultPMtx = XMLoadFloat4x4(&tParentData.mParentMtx);
-
-						// 최상위 루트라면 캐릭터 매트릭스를 곱한다. (월드 매트릭스)
-						XMStoreFloat4x4(&tParentData.mParentMtx, XMMatrixMultiply(tResultPMtx, tCharMtx));
-					}
-				}
-				// 값 저장
-				tParentData.mName = tKey;
-				mBoneParentData[tKey] = tParentData;
-				tKey.clear();
-			}
+			tString.clear();
 		}
 	}
 };

@@ -1,6 +1,8 @@
 #pragma once
 #include "cGameState.h"
 
+extern cCam gCam;
+
 class cPlayState : public cGameState
 {
 public:
@@ -34,6 +36,9 @@ public:
 
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
+
+		// 카메라 초기화
+		gCam.Change1PersonCam();
 	}
 
 	// 제거
@@ -47,7 +52,63 @@ public:
 	{
 		// 렌더링 매니저 업데이트
 		mDrawManager->Update(dt);
+
+		// 플레이어 이동
+		PlayerMove(dt);
 	}
+
+	// 플레이어 이동
+	void PlayerMove(float& dt)
+	{
+		// 카메라 컨트롤
+		if (GetAsyncKeyState('W') & 0x8000)
+		{
+			//----------------------------------//
+			// 상 키 눌렀음을 서버에 보내기
+			//----------------------------------//
+
+
+			//----------------------------------//
+			gCam.Walk(100.0f*dt);
+		}
+
+		if (GetAsyncKeyState('S') & 0x8000)
+		{
+			//----------------------------------//
+			// 히 키 눌렀음을 서버에 보내기
+			//----------------------------------//
+
+
+			//----------------------------------//
+			gCam.Walk(-100.0f*dt);
+		}
+
+		if (GetAsyncKeyState('A') & 0x8000)
+		{
+			//----------------------------------//
+			// 좌 키 눌렀음을 서버에 보내기
+			//----------------------------------//
+
+			//----------------------------------//
+			gCam.Strafe(-100.0f*dt);
+		}
+
+		if (GetAsyncKeyState('D') & 0x8000)
+		{
+			//----------------------------------//
+			// 우 키 눌렀음을 서버에 보내기
+			//----------------------------------//
+
+
+			// 서버에서 위치를 받아, 플레이어 위치를 갱신하는 함수.
+			// 해당 부분 이곳이 아닌, 다른 곳에서 구현해야함.
+			// 서버에서 데이터 받는 곳
+			//mModelManager->SetPlayerPos(_x, _y, _z);
+			//----------------------------------//
+			gCam.Strafe(100.0f*dt);
+		}
+	}
+
 
 	// 그리기
 	void Draw()
@@ -68,6 +129,14 @@ public:
 
 		case 'X':
 			mDrawManager->SetRes(e_Wire);
+			break;
+
+		case 'R':
+			gCam.Change3PersonCam();
+			break;
+
+		case 'T':
+			gCam.Change1PersonCam();
 			break;
 		}
 
