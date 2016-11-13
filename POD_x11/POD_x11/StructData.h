@@ -2200,6 +2200,7 @@ public:
 			XMStoreFloat4x4(&mParentData.mParentMtx, tResult);
 
 			// 테스트 (LAP 에 저장)
+			_LAPMtx.push_back(mParentData.mParentMtx); // 순서 맞추기
 			_LAPMtx.push_back(mParentData.mParentMtx);
 
 			// 테스트 (SKIN 에 저장)
@@ -2207,6 +2208,7 @@ public:
 			XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
 			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
 
+			_SkinMtx.push_back(tSkinMtx); // 순서 맞추기
 			_SkinMtx.push_back(tSkinMtx);
 
 			// 자식갯수만큼 반복

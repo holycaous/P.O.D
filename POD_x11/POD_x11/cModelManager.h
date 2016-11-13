@@ -83,6 +83,7 @@ public:
 		auto Stroage = mAniManager->mData[_modelName][_aniName].GetLapStorage();
 		for (unsigned int i = 0; i < Stroage.size(); ++i)
 		{
+			// 위치 값 조정
 			Stroage[i]._41 += _x;
 			Stroage[i]._42 += _y;
 			Stroage[i]._43 += _z;
