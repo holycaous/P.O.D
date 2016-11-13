@@ -709,8 +709,8 @@ public:
 	// 오브젝트 회전
 	void SetRotate(int _uniqueCode, float _x, float _y, float _z)
 	{
-		// 회전 보간 양
-		float InterpolationAmount = 12;
+		// 회전 보간 양 (클수록 빨리 돈다.)
+		float InterpolationAmount = 12 * mCoreStorage->mTimer->DeltaTime();
 
 		// 회전 범위제한
 		float Rotatelimit = 0.05f;
@@ -731,7 +731,7 @@ public:
 		{
 			// 빠른쪽을 기준으로 회전 행렬을 만든다.
 			XMMATRIX tRotMtx;
-			tRotMtx = XMMatrixRotationAxis(tObjUp, tRadius / InterpolationAmount);
+			tRotMtx = XMMatrixRotationAxis(tObjUp, tRadius * InterpolationAmount);
 
 			// 회전 행렬 곱
 			XMFLOAT3 tFinLookDir;

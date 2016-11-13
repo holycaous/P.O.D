@@ -410,7 +410,7 @@ private:
 
 					// 현재 쉐이더 모드 갱신
 					_BeforeShaderMode = _CurrentModel->mShaderMode;
-					_BeforeModelName = _CurrentModel->mCreateName;
+					_BeforeModelName  = _CurrentModel->mCreateName;
 
 					// 쉐이더 정보 얻기
 					mShaderManager->GetDesc(&TechDesc);

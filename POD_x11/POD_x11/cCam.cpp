@@ -20,6 +20,7 @@ cCam::~cCam()
 {
 }
 
+
 void cCam::FrustumProjection()
 {
 	ComputeFrustumFromProjection(&mCamFrustum, &Proj());
@@ -319,6 +320,12 @@ XMVECTOR cCam::GetLookXM()const
 
 XMFLOAT3 cCam::GetLook()const
 {
+	return mLook;
+}
+
+XMFLOAT3 cCam::GetLookXZ()
+{
+	mLook.y = 0.0f;
 	return mLook;
 }
 

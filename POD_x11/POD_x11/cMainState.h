@@ -62,12 +62,11 @@ public:
 		// 테스트용
 		//mModelManager->AddModel("Model4",  100.0f, 0.0f,  300.0f);
 		mModelManager->AddModel("Model2",  100.0f, 100.0f,  200.0f);
-		mModelManager->AddModel("Model1",  100.0f, 100.0f,  100.0f);
-		mModelManager->AddModel("Model5",  100.0f, 100.0f,  500.0f);
+		mModelManager->AddModel("Model1",  100.0f, 100.0f,  500.0f);
+		mModelManager->AddModel("Model5",  100.0f, 100.0f,  700.0f);
 		
 		// 본 그려보기 추가
-		mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 100.0f);
-		mModelManager->DrawBone("Model5", "Idle", 100.0f, 100.0f, 500.0f);
+		mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f);
 
 		// 스크린 추가 (풀 스크린쿼드)
 		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);
@@ -97,7 +96,7 @@ public:
 		mDrawManager->Update(dt);
 
 		mModelManager->MovePoint(0, "Model2", testPos, 10.0f * dt);
-		//mModelManager->MovePoint(0, "Model5", testPos, 10.0f * dt);
+		mModelManager->MovePoint(0, "Model5", testPos, 10.0f * dt);
 
 		// 플레이어 이동
 		PlayerMove(dt);
@@ -116,6 +115,9 @@ public:
 
 			//----------------------------------//
 			gCam.Walk(100.0f*dt);
+
+			// 카메라 룩벡터 얻기
+			//XMFLOAT3 _tLook = gCam.GetLookXZ();
 
 			testPos = gCam.GetThirdPosition();
 			mModelManager->SetRotate(0, "Model3", testPos);

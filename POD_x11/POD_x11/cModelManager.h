@@ -35,9 +35,9 @@ public:
 		CreateBoxModel("BOX2", e_ShaderLight);
 		
 		CreateBoxModel("BOX3", e_ShaderPongTex);
-		AddTex	      ("BOX3", "WoodCrate01_diff.dds", e_DiffuseMap);
-		AddTex		  ("BOX3", "WoodCrate01_norm.dds", e_NomalMap);
-		AddTex	      ("BOX3", "WoodCrate01_spec.dds", e_SpecularMap);
+		AddTex	      ("BOX3", "Export/WoodCrate01_diff.dds", e_DiffuseMap);
+		AddTex		  ("BOX3", "Export/WoodCrate01_norm.dds", e_NomalMap);
+		AddTex	      ("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
 
 		// ¸Ê Ãß°¡
 		CreateModel("Map1", "Export/FinTestMapLoc.pod", e_ShaderPongTex);

@@ -27,6 +27,7 @@ public:
 	XMFLOAT3 GetUp()const;
 	XMVECTOR GetLookXM()const;
 	XMFLOAT3 GetLook()const;
+	XMFLOAT3 GetLookXZ();
 	XMFLOAT3 GetThirdPosition()const;
 
 	// Get frustum properties.
