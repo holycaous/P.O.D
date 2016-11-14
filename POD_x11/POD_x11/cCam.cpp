@@ -10,17 +10,7 @@ cCam::cCam()
 	mPosition.z = 0.0f;
 
 	// 각 방향벡터 초기화
-	mRight.x = 1.0f;
-	mRight.y = 0.0f;
-	mRight.z = 0.0f;
-
-	mUp.x = 0.0f;
-	mUp.y = 1.0f;
-	mUp.z = 0.0f;
-
-	mLook.x = 0.0f;
-	mLook.y = 0.0f;
-	mLook.z = 1.0f;
+	initDir();
 
 	// 3인칭 모드 기본 카메라 거리 설정
 	m3PersonLength = CAM_3PERSON_LENGTH;
@@ -32,6 +22,30 @@ cCam::cCam()
 
 cCam::~cCam()
 {
+}
+
+// 카메라 초기화
+void cCam::initCam(float _x, float _y, float _z)
+{
+	SetPosition(_x, _y, _z);
+	initDir();
+	UpdateViewMatrix();
+}
+
+void cCam::initDir()
+{
+	// 각 방향벡터 초기화
+	mRight.x = 1.0f;
+	mRight.y = 0.0f;
+	mRight.z = 0.0f;
+
+	mUp.x = 0.0f;
+	mUp.y = 1.0f;
+	mUp.z = 0.0f;
+
+	mLook.x = 0.0f;
+	mLook.y = 0.0f;
+	mLook.z = 1.0f;
 }
 
 

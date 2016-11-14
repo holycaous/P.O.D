@@ -11,6 +11,8 @@ public:
 	XNA::Frustum mCamFrustum;
 
 	// Get/Set world camera position.
+	void initCam(float _x, float _y, float _z);
+	void initDir();
 	XMVECTOR GetPositionXM()const;
 	XMFLOAT3 GetPosition()const;
 	XMFLOAT3 Get3PersonPosition();

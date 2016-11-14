@@ -182,7 +182,8 @@ public:
 	// 카메라 초기화
 	void initCam(int _key, string _model, float _x, float _y, float _z)
 	{
-		gCam.SetPosition(_x, _y, _z);
+		gCam.initCam(_x, _y, _z);
+
 		gCam.Change3PersonCam();
 		mPlayerPos = gCam.GetThirdPosition();
 		mModelManager->SetRotate(_key, _model, mPlayerPos);
