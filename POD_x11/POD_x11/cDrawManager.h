@@ -156,19 +156,19 @@ private:
 		// 와이어
 		static D3D11_RASTERIZER_DESC frameDesc;
 		ZeroMemory(&frameDesc, sizeof(D3D11_RASTERIZER_DESC));
-		frameDesc.FillMode = D3D11_FILL_WIREFRAME;
-		frameDesc.CullMode = D3D11_CULL_BACK;
+		frameDesc.FillMode              = D3D11_FILL_WIREFRAME;
+		frameDesc.CullMode              = D3D11_CULL_BACK;
 		frameDesc.FrontCounterClockwise = false;
-		frameDesc.DepthClipEnable = true;
+		frameDesc.DepthClipEnable       = true;
 
 		HR(cCoreStorage::GetInstance()->md3dDevice->CreateRasterizerState(&frameDesc, &mWireframeRS));
 
 		// 솔리드
 		ZeroMemory(&frameDesc, sizeof(D3D11_RASTERIZER_DESC));
-		frameDesc.FillMode = D3D11_FILL_SOLID;
-		frameDesc.CullMode = D3D11_CULL_BACK;
+		frameDesc.FillMode              = D3D11_FILL_SOLID;
+		frameDesc.CullMode              = D3D11_CULL_BACK;
 		frameDesc.FrontCounterClockwise = false;
-		frameDesc.DepthClipEnable = true;
+		frameDesc.DepthClipEnable       = true;
 
 		HR(cCoreStorage::GetInstance()->md3dDevice->CreateRasterizerState(&frameDesc, &mSolidframeRS));
 	}

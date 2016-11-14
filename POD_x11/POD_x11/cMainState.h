@@ -5,7 +5,9 @@ extern cCam gCam;
 
 class cMainState : public cGameState
 {
-	XMFLOAT3 testPos;
+	// 플레이어 위치
+	XMFLOAT3 mPlayerPos;
+
 public:
 	// 초기화
 	void Init()
@@ -75,10 +77,7 @@ public:
 		mModelManager->MakeInsbuf();
 
 		// 카메라 세팅
-		gCam.Change3PersonCam();
-		testPos = gCam.GetThirdPosition();
-		mModelManager->SetRotate(0, "Model3", testPos);
-		mModelManager->SetPos   (0, "Model3", testPos);
+		initCam(0, "Model3", 275.0f, 125.0f, 200.0f);
 	}
 
 	// 제거
@@ -95,15 +94,15 @@ public:
 		// 렌더링 매니저 업데이트
 		mDrawManager->Update(dt);
 
-		mModelManager->MovePoint(0, "Model2", testPos, 10.0f * dt);
-		mModelManager->MovePoint(0, "Model5", testPos, 10.0f * dt);
+		mModelManager->MovePoint(0, "Model2", mPlayerPos, 10.0f * dt);
+		mModelManager->MovePoint(0, "Model5", mPlayerPos, 10.0f * dt);
 
-		// 플레이어 이동
-		PlayerMove(dt);
+		// 플레이어 액션
+		PlayerAction(dt);
 	}
 
-	// 플레이어 이동
-	void PlayerMove(float& dt)
+	// 플레이어 액션
+	void PlayerAction(float& dt)
 	{
 		// 카메라 컨트롤
 		if (GetAsyncKeyState('W') & 0x8000)
@@ -111,17 +110,12 @@ public:
 			//----------------------------------//
 			// 상 키 눌렀음을 서버에 보내기
 			//----------------------------------//
+			//mPlayerPos <-- 클라에서 계산한 플레이어 위치
+
 
 
 			//----------------------------------//
-			gCam.Walk(100.0f*dt);
-
-			// 카메라 룩벡터 얻기
-			//XMFLOAT3 _tLook = gCam.GetLookXZ();
-
-			testPos = gCam.GetThirdPosition();
-			mModelManager->SetRotate(0, "Model3", testPos);
-			mModelManager->SetPos   (0, "Model3", testPos);
+			PlayerWalk(0, "Model3", 100.0f * dt);
 		}
 
 		if (GetAsyncKeyState('S') & 0x8000)
@@ -131,12 +125,10 @@ public:
 			//----------------------------------//
 
 
-			//----------------------------------//
-			gCam.Walk(-100.0f*dt);
 
-			testPos = gCam.GetThirdPosition();
-			mModelManager->SetRotate(0, "Model3", testPos);
-			mModelManager->SetPos   (0, "Model3", testPos);
+
+			//----------------------------------//
+			PlayerWalk(0, "Model3", -100.0f * dt);
 		}
 
 		if (GetAsyncKeyState('A') & 0x8000)
@@ -145,12 +137,11 @@ public:
 			// 좌 키 눌렀음을 서버에 보내기
 			//----------------------------------//
 
-			//----------------------------------//
-			gCam.Strafe(-100.0f*dt);
 
-			testPos = gCam.GetThirdPosition();
-			mModelManager->SetRotate(0, "Model3", testPos);
-			mModelManager->SetPos   (0, "Model3", testPos);
+
+
+			//----------------------------------//
+			PlayerStrafe(0, "Model3", -100.0f * dt);
 		}
 
 		if (GetAsyncKeyState('D') & 0x8000)
@@ -160,17 +151,42 @@ public:
 			//----------------------------------//
 
 
-			// 서버에서 위치를 받아, 플레이어 위치를 갱신하는 함수.
-			// 해당 부분 이곳이 아닌, 다른 곳에서 구현해야함.
-			// 서버에서 데이터 받는 곳
-			//mModelManager->SetPlayerPos(_x, _y, _z);
-			//----------------------------------//
-			gCam.Strafe(100.0f*dt);
 
-			testPos = gCam.GetThirdPosition();
-			mModelManager->SetRotate(0, "Model3", testPos);
-			mModelManager->SetPos   (0, "Model3", testPos);
+
+
+			//----------------------------------//
+			PlayerStrafe(0, "Model3", 100.0f * dt);
 		}
+	}
+
+	// 플레이어 전진, 후진
+	void PlayerWalk(int _key, string _model, float _speed)
+	{
+		gCam.Walk(_speed);
+
+		mPlayerPos = gCam.GetThirdPosition();
+		mModelManager->SetRotate(_key, _model, mPlayerPos);
+		mModelManager->SetPos   (_key, _model, mPlayerPos);
+	}
+
+	// 플레이어 좌진, 우진
+	void PlayerStrafe(int _key, string _model, float _speed)
+	{
+		gCam.Strafe(_speed);
+
+		mPlayerPos = gCam.GetThirdPosition();
+		mModelManager->SetRotate(_key, _model, mPlayerPos);
+		mModelManager->SetPos   (_key, _model, mPlayerPos);
+	}
+
+	// 카메라 초기화
+	void initCam(int _key, string _model, float _x, float _y, float _z)
+	{
+		gCam.SetPosition(_x, _y, _z);
+		gCam.Change3PersonCam();
+		mPlayerPos = gCam.GetThirdPosition();
+		mModelManager->SetRotate(_key, _model, mPlayerPos);
+		mModelManager->SetPos   (_key, _model, mPlayerPos);
 	}
 
 	// 그리기

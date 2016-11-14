@@ -50,12 +50,12 @@ public:
 		// 렌더링 매니저 업데이트
 		mDrawManager->Update(dt);
 
-		// 플레이어 이동
-		PlayerMove(dt);
+		// 플레이어 액션
+		PlayerAction(dt);
 	}
 
-	// 플레이어 이동
-	void PlayerMove(float& dt)
+	// 플레이어 액션
+	void PlayerAction(float& dt)
 	{
 		// 카메라 컨트롤
 		if (GetAsyncKeyState('W') & 0x8000)

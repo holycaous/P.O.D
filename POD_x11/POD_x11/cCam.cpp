@@ -3,17 +3,31 @@
 
 
 cCam::cCam()
-: mPosition(0.0f, 0.0f, 0.0f),
-mRight(1.0f, 0.0f, 0.0f),
-mUp(0.0f, 1.0f, 0.0f),
-mLook(0.0f, 0.0f, 1.0f)
 {
-	SetLens(0.25f * cMathHelper::Pi, 1.0f, 1.0f, CAM_FAR);
+	// 카메라 초기 위치
+	mPosition.x = 0.0f;
+	mPosition.y = 0.0f;
+	mPosition.z = 0.0f;
+
+	// 각 방향벡터 초기화
+	mRight.x = 1.0f;
+	mRight.y = 0.0f;
+	mRight.z = 0.0f;
+
+	mUp.x = 0.0f;
+	mUp.y = 1.0f;
+	mUp.z = 0.0f;
+
+	mLook.x = 0.0f;
+	mLook.y = 0.0f;
+	mLook.z = 1.0f;
 
 	// 3인칭 모드 기본 카메라 거리 설정
-	m3PersonLength.x = 0.0f;
-	m3PersonLength.y = 0.0f;
-	m3PersonLength.z = CAM_3PERSON_LENGTH;
+	m3PersonLength = CAM_3PERSON_LENGTH;
+
+	// 카메라 거리 디폴트
+	mNearZ = CAM_NEAR;
+	mFarZ  = CAM_FAR;
 }
 
 cCam::~cCam()
@@ -26,7 +40,7 @@ void cCam::FrustumProjection()
 	ComputeFrustumFromProjection(&mCamFrustum, &Proj());
 }
 
-
+// 카메라 조절
 void cCam::SetLens(float fovY, float aspect, float zn, float zf)
 {
 	// cache properties
@@ -40,11 +54,20 @@ void cCam::SetLens(float fovY, float aspect, float zn, float zf)
 
 	XMMATRIX P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
 	XMStoreFloat4x4(&mProj, P);
+}
 
-	// 카메라 초기 위치
-	mPosition.x = 275.0f;
-	mPosition.y = 125.0f;
-	mPosition.z = 200.0f;
+// 카메라 조절
+void cCam::SetLens(float fovY, float aspect)
+{
+	// cache properties
+	mFovY   = fovY;
+	mAspect = aspect;
+
+	mNearWindowHeight = 2.0f * mNearZ * tanf(0.5f * mFovY);
+	mFarWindowHeight  = 2.0f * mFarZ  * tanf(0.5f * mFovY);
+
+	XMMATRIX P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
+	XMStoreFloat4x4(&mProj, P);
 }
 
 void cCam::LookAt(FXMVECTOR pos, FXMVECTOR target, FXMVECTOR worldUp)
@@ -70,8 +93,8 @@ void cCam::LookAt(const XMFLOAT3& pos, const XMFLOAT3& target, const XMFLOAT3& u
 
 void cCam::Strafe(float d)
 {
-	// mPosition += d*mRight
-	XMVECTOR s = XMVectorReplicate(d);
+	// mPosition += d * mRight
+	XMVECTOR s = XMVectorReplicate(d); 
 	XMVECTOR r = XMLoadFloat3(&mRight);
 	XMVECTOR p = XMLoadFloat3(&mPosition);
 	XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, r, p));
@@ -79,7 +102,7 @@ void cCam::Strafe(float d)
 
 void cCam::Walk(float d)
 {
-	// mPosition += d*mLook
+	// mPosition += d * mLook
 	XMVECTOR s = XMVectorReplicate(d);
 
 	// 3인칭 시점일때는 y축을 고정시킨다.
@@ -110,19 +133,11 @@ void cCam::Pitch(float angle)
 	// 3인칭 모드
 	if (mCamMode == e_3Person)
 	{
-		XMVECTOR temp_vtx, length_vtx;
-		XMFLOAT3 temp_dir, length;
-
-		// 길이
-		temp_vtx = XMLoadFloat3(&m3PersonLength);
-		length_vtx = XMVector3Length(temp_vtx);
-		XMStoreFloat3(&length, length_vtx);
-
 		//--------------------------------------------------------//
 		// 이동
-		mPosition.x = (mPosition.x + mLook.x * length.x);
-		mPosition.y = (mPosition.y + mLook.y * length.y);
-		mPosition.z = (mPosition.z + mLook.z * length.z);
+		mPosition.x = (mPosition.x + mLook.x * m3PersonLength);
+		mPosition.y = (mPosition.y + mLook.y * m3PersonLength);
+		mPosition.z = (mPosition.z + mLook.z * m3PersonLength);
 
 		//--------------------------------------------------------//
 		// 회전
@@ -130,9 +145,9 @@ void cCam::Pitch(float angle)
 
 		//--------------------------------------------------------//
 		// 이동
-		mPosition.x = (mPosition.x + mLook.x * -length.x);
-		mPosition.y = (mPosition.y + mLook.y * -length.y);
-		mPosition.z = (mPosition.z + mLook.z * -length.z);
+		mPosition.x = (mPosition.x + mLook.x * -m3PersonLength);
+		mPosition.y = (mPosition.y + mLook.y * -m3PersonLength);
+		mPosition.z = (mPosition.z + mLook.z * -m3PersonLength);
 		//--------------------------------------------------------//
 
 		XMStoreFloat3(&mUp, XMVector3TransformNormal(XMLoadFloat3(&mUp), R));
@@ -155,19 +170,11 @@ void cCam::RotateY(float angle)
 	// 3인칭 모드
 	if (mCamMode == e_3Person)
 	{
-		XMVECTOR temp_vtx, length_vtx;
-		XMFLOAT3 temp_dir, length;
-
-		// 길이
-		temp_vtx   = XMLoadFloat3(&m3PersonLength);
-		length_vtx = XMVector3Length(temp_vtx);
-		XMStoreFloat3(&length, length_vtx);
-
 		//--------------------------------------------------------//
 		// 이동
-		mPosition.x = (mPosition.x + mLook.x * length.x);
-		mPosition.y = (mPosition.y + mLook.y * length.y);
-		mPosition.z = (mPosition.z + mLook.z * length.z);
+		mPosition.x = (mPosition.x + mLook.x * m3PersonLength);
+		mPosition.y = (mPosition.y + mLook.y * m3PersonLength);
+		mPosition.z = (mPosition.z + mLook.z * m3PersonLength);
 
 		//--------------------------------------------------------//
 		// 회전
@@ -175,9 +182,9 @@ void cCam::RotateY(float angle)
 
 		//--------------------------------------------------------//
 		// 이동
-		mPosition.x = (mPosition.x + mLook.x * -length.x);
-		mPosition.y = (mPosition.y + mLook.y * -length.y);
-		mPosition.z = (mPosition.z + mLook.z * -length.z);
+		mPosition.x = (mPosition.x + mLook.x * -m3PersonLength);
+		mPosition.y = (mPosition.y + mLook.y * -m3PersonLength);
+		mPosition.z = (mPosition.z + mLook.z * -m3PersonLength);
 		//--------------------------------------------------------//
 
 		XMStoreFloat3(&mUp   , XMVector3TransformNormal(XMLoadFloat3(&mUp)   , R));
@@ -261,9 +268,9 @@ XMFLOAT3 cCam::GetPosition()const
 XMFLOAT3 cCam::GetThirdPosition() const
 {
 	XMFLOAT3 tPos;
-	tPos.x = mPosition.x + mLook.x * m3PersonLength.z;
+	tPos.x = mPosition.x + mLook.x * m3PersonLength;
 	tPos.y = 100.0f;
-	tPos.z = mPosition.z + mLook.z * m3PersonLength.z;
+	tPos.z = mPosition.z + mLook.z * m3PersonLength;
 	return tPos;
 }
 

@@ -47,19 +47,16 @@ void cEngine::OnResize()
 	cInitD3D::OnResize();
 	
 	// 카메라 다시 만들기
-	gCam.SetLens(0.25f * cMathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+	gCam.SetLens(0.25f * cMathHelper::Pi, AspectRatio());
 
 	// 카메라 뷰 프리스텀 업데이트
-	//cCam::GetInstance()->FrustumProjection();
+	//gCam.FrustumProjection();
 
 }
 
 // 엔진 클래스 초기화
 bool cEngine::Init()
 {
-	// 카메라 초기화
-	gCam.SetPosition(0.0f, 2.0f, -15.0f);
-
 	// 다이렉트 초기화
 	if (!cInitD3D::Init())
 		return false;

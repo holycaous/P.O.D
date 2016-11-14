@@ -21,8 +21,9 @@ using namespace std;
 #define WIN_X 800
 #define WIN_Y 600
 
-#define CAM_FAR 100.0f
-#define CAM_3PERSON_LENGTH 375.0f;
+#define CAM_NEAR 1
+#define CAM_FAR 1500
+#define CAM_3PERSON_LENGTH 375
 
 // 거의 사용되지 않는 내용은 Windows 헤더에서 제외합니다.
 #define WIN32_LEAN_AND_MEAN           

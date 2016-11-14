@@ -45,6 +45,7 @@ public:
 
 	// Set frustum.
 	void SetLens(float fovY, float aspect, float zn, float zf);
+	void SetLens(float fovY, float aspect);
 
 	//
 	void FrustumProjection();
@@ -82,7 +83,7 @@ private:
 	XMFLOAT3 mUp;
 	XMFLOAT3 mLook;
 	XMFLOAT3 m3PersonLook;
-	XMFLOAT3 m3PersonLength;
+	float    m3PersonLength;
 	XMFLOAT3 m3PersonPosition;
 
 	// Cache frustum properties.
