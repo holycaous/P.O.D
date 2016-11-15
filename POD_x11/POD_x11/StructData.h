@@ -246,6 +246,27 @@ public:
 	}
 };
 
+// 스키닝 텍스처
+class SkinTexture
+{
+public:
+	string mName;
+	ID3D11Texture2D* mTexture;
+
+public:
+	SkinTexture()
+	{
+		mTexture = nullptr;
+		mName.clear();
+	}
+
+	~SkinTexture()
+	{
+		ReleaseCOM(mTexture);
+		mName.clear();
+	}
+};
+
 // 버퍼
 struct CharBuf
 {
@@ -268,6 +289,11 @@ public:
 	int          mUniqueCode;
 	XMFLOAT4X4   mWdMtx;
 	OBJ_MOVEABLE mObjMoveAble;
+
+	// 오브젝트 상태값
+	int mHP;
+	int mMP;
+	int mDamage;
 
 public:
 	ObjData()
@@ -371,6 +397,25 @@ public:
 	}
 };
 
+// 플레이어
+class PlayerInfo
+{
+public:
+	XMFLOAT3 mPos;
+	int mkey;
+	string mModelName;
+public:
+	PlayerInfo()
+	{
+		mkey = -1;
+		mModelName.clear();
+	}
+	~PlayerInfo()
+	{
+		mkey = -1;
+		mModelName.clear();
+	}
+};
 
 // 파싱한 매쉬 데이터
 class InitMetaData
@@ -394,13 +439,6 @@ public:
 	XMFLOAT4X4    mLocTMMtx;
 	XMFLOAT4X4    mWdTMMtx;
 	
-	// 현재 선택된 최종 스킨 행렬
-	// 본 SKin (최종 행렬)
-	vector<XMFLOAT4X4> mSkinMtx;
-
-	// 현재 모델의 애니상태
-	string mAniName;
-
 	// 리소스 뷰 (재질정보)
 	ID3D11ShaderResourceView* mDiffuseSRV;
 	ID3D11ShaderResourceView* mSpecularSRV;
@@ -416,8 +454,22 @@ public:
 	// 카운트
 	UINT mIndexCount;
 
-	// 애니 데이터
+	// 애니 데이터 (루트)
 	AniData aniData;
+
+	//----------------------------------------//
+	// 삭제 예정
+	//----------------------------------------//
+	// 현재 선택된 최종 스킨 행렬
+	// 본 SKin (최종 행렬)
+	vector<XMFLOAT4X4> mSkinMtx;
+
+	// 현재 모델의 애니상태
+	string mAniName;
+	//----------------------------------------//
+
+	// 스킨 텍스처
+	map<string, SkinTexture> mSkinTex;
 
 	// 가중치 데이터
 	vector<WeightVtx> weightVtx;
@@ -549,6 +601,7 @@ public:
 		mCreateName.clear();
 		mSkinMtx   .clear();
 		mAniName   .clear();
+		mSkinTex   .clear();
 	}
 
 	// 스킨 행렬 업데이트
@@ -700,6 +753,17 @@ public:
 	{
 		// 위치가 주어진다.
 		XMVECTOR tPoint  = XMLoadFloat3(&XMFLOAT3(_x, 0.0f, _z));
+		XMVECTOR tObjPos = XMLoadFloat3(&mObjData[_uniqueCode].getPosXZ());
+
+		// 위치로 향하는 벡터를 얻는다.
+		return XMVECTOR(XMVector3Normalize(tPoint - tObjPos));
+	}
+
+	// 해당 위치로 가는 벡터를 얻는다
+	XMVECTOR GetPointDir(int _uniqueCode, XMFLOAT3 _Pos)
+	{
+		// 위치가 주어진다.
+		XMVECTOR tPoint  = XMLoadFloat3(&XMFLOAT3(_Pos.x, 0.0f, _Pos.z));
 		XMVECTOR tObjPos = XMLoadFloat3(&mObjData[_uniqueCode].getPosXZ());
 
 		// 위치로 향하는 벡터를 얻는다.

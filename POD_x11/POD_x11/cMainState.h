@@ -5,9 +5,6 @@ extern cCam gCam;
 
 class cMainState : public cGameState
 {
-	// 플레이어 위치
-	XMFLOAT3 mPlayerPos;
-
 public:
 	// 초기화
 	void Init()
@@ -15,13 +12,14 @@ public:
 		// 이전 모델 데이터 삭제 ( 정확히말하면 월드 매트릭스 )
 		mModelManager->ClearModel();
 
+		// 스크린 추가 (풀 스크린쿼드)
+		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);
+
 		// 맵 테스트용
-		float tSzie = 10.0f;
-		float tItp  = (100.0f * tSzie / 2.0f) + 100.0f;  
-		mModelManager->AddModel("Map1", tItp, 100.0f, tItp);
-		mModelManager->SetScale(0, "Map1", tSzie, 1.0f, tSzie);
+		mModelManager->AddMap(0, "Map1", 200, 100, 200, 5.0f);
 
-
+		// 플레이어 및 카메라 세팅
+		mModelManager->IniPlayer(0, "Model3", 275.0f, 100.0f, 200.0f);
 		//// 모델 추가
 		//int size = 1250;
 		//int Count = 2500;
@@ -56,8 +54,7 @@ public:
 		// 단일 객체 테스트용
 		//mModelManager->AddModel("Model0", 100.0f, 100.0f, 100.0f );
 		//mModelManager->AddModel("Model1", 100.0f, 100.0f, 200.0f );
-		//mModelManager->AddModel("Model2", 100.0f, 100.0f, 250.0f );
-		mModelManager  ->AddModel("Model3", 100.0f, 100.0f, 350.0f ); // <-- 모든 모델의 유니크코드는 0번부터 시작
+		//mModelManager->AddModel("Model2", 100.0f, 100.0f, 250.0f ); // <-- 모든 모델의 유니크코드는 0번부터 시작
 		//mModelManager->AddModel("Model3", 100.0f, 100.0f, 470.0f ); //     동일한 모델을 또 만들면 유니크 코드가 1씩 증가함 
 		//mModelManager->AddModel("Model4", 100.0f, 100.0f, 470.0f );
 
@@ -70,14 +67,8 @@ public:
 		// 본 그려보기 추가
 		mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f);
 
-		// 스크린 추가 (풀 스크린쿼드)
-		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);
-
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
-
-		// 카메라 세팅
-		initCam(0, "Model3", 275.0f, 125.0f, 200.0f);
 	}
 
 	// 제거
@@ -94,8 +85,8 @@ public:
 		// 렌더링 매니저 업데이트
 		mDrawManager->Update(dt);
 
-		mModelManager->MovePoint(0, "Model2", mPlayerPos, 10.0f * dt);
-		mModelManager->MovePoint(0, "Model5", mPlayerPos, 10.0f * dt);
+		mModelManager->MoveToPlayer(0, "Model2", 10.0f * dt);
+		mModelManager->MoveToPlayer(0, "Model5", 10.0f * dt);
 
 		// 플레이어 액션
 		PlayerAction(dt);
@@ -115,7 +106,7 @@ public:
 
 
 			//----------------------------------//
-			PlayerWalk(0, "Model3", 100.0f * dt);
+			XMFLOAT3 mPos = mModelManager->PlayerWalk(100.0f * dt);
 		}
 
 		if (GetAsyncKeyState('S') & 0x8000)
@@ -128,7 +119,7 @@ public:
 
 
 			//----------------------------------//
-			PlayerWalk(0, "Model3", -100.0f * dt);
+			XMFLOAT3 mPos = mModelManager->PlayerWalk(-100.0f * dt);
 		}
 
 		if (GetAsyncKeyState('A') & 0x8000)
@@ -141,7 +132,7 @@ public:
 
 
 			//----------------------------------//
-			PlayerStrafe(0, "Model3", -100.0f * dt);
+			XMFLOAT3 mPos = mModelManager->PlayerStrafe(-100.0f * dt);
 		}
 
 		if (GetAsyncKeyState('D') & 0x8000)
@@ -155,39 +146,8 @@ public:
 
 
 			//----------------------------------//
-			PlayerStrafe(0, "Model3", 100.0f * dt);
+			XMFLOAT3 mPos = mModelManager->PlayerStrafe(100.0f * dt);
 		}
-	}
-
-	// 플레이어 전진, 후진
-	void PlayerWalk(int _key, string _model, float _speed)
-	{
-		gCam.Walk(_speed);
-
-		mPlayerPos = gCam.GetThirdPosition();
-		mModelManager->SetRotate(_key, _model, mPlayerPos);
-		mModelManager->SetPos   (_key, _model, mPlayerPos);
-	}
-
-	// 플레이어 좌진, 우진
-	void PlayerStrafe(int _key, string _model, float _speed)
-	{
-		gCam.Strafe(_speed);
-
-		mPlayerPos = gCam.GetThirdPosition();
-		mModelManager->SetRotate(_key, _model, mPlayerPos);
-		mModelManager->SetPos   (_key, _model, mPlayerPos);
-	}
-
-	// 카메라 초기화
-	void initCam(int _key, string _model, float _x, float _y, float _z)
-	{
-		gCam.initCam(_x, _y, _z);
-
-		gCam.Change3PersonCam();
-		mPlayerPos = gCam.GetThirdPosition();
-		mModelManager->SetRotate(_key, _model, mPlayerPos);
-		mModelManager->SetPos   (_key, _model, mPlayerPos);
 	}
 
 	// 그리기

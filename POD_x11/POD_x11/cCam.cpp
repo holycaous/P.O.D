@@ -283,7 +283,7 @@ XMFLOAT3 cCam::GetThirdPosition() const
 {
 	XMFLOAT3 tPos;
 	tPos.x = mPosition.x + mLook.x * m3PersonLength;
-	tPos.y = 100.0f;
+	tPos.y = mPosition.y + mLook.y * m3PersonLength;
 	tPos.z = mPosition.z + mLook.z * m3PersonLength;
 	return tPos;
 }

@@ -23,6 +23,9 @@ public:
 	
 	// 애니 매니저
 	cAniManager* mAniManager = cAniManager::GetInstance();
+
+	// 플레이어
+	PlayerInfo mPlayer;
 public:
 	void Init()
 	{
@@ -107,6 +110,13 @@ public:
 			// 스크린 월드 매트릭스 초기화
 			XMStoreFloat4x4(&mScreenMtx, I);
 		}
+	}
+
+	// 맵 만들기
+	void AddMap(int _key, string _name, float _x, float _y, float _z, float _scale)
+	{
+		AddModel(_key, _name, _x , _y, _z);
+		SetScale(_key, _name, _scale, 1.0f, _scale);
 	}
 
 	// 스크린 삭제
@@ -222,6 +232,23 @@ public:
 		// 체인에 있는 모델 하나만 선택해서 방향 보냄
 		XMFLOAT3 ptDir;
 		XMStoreFloat3(&ptDir, mAllModelData[mModelChain[_Name][0]]->GetPointDir(_uniqueCode, _pos.x, _pos.y, _pos.z));
+
+		XMFLOAT3 tPos = GetPos(_uniqueCode, _Name);
+
+		tPos.x = tPos.x + ptDir.x * _speed;
+		tPos.y = tPos.y + ptDir.y * _speed;
+		tPos.z = tPos.z + ptDir.z * _speed;
+
+		SetRotate(_uniqueCode, _Name, tPos);
+		SetPos   (_uniqueCode, _Name, tPos);
+	}
+
+	// 해당 위치로 이동
+	void MoveToPlayer(int _uniqueCode, string _Name, float _speed)
+	{
+		// 체인에 있는 모델 하나만 선택해서 방향 보냄
+		XMFLOAT3 ptDir;
+		XMStoreFloat3(&ptDir, mAllModelData[mModelChain[_Name][0]]->GetPointDir(_uniqueCode, mPlayer.mPos));
 
 		XMFLOAT3 tPos = GetPos(_uniqueCode, _Name);
 
@@ -504,7 +531,7 @@ public:
 		InitMetaData* _nowModel = mAllModelData[_Name];
 
 		// 모델의 종류
-		_nowModel->mModelType = e_BasicModel;
+		_nowModel->mModelType  = e_BasicModel;
 		_nowModel->mCreateName = _Name;
 
 		// 파싱 시작
@@ -527,7 +554,7 @@ public:
 		InitMetaData* _nowModel = mAllModelData[_Name];
 
 		// 모델의 종류
-		_nowModel->mModelType = e_BasicModel;
+		_nowModel->mModelType  = e_BasicModel;
 		_nowModel->mCreateName = _Name;
 
 		// 파싱 시작
@@ -736,6 +763,46 @@ public:
 	void AddScreen(float _x, float _y, float _z)
 	{
 		mScreen->AddModel(_x, _y, _z, e_StaticObj);
+	}
+
+
+	// 플레이어 전진, 후진
+	XMFLOAT3 PlayerWalk(float _speed)
+	{
+		gCam.Walk(_speed);
+
+		mPlayer.mPos = gCam.GetThirdPosition();
+		SetRotate(mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+		SetPos   (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+
+		return mPlayer.mPos;
+	}
+
+	// 플레이어 좌진, 우진
+	XMFLOAT3 PlayerStrafe(float _speed)
+	{
+		gCam.Strafe(_speed);
+
+		mPlayer.mPos = gCam.GetThirdPosition();
+		SetRotate(mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+		SetPos   (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+
+		return mPlayer.mPos;
+	}
+
+	// 플레이어 셋팅
+	void IniPlayer(int _key, string _model, float _x, float _y, float _z)
+	{
+		gCam.initCam(_x, _y, _z);
+		AddModel(_key, _model, _x, _y, _z);
+		gCam.Change3PersonCam();
+
+		mPlayer.mkey       = _key;
+		mPlayer.mModelName = _model;
+		mPlayer.mPos       = gCam.GetThirdPosition();
+
+		SetRotate(mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+		SetPos   (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
 	}
 
 	// 인스턴스 버퍼 만들기
