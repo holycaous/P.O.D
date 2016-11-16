@@ -18,8 +18,6 @@ public:
 		// 맵 테스트용
 		mModelManager->AddMap(0, "Map1", 200, 100, 200, 5.0f);
 
-		// 플레이어 및 카메라 세팅
-		mModelManager->IniPlayer(0, "Model3", 275.0f, 100.0f, 200.0f);
 		//// 모델 추가
 		//int size = 1250;
 		//int Count = 2500;
@@ -69,7 +67,10 @@ public:
 
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
-	}
+
+		// 플레이어 및 카메라 세팅
+		mModelManager->IniPlayer(0, "Model3", 200.0f, 100.0f, 600.0f);
+	}	
 
 	// 제거
 	void ClearClass()
@@ -85,8 +86,8 @@ public:
 		// 렌더링 매니저 업데이트
 		mDrawManager->Update(dt);
 
-		mModelManager->MoveToPlayer(0, "Model2", 10.0f * dt);
-		mModelManager->MoveToPlayer(0, "Model5", 10.0f * dt);
+		mModelManager->MoveToPlayer(0, "Model2", 10.0f * dt);						  // 플레이어에게 이동
+		mModelManager->MovePoint   (0, "Model5", 100.0f, 100.0f, 100.0f ,10.0f * dt); // 해당 지점으로 이동
 
 		// 플레이어 액션
 		PlayerAction(dt);
@@ -101,12 +102,14 @@ public:
 			//----------------------------------//
 			// 상 키 눌렀음을 서버에 보내기
 			//----------------------------------//
-			//mPlayerPos <-- 클라에서 계산한 플레이어 위치
+
 
 
 
 			//----------------------------------//
+			// 클라에서 계산한 플레이어 위치
 			XMFLOAT3 mPos = mModelManager->PlayerWalk(100.0f * dt);
+			cout << "mPos: " << mPos.x << ", " << mPos.y << ", " << mPos.z << endl;
 		}
 
 		if (GetAsyncKeyState('S') & 0x8000)
@@ -120,6 +123,7 @@ public:
 
 			//----------------------------------//
 			XMFLOAT3 mPos = mModelManager->PlayerWalk(-100.0f * dt);
+			cout << "mPos: " << mPos.x << ", " << mPos.y << ", " << mPos.z << endl;
 		}
 
 		if (GetAsyncKeyState('A') & 0x8000)
@@ -133,6 +137,7 @@ public:
 
 			//----------------------------------//
 			XMFLOAT3 mPos = mModelManager->PlayerStrafe(-100.0f * dt);
+			cout << "mPos: " << mPos.x << ", " << mPos.y << ", " << mPos.z << endl;
 		}
 
 		if (GetAsyncKeyState('D') & 0x8000)
@@ -147,6 +152,7 @@ public:
 
 			//----------------------------------//
 			XMFLOAT3 mPos = mModelManager->PlayerStrafe(100.0f * dt);
+			cout << "mPos: " << mPos.x << ", " << mPos.y << ", " << mPos.z << endl;
 		}
 	}
 

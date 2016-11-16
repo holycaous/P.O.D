@@ -319,6 +319,14 @@ public:
 		}
 	}
 
+	// 모델 데이터 가져오기
+	ObjData& getModelData(int _uniqueCode, string _Name)
+	{
+		string _SlectModel;
+		_SlectModel = mModelChain[_Name][0];
+		return 	mAllModelData[_SlectModel]->getObj(_uniqueCode);
+	}
+
 	// 모델 데이터 가져오기 (_outData에 모두 다 가져감. _outData는 밖에서 생성하고 별도로 삭제해줘야함) // 주의
 	void getAllModelData(string _Name, vector<ObjData>& _outData)
 	{
@@ -354,7 +362,7 @@ public:
 		}
 
 		// 모델 인스턴스 버퍼 삭제
-		ClearBuf();
+		ClearModelAndBuf();
 
 		// 모델에 사용되었던 쉐이더 제거
 		mUseAllShader.clear();
@@ -793,10 +801,10 @@ public:
 	// 플레이어 셋팅
 	void IniPlayer(int _key, string _model, float _x, float _y, float _z)
 	{
-		gCam.initCam(_x, _y, _z);
-		AddModel(_key, _model, _x, _y, _z);
 		gCam.Change3PersonCam();
-
+		gCam.initCam(_x, _y, _z);
+		AddUpdateModel(_key, _model, _x, _y, _z);
+		
 		mPlayer.mkey       = _key;
 		mPlayer.mModelName = _model;
 		mPlayer.mPos       = gCam.GetThirdPosition();
@@ -946,7 +954,7 @@ private:
 	}
 
 	// 버퍼 클리어
-	void ClearBuf()
+	void ClearModelAndBuf()
 	{
 		for (auto itor = mBufferType.begin(); itor != mBufferType.end(); ++itor)
 		{
@@ -954,6 +962,14 @@ private:
 		}
 	}
 
+	// 버퍼 클리어
+	void ClearBuf()
+	{
+		for (auto itor = mBufferType.begin(); itor != mBufferType.end(); ++itor)
+		{
+			itor->second->ClearInsBuf();
+		}
+	}
 
 	// 모델 인스턴스 버퍼만 삭제
 	void ClearModelInsBuf()

@@ -27,8 +27,20 @@ cCam::~cCam()
 // 카메라 초기화
 void cCam::initCam(float _x, float _y, float _z)
 {
-	SetPosition(_x, _y, _z);
+	// 위치
+	if (mCamMode == e_3Person)
+		SetPosition(_x, _y, _z - m3PersonLength);
+	else
+		SetPosition(_x, _y, _z);
+
+	// 방향
 	initDir();
+
+	// 회전
+	Pitch(0.71f);
+	RotateY(1.5f);
+
+	// 업데이트
 	UpdateViewMatrix();
 }
 

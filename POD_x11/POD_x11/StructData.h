@@ -293,7 +293,6 @@ public:
 	// 오브젝트 상태값
 	int mHP;
 	int mMP;
-	int mDamage;
 
 public:
 	ObjData()

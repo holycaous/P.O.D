@@ -85,7 +85,6 @@ private:
 	XMFLOAT3 mUp;
 	XMFLOAT3 mLook;
 	XMFLOAT3 m3PersonLook;
-	float    m3PersonLength;
 	XMFLOAT3 m3PersonPosition;
 
 	// Cache frustum properties.
@@ -95,6 +94,7 @@ private:
 	float mFovY;
 	float mNearWindowHeight;
 	float mFarWindowHeight;
+	float m3PersonLength;
 
 	// Cache View/Proj matrices.
 	XMFLOAT4X4 mView;
