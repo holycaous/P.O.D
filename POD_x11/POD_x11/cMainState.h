@@ -50,7 +50,6 @@ public:
 		
 
 		// 단일 객체 테스트용
-		//mModelManager->AddModel("Model0", 100.0f, 100.0f, 100.0f );
 		//mModelManager->AddModel("Model1", 100.0f, 100.0f, 200.0f );
 		//mModelManager->AddModel("Model2", 100.0f, 100.0f, 250.0f ); // <-- 모든 모델의 유니크코드는 0번부터 시작
 		//mModelManager->AddModel("Model3", 100.0f, 100.0f, 470.0f ); //     동일한 모델을 또 만들면 유니크 코드가 1씩 증가함 
@@ -63,7 +62,7 @@ public:
 		mModelManager->AddModel("Model5",  100.0f, 100.0f,  700.0f);
 		
 		// 본 그려보기 추가
-		mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f);
+		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f);
 
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
@@ -109,7 +108,6 @@ public:
 			//----------------------------------//
 			// 클라에서 계산한 플레이어 위치
 			XMFLOAT3 mPos = mModelManager->PlayerWalk(100.0f * dt);
-			cout << "mPos: " << mPos.x << ", " << mPos.y << ", " << mPos.z << endl;
 		}
 
 		if (GetAsyncKeyState('S') & 0x8000)
@@ -123,7 +121,6 @@ public:
 
 			//----------------------------------//
 			XMFLOAT3 mPos = mModelManager->PlayerWalk(-100.0f * dt);
-			cout << "mPos: " << mPos.x << ", " << mPos.y << ", " << mPos.z << endl;
 		}
 
 		if (GetAsyncKeyState('A') & 0x8000)
@@ -137,7 +134,6 @@ public:
 
 			//----------------------------------//
 			XMFLOAT3 mPos = mModelManager->PlayerStrafe(-100.0f * dt);
-			cout << "mPos: " << mPos.x << ", " << mPos.y << ", " << mPos.z << endl;
 		}
 
 		if (GetAsyncKeyState('D') & 0x8000)
@@ -152,7 +148,6 @@ public:
 
 			//----------------------------------//
 			XMFLOAT3 mPos = mModelManager->PlayerStrafe(100.0f * dt);
-			cout << "mPos: " << mPos.x << ", " << mPos.y << ", " << mPos.z << endl;
 		}
 	}
 

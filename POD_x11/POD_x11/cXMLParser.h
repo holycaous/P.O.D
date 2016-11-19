@@ -271,24 +271,24 @@ public:
 
 		// 위치
 		fread(&len, sizeof(int), 1, mFilePointer);
-		mMyMeshData.aniData.Position.resize(len);
+		mMyMeshData.mAniData.Position.resize(len);
 
 		for (int i = 0; i < len; ++i)
-			fread(&mMyMeshData.aniData.Position[i], sizeof(KeyVtx), 1, mFilePointer);
+			fread(&mMyMeshData.mAniData.Position[i], sizeof(KeyVtx), 1, mFilePointer);
 
 		// 회전
 		fread(&len, sizeof(int), 1, mFilePointer);
-		mMyMeshData.aniData.Quaternion.resize(len);
+		mMyMeshData.mAniData.Quaternion.resize(len);
 
 		for (int i = 0; i < len; ++i)
-			fread(&mMyMeshData.aniData.Quaternion[i], sizeof(KeyVtx), 1, mFilePointer);
+			fread(&mMyMeshData.mAniData.Quaternion[i], sizeof(KeyVtx), 1, mFilePointer);
 
 		// 스케일
 		fread(&len, sizeof(int), 1, mFilePointer);
-		mMyMeshData.aniData.Scale.resize(len);
+		mMyMeshData.mAniData.Scale.resize(len);
 
 		for (int i = 0; i < len; ++i)
-			fread(&mMyMeshData.aniData.Scale[i], sizeof(KeyVtx), 1, mFilePointer);
+			fread(&mMyMeshData.mAniData.Scale[i], sizeof(KeyVtx), 1, mFilePointer);
 
 
 		// 가중치 데이터
@@ -413,21 +413,21 @@ public:
 
 			// 위치
 			fread(&len, sizeof(int), 1, mFilePointer);
-			_MyBoneData->mSaveBoneData[i].aniData.Position.resize(len);
+			_MyBoneData->mSaveBoneData[i].mAniData.Position.resize(len);
 			for (int idx = 0; idx < len; ++idx)
-				fread(&_MyBoneData->mSaveBoneData[i].aniData.Position[idx], sizeof(KeyVtx), 1, mFilePointer);
+				fread(&_MyBoneData->mSaveBoneData[i].mAniData.Position[idx], sizeof(KeyVtx), 1, mFilePointer);
 
 			// 회전
 			fread(&len, sizeof(int), 1, mFilePointer);
-			_MyBoneData->mSaveBoneData[i].aniData.Quaternion.resize(len);
+			_MyBoneData->mSaveBoneData[i].mAniData.Quaternion.resize(len);
 			for (int idx = 0; idx < len; ++idx)
-				fread(&_MyBoneData->mSaveBoneData[i].aniData.Quaternion[idx], sizeof(KeyVtx), 1, mFilePointer);
+				fread(&_MyBoneData->mSaveBoneData[i].mAniData.Quaternion[idx], sizeof(KeyVtx), 1, mFilePointer);
 
 			// 스케일
 			fread(&len, sizeof(int), 1, mFilePointer);
-			_MyBoneData->mSaveBoneData[i].aniData.Scale.resize(len);
+			_MyBoneData->mSaveBoneData[i].mAniData.Scale.resize(len);
 			for (int idx = 0; idx < len; ++idx)
-				fread(&_MyBoneData->mSaveBoneData[i].aniData.Scale[idx], sizeof(KeyVtx), 1, mFilePointer);
+				fread(&_MyBoneData->mSaveBoneData[i].mAniData.Scale[idx], sizeof(KeyVtx), 1, mFilePointer);
 
 
 			// 바운딩 박스
@@ -516,7 +516,7 @@ public:
 		}
 
 		// 애니 데이터
-		_InitMetaData.aniData = mMyMeshData.aniData;
+		_InitMetaData.mAniData = mMyMeshData.mAniData;
 
 		// 가중치 데이터
 		_InitMetaData.weightVtx = mMyMeshData.weightVtx;

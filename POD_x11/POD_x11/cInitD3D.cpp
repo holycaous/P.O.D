@@ -518,20 +518,23 @@ LRESULT cInitD3D::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//---------------------------------------------------------------------------------------
 		// 윈도우 보조
 		//---------------------------------------------------------------------------------------
-	case WM_ACTIVATE:
-		// 윈도우 활성, 비활성
-		// 윈도우 활성, 비활성화에 따라, 타이머 또한 활성, 비활성화를 한다.
-		if (LOWORD(wParam) == WA_INACTIVE)
-		{
-			mAppPaused = true;
-			mTimer.Stop();
-		}
-		else
-		{
-			mAppPaused = false;
-			mTimer.Start();
-		}
-		return 0;
+#ifdef WINDOW_DISABLE_NO_RENDER
+		case WM_ACTIVATE:
+			// 윈도우 활성, 비활성
+			// 윈도우 활성, 비활성화에 따라, 타이머 또한 활성, 비활성화를 한다.
+			if (LOWORD(wParam) == WA_INACTIVE)
+			{
+				mAppPaused = true;
+				mTimer.Stop();
+			}
+			else
+			{
+				mAppPaused = false;
+				mTimer.Start();
+			}
+			return 0;
+#else
+#endif
 
 	case WM_SIZE:
 		// 윈도우 사이즈가 변경됬는가?

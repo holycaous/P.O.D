@@ -46,7 +46,6 @@ public:
 		CreateModel("Map1", "Export/FinTestMapLoc.pod", e_ShaderPongTex);
 
 		// 모델 추가
-		CreateModel("Model0", "Export/FinSkinning_TestLoc.pod", e_ShaderPongTex);
 		CreateModel("Model1", "Export/FinAman_boyLoc.pod"     , e_ShaderPongTex);
 		CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTex);
 		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTex);
@@ -54,7 +53,6 @@ public:
 		CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTex);
 
 		// 애니 추가
-		CreateBoneAni("Model0", "Export/FinSkinning_TestBoneIdle.pod", e_ShaderPongTex);
 		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdle.pod"     , e_ShaderPongTex);
 		CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"         , e_ShaderPongTex);
 		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"  , e_ShaderPongTex);
@@ -70,30 +68,30 @@ public:
 		ModelRegistration();
 	}
 
-	// 특정 모델의 본 그리기
-	void DrawBone(string _modelName, string _aniName)
-	{
-		auto Stroage = mAniManager->mData[_modelName][_aniName].GetLapStorage();
-		for (unsigned int i = 0; i < Stroage.size(); ++i)
-		{
-			AddModel("BOX1", Stroage[i]);
-		}
-	}
-
-	// 특정 모델의 본 그리기
-	void DrawBone(string _modelName, string _aniName, float _x, float _y, float _z)
-	{
-		auto Stroage = mAniManager->mData[_modelName][_aniName].GetLapStorage();
-		for (unsigned int i = 0; i < Stroage.size(); ++i)
-		{
-			// 위치 값 조정
-			Stroage[i]._41 += _x;
-			Stroage[i]._42 += _y;
-			Stroage[i]._43 += _z;
-
-			AddModel("BOX1", Stroage[i]);
-		}
-	}
+	//// 특정 모델의 본 그리기
+	//void DrawBone(string _modelName, string _aniName)
+	//{
+	//	auto Stroage = mAniManager->mData[_modelName][_aniName].GetLapStorage();
+	//	for (unsigned int i = 0; i < Stroage.size(); ++i)
+	//	{
+	//		AddModel("BOX1", Stroage[i]);
+	//	}
+	//}
+	//
+	//// 특정 모델의 본 그리기
+	//void DrawBone(string _modelName, string _aniName, float _x, float _y, float _z)
+	//{
+	//	auto Stroage = mAniManager->mData[_modelName][_aniName].GetLapStorage();
+	//	for (unsigned int i = 0; i < Stroage.size(); ++i)
+	//	{
+	//		// 위치 값 조정
+	//		Stroage[i]._41 += _x;
+	//		Stroage[i]._42 += _y;
+	//		Stroage[i]._43 += _z;
+	//
+	//		AddModel("BOX1", Stroage[i]);
+	//	}
+	//}
 
 	// 스크린 만들기
 	void CreateScreen()
@@ -505,20 +503,24 @@ public:
 		// 본 데이터 파싱
 		//----------------------------------------------------//
 		// 본은 데이터당 하나씩이기에 이런식으로 저장해도 됨.
-		MyBoneData mMyBoneData;
+		MyBoneData* mMyBoneData = new MyBoneData();
 
 		// 1개 모델의 본 파싱
-		mXMLParser.ReadDataMyFormat_Bone(_BoneRoute, &mMyBoneData);
+		mXMLParser.ReadDataMyFormat_Bone(_BoneRoute, mMyBoneData);
+
+		// 텍스처 이름
+		string _TexName = mAllModelData[_Name]->mObjName;
+		_TexName += mMyBoneData->mAniName;
 
 		// 데이터 계산
-		mMyBoneData.CalData();
+		mMyBoneData->CalData(_TexName);
 
 		// 체인에 연결된 모델에 저장
 		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
 		{
 			string SelectName = mModelChain[_Name][i];
-			mAllModelData[SelectName]->mAniName = "Idle";
-			mAniManager->mData[SelectName][mMyBoneData.mAniName] = mMyBoneData;
+			mAllModelData[SelectName]->mAniModel = true;
+			mAniManager->mData[SelectName][mMyBoneData->mAniName] = mMyBoneData;
 			SelectName.clear();
 		}
 

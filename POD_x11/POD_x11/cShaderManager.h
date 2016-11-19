@@ -126,14 +126,6 @@ public:
 		SetShaderValue(e_ShaderValMtx,      "gLocTMMtx"   , mNowModel->mLocTMMtx);
 		SetShaderValue(e_ShaderValMtx,      "gWdTMMtx"    , mNowModel->mWdTMMtx);
 
-		// 모델의 현재 스킨행렬
-		if (!mNowModel->mAniName.empty())
-		{
-			MyBoneData* tAniData = &mAniManager->mData[mNowModel->mCreateName][mNowModel->mAniName];
-			mNowModel->updateSkinMtx(tAniData->GetSkinStorage());
-			SetShaderMtxArray(e_ShaderValMtxArray, "gBoneTransforms", &mNowModel->mSkinMtx[0], mNowModel->mSkinMtx.size());
-		}
-
 		// 모델 리소스
 		SetShaderValue(e_ShaderValResource, "gDiffuseTex" , mNowModel->mDiffuseSRV);
 		SetShaderValue(e_ShaderValResource, "gSpecularTex", mNowModel->mSpecularSRV);
@@ -397,7 +389,6 @@ private:
 		GetShaderValue(tEffectStorage, "gDiffuseTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gSpecularTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gNormalTex"		   , e_ShaderValResource);
-		GetShaderValue(tEffectStorage, "gBoneTransforms"   , e_ShaderValMtxArray);
 
 
 		// IA 생성

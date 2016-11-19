@@ -252,18 +252,26 @@ class SkinTexture
 public:
 	string mName;
 	ID3D11Texture2D* mTexture;
+	ID3D11ShaderResourceView* mTexSRV;
 
 public:
 	SkinTexture()
 	{
 		mTexture = nullptr;
+		mTexSRV  = nullptr;
 		mName.clear();
 	}
 
 	~SkinTexture()
 	{
 		ReleaseCOM(mTexture);
+		ReleaseCOM(mTexSRV);
 		mName.clear();
+	}
+
+	void ClearTex()
+	{
+		ReleaseCOM(mTexture);
 	}
 };
 
@@ -454,21 +462,13 @@ public:
 	UINT mIndexCount;
 
 	// 애니 데이터 (루트)
-	AniData aniData;
+	AniData mAniData;
 
-	//----------------------------------------//
-	// 삭제 예정
-	//----------------------------------------//
-	// 현재 선택된 최종 스킨 행렬
-	// 본 SKin (최종 행렬)
-	vector<XMFLOAT4X4> mSkinMtx;
+	// 애니데이터가 있는 모델인가
+	bool mAniModel;
 
-	// 현재 모델의 애니상태
-	string mAniName;
-	//----------------------------------------//
-
-	// 스킨 텍스처
-	map<string, SkinTexture> mSkinTex;
+	// 스킨 텍스처 (포인터)
+	map<string, SkinTexture*> mSkinTex;
 
 	// 가중치 데이터
 	vector<WeightVtx> weightVtx;
@@ -547,9 +547,8 @@ public:
 
 	~InitMetaData()
 	{
-#ifdef DEBUG_MODE
 		printf("클리어 객체명: %17s ---> 생성명: %12s, 이름: %12s\n", mObjName, mCreateName.c_str(), mMainName);
-#endif
+
 		ReleaseCOM(mDiffuseSRV);
 		ReleaseCOM(mSpecularSRV);
 		ReleaseCOM(mNomalSRV);
@@ -566,6 +565,9 @@ public:
 
 		// 유니크 코드 할당용
 		_inputcode = -1;
+
+		// 애니가 있는 모델인가
+		mAniModel = false;
 
 		// 리소스
 		mDiffuseSRV = mSpecularSRV = mNomalSRV = nullptr;
@@ -598,16 +600,7 @@ public:
 		TexVertices.clear();
 		mObjData   .clear();
 		mCreateName.clear();
-		mSkinMtx   .clear();
-		mAniName   .clear();
 		mSkinTex   .clear();
-	}
-
-	// 스킨 행렬 업데이트
-	void updateSkinMtx(vector<XMFLOAT4X4>& _SkinMtx)
-	{
-		mSkinMtx.clear();
-		mSkinMtx = _SkinMtx;
 	}
 
 	// 텍스처 로드
@@ -2005,7 +1998,7 @@ public:
 	vector<XMFLOAT3> indices;
 
 	// 애니 데이터 ( 모델 자체 )
-	AniData aniData;
+	AniData mAniData;
 
 	// 가중치 데이터
 	vector<WeightVtx> weightVtx;
@@ -2062,7 +2055,7 @@ public:
 	void ClearClass()
 	{
 		mMyMat   .ClearClass();
-		aniData  .ClearClass();
+		mAniData .ClearClass();
 		vertices .clear();
 		indices  .clear();
 		weightVtx.clear();
@@ -2116,7 +2109,7 @@ public:
 	XMFLOAT4X4 mInvWorldTMMtx;
 
 	// 애니 데이터
-	AniData aniData;
+	AniData mAniData;
 
 	// 바운딩 박스
 	BoundBox mBoundingBox;
@@ -2148,7 +2141,7 @@ public:
 	}
 
 	// 애니 데이터
-	XMFLOAT4X4 getAniMtx(/*int _key*/)
+	XMFLOAT4X4 getAniMtx(int& _key)
 	{
 		XMFLOAT4X4 mAniMtx;
 		
@@ -2156,8 +2149,9 @@ public:
 		XMStoreFloat4x4(&mAniMtx, I);
 
 		// 애니메이션 데이터 계산
-		// aniData, _key
-
+		mAniData.Position[_key];
+		mAniData.Quaternion[_key]
+			mAniData.Scale[_key];
 
 		return mAniMtx;
 	}
@@ -2187,12 +2181,12 @@ public:
 	}
 
 	// 스킨행렬 만들기, 하향 계산하기 (자식 본)
-	void MakeSkin(int _AniPoint, SkinTree& _SkinTree, vector<XMFLOAT4X4>& _LAPMtx, vector<XMFLOAT4X4>& _SkinMtx)
+	void MakeSkin(int _AniPoint, SkinTree& _SkinTree, vector<vector<XMFLOAT4X4>>& _SkinMtx)
 	{
 		auto itor = _SkinTree.mData.begin();
 
 		XMMATRIX tLoclMtx = XMLoadFloat4x4(&itor->second.mTMLocalMtx);
-		XMMATRIX tAniMtx  = XMLoadFloat4x4(&itor->second.getAniMtx(/*_AniPoint*/));
+		XMMATRIX tAniMtx  = XMLoadFloat4x4(&itor->second.getAniMtx(_AniPoint));
 		XMMATRIX tParMtx, tResultMtx, tResult;
 
 		// 현 본의 LA 처리
@@ -2211,16 +2205,13 @@ public:
 			tResult = tResultMtx;
 			XMStoreFloat4x4(&_SkinTree.mParentData.mParentMtx, tResult);
 		}
-
-		// 테스트 (LAP 에 저장)
-		_LAPMtx.push_back(_SkinTree.mParentData.mParentMtx);
-
+		
 		// 테스트 (SKIN 에 저장)
 		XMFLOAT4X4 tSkinMtx;
 		XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
 		XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
 
-		_SkinMtx.push_back(tSkinMtx);
+		_SkinMtx[_AniPoint].push_back(tSkinMtx);
 
 		// 자식갯수만큼 반복
 		for (auto itorChild = _SkinTree.mChildData.begin(); itorChild != _SkinTree.mChildData.end(); ++itorChild)
@@ -2229,16 +2220,13 @@ public:
 			itorChild->second.mParentData.mParentMtx = _SkinTree.mParentData.mParentMtx;
 
 			// 함수(자식본번지) 애니 키와, AP 넘기기
-			MakeSkin(_AniPoint, itorChild->second, _LAPMtx, _SkinMtx);
+			MakeSkin(_AniPoint, itorChild->second, _SkinMtx);
 		}
 	}
 
 	// 스킨행렬 만들기, 하향 계산하기 (루트 본)
-	void MakeSkin(int _AniPoint, vector<XMFLOAT4X4>& _LAPMtx, vector<XMFLOAT4X4>& _SkinMtx)
+	void MakeSkin(int _AniPoint, vector<vector<XMFLOAT4X4>>& _SkinMtx)
 	{
-		_LAPMtx.clear();
-		_SkinMtx.clear();
-
 		// 데이터가 다수일 경우.. (루트 빼곤 없을 듯..)
 		//for (auto itor = mData.begin(); itor != mData.end(); ++itor)
 		{
@@ -2247,11 +2235,11 @@ public:
 
 			// BONE1
 			XMMATRIX tLoclMtx = XMLoadFloat4x4(&itor->second.mTMLocalMtx);
-			XMMATRIX tAniMtx  = XMLoadFloat4x4(&itor->second.getAniMtx(/*_AniPoint*/));
+			XMMATRIX tAniMtx  = XMLoadFloat4x4(&itor->second.getAniMtx(_AniPoint));
 
 			// 루트 본(NULL)
 			XMMATRIX tLoclMtx2 = XMLoadFloat4x4(&itor2->second.mTMLocalMtx);
-			XMMATRIX tAniMtx2  = XMLoadFloat4x4(&itor2->second.getAniMtx(/*_AniPoint*/));
+			XMMATRIX tAniMtx2  = XMLoadFloat4x4(&itor2->second.getAniMtx(_AniPoint));
 			
 			XMMATRIX tResultMtx, tResultMtx2, tResult;
 
@@ -2262,17 +2250,13 @@ public:
 
 			XMStoreFloat4x4(&mParentData.mParentMtx, tResult);
 
-			// 테스트 (LAP 에 저장)
-			_LAPMtx.push_back(mParentData.mParentMtx); // 순서 맞추기
-			_LAPMtx.push_back(mParentData.mParentMtx);
-
-			// 테스트 (SKIN 에 저장)
+			// SKIN 에 저장
 			XMFLOAT4X4 tSkinMtx;
 			XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
 			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
 
-			_SkinMtx.push_back(tSkinMtx); // 순서 맞추기
-			_SkinMtx.push_back(tSkinMtx);
+			_SkinMtx[_AniPoint].push_back(tSkinMtx); // 순서 맞추기
+			_SkinMtx[_AniPoint].push_back(tSkinMtx);
 
 			// 자식갯수만큼 반복
 			for (auto itorChild = mChildData.begin(); itorChild != mChildData.end(); ++itorChild)
@@ -2281,7 +2265,7 @@ public:
 				itorChild->second.mParentData.mParentMtx = mParentData.mParentMtx;
 
 				// 함수(자식본번지) 애니 키와, AP 넘기기
-				MakeSkin(_AniPoint, itorChild->second, _LAPMtx, _SkinMtx);
+				MakeSkin(_AniPoint, itorChild->second, _SkinMtx);
 			}
 		}
 	}
@@ -2359,16 +2343,16 @@ public:
 	// 계층 구조를 실질적으로 찾아가는 정보
 	// 일종의 해쉬맵
 	vector<vector<KeyString> > mBoneHierarchy;
-
-	// 본 LAP
-	vector<XMFLOAT4X4> mLAPMtx;
-
-	// 본 SKin
-	vector<XMFLOAT4X4> mSkinMtx;
-
+	
 	// 스킨 트리
 	SkinTree mSkinTree;
 
+	// 본 SKin 매트릭스 (계산용)
+	vector<vector<XMFLOAT4X4>> mSkinMtx;
+
+	// 본 SKin 텍스처 (사용)
+	SkinTexture mSkinTex;
+	
 	// 이름
 	char mMainName[BUF_SIZE];
 	char mAniName[BUF_SIZE];
@@ -2380,38 +2364,192 @@ public:
 		ClearClass();
 	}
 
-	// LAP 얻기
-	vector<XMFLOAT4X4> GetLapStorage()
-	{
-		return mLAPMtx;
-	}
-
-	// Skin 얻기
-	vector<XMFLOAT4X4> GetSkinStorage()
-	{
-		// 스킨 데이터만들기
-		mSkinTree.MakeSkin(0, mLAPMtx, mSkinMtx);
-
-		return mSkinMtx;
-	}
-
-
 	// 데이터 계산
-	void CalData(/*XMFLOAT4X4& _CharMtx*/)
+	void CalData(string _TexName)
 	{
-		// 테스트 용도
-		XMFLOAT4X4 mTestMtx;
-		XMMATRIX I = XMMatrixIdentity();
-		XMStoreFloat4x4(&mTestMtx, I);
+		// 텍스트가 있냐 없냐
+		string tTexName;
 
-		// 데이터 옮기기
-		RelocationData();
-		
-		//트리 만들기
-		MakeTree();
+		tTexName += "Export/SkinTex/";
+		tTexName += _TexName;
+		tTexName += ".bmp";
 
-		// 스킨 데이터만들기
-		mSkinTree.MakeSkin(0, mLAPMtx, mSkinMtx);
+		// 이름 저장
+		mSkinTex.mName = _TexName;
+
+		wstring _WsTexName;
+		StringToWchar_t(tTexName.c_str(), _WsTexName);
+
+		RetryLoadTex:
+		HRESULT hr = D3DX11CreateShaderResourceViewFromFile(cCoreStorage::GetInstance()->md3dDevice, _WsTexName.c_str(), 0, 0, &mSkinTex.mTexSRV, 0);
+
+		// 텍스처가 없다
+		if (hr == D3D11_ERROR_FILE_NOT_FOUND)
+		{
+			// 없다면 텍스처 생성
+			cout << "SkinTex 파일이 없어 생성합니다. 다소 시간이 걸릴 수 있습니다." << endl;
+	
+			// 데이터 옮기기
+			RelocationData();
+
+			//트리 만들기
+			MakeTree();
+
+			// 스킨 텍스처 만들기
+			MakSkinTex(_WsTexName);
+			
+			// 텍스처 스킨 다시 로딩
+			goto RetryLoadTex;
+		}
+		else if (hr == S_OK)
+			cout << "SkinTex 로딩 성공" << endl;
+		else
+			cout << ">> 명시되지 않은 에러 발생. SkinTex 파일 <<" << endl;
+
+		_WsTexName.clear();
+	}
+
+	// 스킨 텍스처 만들기
+	void MakSkinTex(wstring& _TexName)
+	{
+		// 모든 키는 동일한 갯수를 가진다.
+		int tAniSize = mSaveBoneData[0].mAniData.Position.size();
+
+		// 텍스처 생성
+		CreateTex(tAniSize);
+
+		// 텍스처 계산
+		CalTex(tAniSize);
+
+		// 텍스처 저장
+		SaveTex(_TexName);
+	}
+	
+	// 텍스처 생성
+	void CreateTex(int _AniSize)
+	{
+		D3D11_TEXTURE2D_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+
+		desc.Width            = mSaveBoneData.size() * 4; // 옆으로 행렬 나열 (행 4칸씩, 1개)
+		desc.Height           = _AniSize;				  // 애니 사이즈 만큼 (초)
+		desc.MipLevels        = 1;                             
+		desc.ArraySize        = 1;                             
+		desc.Format           = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		desc.SampleDesc.Count = 1;                             
+		desc.Usage            = D3D11_USAGE_DYNAMIC;
+		desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
+		desc.CPUAccessFlags   = D3D11_CPU_ACCESS_WRITE;
+
+		cCoreStorage::GetInstance()->md3dDevice->CreateTexture2D(&desc, NULL, &mSkinTex.mTexture);
+	}
+
+	// 텍스처 계산
+	void CalTex(int _AniSize)
+	{
+		// 비우기
+		for (unsigned int i = 0; i < mSkinMtx.size(); ++i)
+			mSkinMtx[i].clear();
+		mSkinMtx.clear();
+
+		// 모든 키는 동일한 갯수를 가진다.
+		int _size = mSaveBoneData[0].mAniData.Position.size();
+
+		// 스킨 매트릭스
+		mSkinMtx.resize(_size);
+
+		// 텍스처 쓰기
+		for (int i = 0; i < _AniSize; ++i)
+		{
+			// 스킨 데이터만들기
+			mSkinTree.MakeSkin(i, mSkinMtx);
+		}
+
+		// 텍스처 쓰기
+		WriteTex(_AniSize);
+	}
+
+	// 텍스처 쓰기
+	void WriteTex(int _AniSize)
+	{
+		D3D11_MAPPED_SUBRESOURCE MappedResource;
+
+		// 버퍼 열기
+		HRESULT hr = cCoreStorage::GetInstance()->md3dImmediateContext->Map(mSkinTex.mTexture, //매핑할 텍스처
+			D3D11CalcSubresource(0, 0, 1),													   //서브 리소스 번호
+			D3D11_MAP_WRITE_DISCARD,														   //리소스에 쓴다
+			0,
+			&MappedResource);																   //데이터를 쓸 포인터
+
+		// 열기 성공했을때만
+		if (hr == S_OK)
+		{
+			// 데이터 맵핑 레퍼런스 얻기
+			FLOAT* pTexels = (FLOAT*)MappedResource.pData;
+
+			// 열 반복 (애니 키)
+			for (int y = 0; y < _AniSize; ++y) 
+			{
+				// 행, 열 계산
+				UINT rowStart = y * MappedResource.RowPitch / 4;  //열
+
+				// 행 쓰기
+				for (UINT x = 0; x < mSaveBoneData.size(); ++x)
+				{
+					UINT colStart = x * 4 * 4; // (float 4개 * 1개가 4바이트 == 16) * (4픽셀 씩)
+					for (int i = 0; i < 4; ++i)
+					{
+						switch (i)
+						{
+						case 0:
+							pTexels[rowStart + colStart + i + 0] = mSkinMtx[y][x]._11;     //R (float 1)
+							pTexels[rowStart + colStart + i + 1] = mSkinMtx[y][x]._12;     //G (float 2)
+							pTexels[rowStart + colStart + i + 2] = mSkinMtx[y][x]._13;     //B (float 3)
+							pTexels[rowStart + colStart + i + 3] = mSkinMtx[y][x]._14;     //A (float 4)
+							break;
+						case 1:
+							pTexels[rowStart + colStart + i + 0] = mSkinMtx[y][x]._21;     //R (float 1)
+							pTexels[rowStart + colStart + i + 1] = mSkinMtx[y][x]._22;     //G (float 2)
+							pTexels[rowStart + colStart + i + 2] = mSkinMtx[y][x]._23;     //B (float 3)
+							pTexels[rowStart + colStart + i + 3] = mSkinMtx[y][x]._24;     //A (float 4)
+							break;
+						case 2:
+							pTexels[rowStart + colStart + i + 0] = mSkinMtx[y][x]._31;     //R (float 1)
+							pTexels[rowStart + colStart + i + 1] = mSkinMtx[y][x]._32;     //G (float 2)
+							pTexels[rowStart + colStart + i + 2] = mSkinMtx[y][x]._33;     //B (float 3)
+							pTexels[rowStart + colStart + i + 3] = mSkinMtx[y][x]._34;     //A (float 4)
+							break;
+						case 3:
+							pTexels[rowStart + colStart + i + 0] = mSkinMtx[y][x]._41;     //R (float 1)
+							pTexels[rowStart + colStart + i + 1] = mSkinMtx[y][x]._42;     //G (float 2)
+							pTexels[rowStart + colStart + i + 2] = mSkinMtx[y][x]._43;     //B (float 3)
+							pTexels[rowStart + colStart + i + 3] = mSkinMtx[y][x]._44;     //A (float 4)
+							break;
+						default:
+							cout << "행렬 범위 초과" << endl;
+							break;
+						}
+					}
+				}
+			}
+
+			// 버퍼 닫기
+			cCoreStorage::GetInstance()->md3dImmediateContext->Unmap(mSkinTex.mTexture, D3D11CalcSubresource(0, 0, 1));
+		}
+		else
+			cout << "텍스처 맵핑 실패" << endl;
+	}
+
+	// 텍스처 저장
+	void SaveTex(wstring& _TexName)
+	{
+		D3DX11SaveTextureToFile(cCoreStorage::GetInstance()->md3dImmediateContext,
+			mSkinTex.mTexture,      //저장할 텍스처
+			D3DX11_IFF_BMP,         //BMP로 저장
+			_TexName.c_str());      //이름
+
+		// 텍스처를 만들었으니, 기존 데이터는 삭제
+		mSkinTex.ClearTex();
 	}
 
 	// 트리 만들기
@@ -2425,23 +2563,11 @@ public:
 		}
 	}
 
-	// 데이터 재계산
-	void ReCalData(/*XMFLOAT4X4& _CharMtx*/)
-	{
-		// 테스트 용도
-		XMFLOAT4X4 mTestMtx;
-		XMMATRIX I = XMMatrixIdentity();
-		XMStoreFloat4x4(&mTestMtx, I);
-
-
-	}
-
 	void ClearClass()
 	{
 		// 본 데이터 삭제
 		mSaveBoneData.clear();
 		mBoneData.clear();
-		mLAPMtx.clear();
 		mSkinMtx.clear();
 
 		// 하이라이키 삭제
@@ -2459,18 +2585,29 @@ private:
 		{
 			// 역행렬 만들기 및 저장
 			XMMATRIX tWdMtx = XMLoadFloat4x4(&mSaveBoneData[i].mTMWorldMtx);
-			XMMATRIX tResultMtx;
 
 			XMVECTOR tDet = XMMatrixDeterminant(tWdMtx);
 			XMMATRIX tInvMtx = XMMatrixInverse(&tDet, tWdMtx);
 
-			tResultMtx = XMMatrixMultiply(tInvMtx, tResultMtx);
-			XMStoreFloat4x4(&mSaveBoneData[i].mInvWorldTMMtx, tResultMtx);
+			XMStoreFloat4x4(&mSaveBoneData[i].mInvWorldTMMtx, tInvMtx);
 
 			// 키에 맞게 재배치
 			string tString = mSaveBoneData[i].mObjName;
 			mBoneData[tString] = mSaveBoneData[i];
 			tString.clear();
 		}
+	}
+
+	// 변환 함수
+	void StringToWchar_t(string _string, wstring& _wstring)
+	{
+		// 변환
+		for (unsigned int i = 0; i < _string.length(); ++i)
+			_wstring += wchar_t(_string[i]);
+
+		// 마무리
+		_wstring += wchar_t('\0');
+
+		_string.clear();
 	}
 };
