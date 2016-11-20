@@ -1814,9 +1814,13 @@ private:
 						// 텍스처 정보 변경
 						ModelTexUV.x = TexUV.x;
 						ModelTexUV.y = TexUV.y;
-
+						
 						// 복사
 						_MetaData->AllVertices.push_back(ModelVtx);
+
+						// 가중치 추가
+						WeightVtx tWeightVtx = _MetaData->mWeightVtx[_ModelIdx];
+						_MetaData->mWeightVtx.push_back(tWeightVtx);
 					}
 				}
 			}

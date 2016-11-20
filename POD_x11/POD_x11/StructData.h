@@ -1723,20 +1723,9 @@ private:
 			if (itor->second->mModelType == e_ParsingModel)
 				continue;
 
-			// 탄젠트 공간 계싼
+			// 탄젠트 공간 계산
 			CalTangentSpace(itor->second);
 		}
-
-		// 애니 데이터 가중치 계산
-
-
-
-
-
-
-
-
-
 
 
 		// 총 버텍스 사이즈 계산
@@ -1754,7 +1743,7 @@ private:
 		UINT k = 0;
 		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
 		{
-			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다.
+			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다. (버텍스 별로 계산 되는 중)
 			for (unsigned int i = 0; i < itor->second->Vertices.size(); ++i, ++k)
 			{
 				vertices[k].Pos      = itor->second->Vertices[i].Position;
@@ -1764,10 +1753,58 @@ private:
 				vertices[k].BiNormal = itor->second->Vertices[i].BiNormal;
 				
 				// 애니메이션 데이터
-				itor->second->weightVtx;
-
-				vertices[k].Weights;
-				vertices[k].BoneIndices[4];
+				if (itor->second->weightVtx.size() > i) // 혹시몰라 만들어둔 안전장치
+				{
+					for (unsigned int x = 0; x < 4; ++x)
+					{
+						// 가중치 3개랑, 본 인덱스 4개
+						switch (x)
+						{
+						case 0:
+							if (itor->second->weightVtx[i].Bone.size() > x)
+							{
+								vertices[k].Weights.x = itor->second->weightVtx[i].Bone[x].Weight;
+								vertices[k].BoneIndices[0] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+							}
+							else
+							{
+								vertices[k].Weights.x = 0.0f;
+								vertices[k].BoneIndices[0] = 0;
+							}
+							break;
+						case 1:
+							if (itor->second->weightVtx[i].Bone.size() > x)
+							{
+								vertices[k].Weights.y = itor->second->weightVtx[i].Bone[x].Weight;
+								vertices[k].BoneIndices[1] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+							}
+							else
+							{
+								vertices[k].Weights.y = 0.0f;
+								vertices[k].BoneIndices[1] = 0;
+							}
+							break;
+						case 2:
+							if (itor->second->weightVtx[i].Bone.size() > x)
+							{
+								vertices[k].Weights.z = itor->second->weightVtx[i].Bone[x].Weight;
+								vertices[k].BoneIndices[2] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+							}
+							else
+							{
+								vertices[k].Weights.z = 0.0f;
+								vertices[k].BoneIndices[2] = 0;
+							}
+							break;
+						case 3:
+							if (itor->second->weightVtx[i].Bone.size() > x)
+								vertices[k].BoneIndices[3] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+							else
+								vertices[k].BoneIndices[3] = 0;
+							break;
+						}
+					}
+				}
 			}
 		}
 
