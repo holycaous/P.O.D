@@ -191,6 +191,13 @@ public:
 	XMFLOAT3 Vtx; // 버텍스
 };
 
+class RotKeyVtx
+{
+public:
+	int Key;      // 키값
+	XMFLOAT4 Vtx; // 버텍스
+};
+
 // 본 데이터 (가중치)
 class BoneData
 {
@@ -230,7 +237,7 @@ class AniData
 {
 public:
 	vector<KeyVtx> Position;
-	vector<KeyVtx> Quaternion;
+	vector<RotKeyVtx> Quaternion;
 	vector<KeyVtx> Scale;
 public:
 	~AniData()
@@ -2144,14 +2151,16 @@ public:
 	XMFLOAT4X4 getAniMtx(int& _key)
 	{
 		XMFLOAT4X4 mAniMtx;
-		
-		XMMATRIX I = XMMatrixIdentity();
-		XMStoreFloat4x4(&mAniMtx, I);
 
 		// 애니메이션 데이터 계산
-		mAniData.Position[_key];
-		mAniData.Quaternion[_key]
-			mAniData.Scale[_key];
+		int t = mAniData.Position[_key].Key;
+
+		XMVECTOR _scaleKey = XMLoadFloat3(&mAniData.Scale[_key].Vtx);
+		XMVECTOR _rotKey   = XMLoadFloat4(&mAniData.Quaternion[_key].Vtx);
+		XMVECTOR _posKey   = XMLoadFloat3(&mAniData.Position[_key].Vtx);
+		XMVECTOR _zero     = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+
+		XMStoreFloat4x4(&mAniMtx, XMMatrixAffineTransformation(_scaleKey, _zero, _rotKey, _posKey));
 
 		return mAniMtx;
 	}
@@ -2183,6 +2192,7 @@ public:
 	// 스킨행렬 만들기, 하향 계산하기 (자식 본)
 	void MakeSkin(int _AniPoint, SkinTree& _SkinTree, vector<vector<XMFLOAT4X4>>& _SkinMtx)
 	{
+		// 사실상 하나 밖에 없음
 		auto itor = _SkinTree.mData.begin();
 
 		XMMATRIX tLoclMtx = XMLoadFloat4x4(&itor->second.mTMLocalMtx);
@@ -2424,7 +2434,7 @@ public:
 		// 텍스처 저장
 		SaveTex(_TexName);
 	}
-	
+
 	// 텍스처 생성
 	void CreateTex(int _AniSize)
 	{
@@ -2583,6 +2593,22 @@ private:
 		// map으로 옮김
 		for (unsigned int i = 0; i < mSaveBoneData.size(); ++i)
 		{
+			// 회전 누적
+			auto _QuaternionArray = mSaveBoneData[i].mAniData.Quaternion;
+			for (unsigned int x = 1; x < _QuaternionArray.size(); ++x)
+			{
+				// 값을 꺼내온다
+				XMVECTOR beforeRot  = XMLoadFloat4(&_QuaternionArray[x - 1].Vtx); // 직전
+				XMVECTOR CurrentRot = XMLoadFloat4(&_QuaternionArray[x].Vtx);     // 현재
+				XMVECTOR ResultRot;
+
+				// 사원수 회전을 누적시킨다.
+				ResultRot = XMQuaternionMultiply(beforeRot, CurrentRot);
+
+				// 저장한다
+				XMStoreFloat4(&_QuaternionArray[x].Vtx, ResultRot);
+			}
+
 			// 역행렬 만들기 및 저장
 			XMMATRIX tWdMtx = XMLoadFloat4x4(&mSaveBoneData[i].mTMWorldMtx);
 

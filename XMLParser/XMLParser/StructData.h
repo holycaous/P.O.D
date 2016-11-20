@@ -65,6 +65,13 @@ public:
 	XMFLOAT3 Vtx; // 버텍스
 };
 
+class RotKeyVtx
+{
+public:
+	int Key;      // 키값
+	XMFLOAT4 Vtx; // 버텍스
+};
+
 // 재질 인덱스 리스트
 class MatIdx
 {
@@ -143,7 +150,7 @@ class AniData
 {
 public:
 	vector<KeyVtx> Position;
-	vector<KeyVtx> Quaternion;
+	vector<RotKeyVtx> Quaternion;
 	vector<KeyVtx> Scale;
 public:
 	~AniData()

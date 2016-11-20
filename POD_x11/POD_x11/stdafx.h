@@ -8,7 +8,7 @@
 // 디버그 모드 활성
 #define DEBUG_MODE
 
-// 해당 프로그램 창을 벗어나면 렌더링을 하지 않음
+// 프로그램을 벗어나면 렌더링 중지
 #define WINDOW_DISABLE_NO_RENDER
 
 #include <iostream>

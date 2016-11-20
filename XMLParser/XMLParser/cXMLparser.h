@@ -460,8 +460,9 @@ private:
 		InitMetaData tMetaData;
 
 		// 좌표를 저장할 것
-		KeyVtx   tKeyVtx;
-		XMFLOAT3 tVtx;
+		KeyVtx    tKeyVtx;
+		XMFLOAT3  tVtx;
+		RotKeyVtx tRotKeyVtx;
 
 		// 텍스처 좌표를 저장할것
 		XMFLOAT2 tTVtx;
@@ -723,12 +724,12 @@ private:
 								if (edRot == _ReadLineData) { break; }
 
 								// 키 값 초기화 및, 추출
-								tKeyVtx.Key = -1;
-								sscanf_s(mReadBuf, "\t\t\t\t\t<Value Frame=\"%df\">[%f,%f,%f]</Value>", &tKeyVtx.Key, &tKeyVtx.Vtx.x, &tKeyVtx.Vtx.y, &tKeyVtx.Vtx.z);
+								tRotKeyVtx.Key = -1;
+								sscanf_s(mReadBuf, "\t\t\t\t\t<Value Frame=\"%df\">[%f,%f,%f,%f]</Value>", &tRotKeyVtx.Key, &tRotKeyVtx.Vtx.x, &tRotKeyVtx.Vtx.y, &tRotKeyVtx.Vtx.z, &tRotKeyVtx.Vtx.w);
 
 								// 추출한 키 값이 유효할때
-								if (tKeyVtx.Key >= 0)
-									tMetaData.mAniData.Quaternion.push_back(tKeyVtx);
+								if (tRotKeyVtx.Key >= 0)
+									tMetaData.mAniData.Quaternion.push_back(tRotKeyVtx);
 
 								// 다음 파일을 읽는다.
 								ReadLineData(_ReadLineData);
@@ -903,7 +904,7 @@ private:
 		fwrite(&len, sizeof(int), 1, mFilePointer);
 
 		for (int i = 0; i < len; ++i)
-			fwrite(&mMyMeshData[_ModelNum].aniData.Quaternion[i], sizeof(KeyVtx), 1, mFilePointer);
+			fwrite(&mMyMeshData[_ModelNum].aniData.Quaternion[i], sizeof(RotKeyVtx), 1, mFilePointer);
 
 		// 스케일
 		len = mMyMeshData[_ModelNum].aniData.Scale.size();
@@ -1048,7 +1049,7 @@ private:
 		_MyMeshData->aniData.Quaternion.resize(len);
 
 		for (int i = 0; i < len; ++i)
-			fread(&_MyMeshData->aniData.Quaternion[i], sizeof(KeyVtx), 1, mFilePointer);
+			fread(&_MyMeshData->aniData.Quaternion[i], sizeof(RotKeyVtx), 1, mFilePointer);
 
 		// 스케일
 		fread(&len, sizeof(int), 1, mFilePointer);
@@ -1189,7 +1190,7 @@ private:
 			len = mMyBoneData.mBoneData[i].aniData.Quaternion.size();
 			fwrite(&len, sizeof(int), 1, mFilePointer);
 			for (int idx = 0; idx < len; ++idx)
-				fwrite(&mMyBoneData.mBoneData[i].aniData.Quaternion[idx], sizeof(KeyVtx), 1, mFilePointer);
+				fwrite(&mMyBoneData.mBoneData[i].aniData.Quaternion[idx], sizeof(RotKeyVtx), 1, mFilePointer);
 
 			// 스케일
 			len = mMyBoneData.mBoneData[i].aniData.Scale.size();
@@ -1296,7 +1297,7 @@ private:
 			fread(&len, sizeof(int), 1, mFilePointer);
 			mMyBoneData.mBoneData[i].aniData.Quaternion.resize(len);
 			for (int idx = 0; idx < len; ++idx)
-				fread(&mMyBoneData.mBoneData[i].aniData.Quaternion[idx], sizeof(KeyVtx), 1, mFilePointer);
+				fread(&mMyBoneData.mBoneData[i].aniData.Quaternion[idx], sizeof(RotKeyVtx), 1, mFilePointer);
 
 			// 스케일
 			fread(&len, sizeof(int), 1, mFilePointer);

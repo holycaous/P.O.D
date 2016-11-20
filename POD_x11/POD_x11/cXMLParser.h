@@ -281,7 +281,7 @@ public:
 		mMyMeshData.mAniData.Quaternion.resize(len);
 
 		for (int i = 0; i < len; ++i)
-			fread(&mMyMeshData.mAniData.Quaternion[i], sizeof(KeyVtx), 1, mFilePointer);
+			fread(&mMyMeshData.mAniData.Quaternion[i], sizeof(RotKeyVtx), 1, mFilePointer);
 
 		// 스케일
 		fread(&len, sizeof(int), 1, mFilePointer);
@@ -421,7 +421,7 @@ public:
 			fread(&len, sizeof(int), 1, mFilePointer);
 			_MyBoneData->mSaveBoneData[i].mAniData.Quaternion.resize(len);
 			for (int idx = 0; idx < len; ++idx)
-				fread(&_MyBoneData->mSaveBoneData[i].mAniData.Quaternion[idx], sizeof(KeyVtx), 1, mFilePointer);
+				fread(&_MyBoneData->mSaveBoneData[i].mAniData.Quaternion[idx], sizeof(RotKeyVtx), 1, mFilePointer);
 
 			// 스케일
 			fread(&len, sizeof(int), 1, mFilePointer);
