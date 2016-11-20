@@ -46,24 +46,19 @@ public:
 		CreateModel("Map1", "Export/FinTestMapLoc.pod", e_ShaderPongTex);
 
 		// 모델 추가
-		CreateModel("Model1", "Export/FinAman_boyLoc.pod"     , e_ShaderPongTex);
-		CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTex);
-		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTex);
-		//CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTex);
-		CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTex);
+		CreateModel("Model1", "Export/FinAman_boyLoc.pod"     , e_ShaderPongTexAni);
+		CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTexAni);
+		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTexAni);
+		//CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTexAni);
+		CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTexAni);
 
 		// 애니 추가
-		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdle.pod"     , e_ShaderPongTex);
-		CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"         , e_ShaderPongTex);
-		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"  , e_ShaderPongTex);
-		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"      , e_ShaderPongTex);
-		CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod"     , e_ShaderPongTex);
-
-		//CreateModel("Model4", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
-		//CreateModel("Model5", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
-		//CreateModel("Model6", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
-		//CreateModel("Model7", "Export/FinAnonSoldierLoc.pod", "Export/FinAnonSoldierBone.pod", e_ShaderPongTex);
-	
+		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdle.pod");
+		CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod");
+		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod");
+		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod");
+		CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod");
+			
 		// 만들어진 모델 등록
 		ModelRegistration();
 	}
@@ -497,7 +492,7 @@ public:
 	}
 
 	// 모델 생성하기
-	void CreateBoneAni(string _Name, string _BoneRoute, SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	void CreateBoneAni(string _Name, string _BoneRoute, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
 	{
 		//----------------------------------------------------//
 		// 본 데이터 파싱

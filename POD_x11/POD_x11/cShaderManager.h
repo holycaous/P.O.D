@@ -160,11 +160,13 @@ public:
 		case e_ShaderDeferred:
 			return sizeof(VertexG);
 
+		case e_ShaderPongTexAni:
+			return sizeof(VertexPNTAni);
+
 		default:
 		case e_ShaderPongTex:
 		case e_ShaderCartoonTex:
 			return sizeof(VertexPNT);
-
 		}
 	}
 
@@ -349,6 +351,9 @@ private:
 		// 카툰쉐이더, 텍스처
 		BuildFX(e_ShaderCartoonTex, L"PNT.fx", "CartoonTex");
 
+		// 퐁쉐이더, 텍스처, 애니
+		BuildFX(e_ShaderPongTexAni, L"PNT_ANI.fx", "PongTexAni");
+
 		// 디퍼드 렌더링
 		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred");
 	}
@@ -470,6 +475,26 @@ private:
 				{ "WORLD"   , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 				{ "WORLD"   , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 				{ "WORLD"   , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 }		
+			};
+			// Create the input layout
+			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
+		}
+		else if (mShaderMode == e_ShaderPongTexAni)
+		{
+			D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+			{
+				{ "POSITION"   , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "NORMAL"     , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "TEXCOORD"   , 0, DXGI_FORMAT_R32G32_FLOAT      , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "TANGENT"    , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "BINORMAL"   , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "WEIGHTS"    , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "BONEINDICES", 0, DXGI_FORMAT_R8G8B8A8_UINT     , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "WORLD"      , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0                           , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 }	
+				// 인스턴스데이터에 애니 텍스처 번호, 프레임번호 넘겨야함
 			};
 			// Create the input layout
 			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));

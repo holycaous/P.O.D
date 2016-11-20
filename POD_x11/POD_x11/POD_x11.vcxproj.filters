@@ -272,6 +272,9 @@
     <FxCompile Include="Deferred.fx">
       <Filter>FX</Filter>
     </FxCompile>
+    <FxCompile Include="PNT_ANI.fx">
+      <Filter>FX</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

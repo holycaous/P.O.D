@@ -192,6 +192,7 @@
     <FxCompile Include="PL.fx">
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RelativeDir)%(Filename).fxo</ObjectFileOutput>
     </FxCompile>
+    <FxCompile Include="PNT_ANI.fx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

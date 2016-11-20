@@ -1445,7 +1445,7 @@ private:
 		if (addr)
 		{
 			// 찾은 문자열 + 1만큼 더 뒤로
-			addr += strlen(_findStr) + 1;
+			addr += strlen(_findStr);
 
 			// eof 문자
 			while ((*addr) != _eof)
@@ -1470,7 +1470,7 @@ private:
 		if (addr)
 		{
 			// 찾은 문자열 + 1만큼 더 뒤로
-			addr += strlen(_findStr) + 1;
+			addr += strlen(_findStr);
 
 			// eof 문자
 			while ((*addr) != _eof)

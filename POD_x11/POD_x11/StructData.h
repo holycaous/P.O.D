@@ -24,11 +24,12 @@ typedef enum
 // 조합방법
 typedef enum
 {
-	e_ShaderColor      = 0,
-	e_ShaderLight      = 1,
-	e_ShaderPongTex    = 2,
+	e_ShaderColor	   = 0,
+	e_ShaderLight	   = 1,
+	e_ShaderPongTex	   = 2,
 	e_ShaderCartoonTex = 3,
-	e_ShaderDeferred   = 4
+	e_ShaderDeferred   = 4,
+	e_ShaderPongTexAni = 5
 }SHADER_TYPE;
 
 // 쉐이더 변수 초기화
@@ -99,6 +100,17 @@ struct VertexPNT
 	XMFLOAT2 Tex;
 	XMFLOAT3 Tangent;
 	XMFLOAT3 BiNormal;
+};
+
+struct VertexPNTAni
+{
+	XMFLOAT3 Pos;
+	XMFLOAT3 Normal;
+	XMFLOAT2 Tex;
+	XMFLOAT3 Tangent;
+	XMFLOAT3 BiNormal;
+	XMFLOAT3 Weights;
+	BYTE     BoneIndices[4];
 };
 
 struct VertexG
@@ -202,9 +214,9 @@ public:
 class BoneData
 {
 public:
-	int ID;
+	int   ID;
 	float Weight;
-	char Name[BUF_SIZE];
+	char  Name[BUF_SIZE];
 public:
 	BoneData()
 	{
@@ -1063,6 +1075,10 @@ public:
 			Build_PNT();
 			break;
 
+		case e_ShaderPongTexAni:
+			Build_PNT_Ani();
+			break;
+
 		default:
 			break;
 		}
@@ -1442,7 +1458,7 @@ private:
 			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다.
 			for (unsigned int i = 0; i < itor->second->Vertices.size(); ++i, ++k)
 			{
-				vertices[k].Pos = itor->second->Vertices[i].Position;
+				vertices[k].Pos    = itor->second->Vertices[i].Position;
 				vertices[k].Normal = itor->second->Vertices[i].Normal;
 			}
 		}
@@ -1484,6 +1500,7 @@ private:
 		iinitData.pSysMem = &indices[0];
 		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
+
 	void Build_PNT()
 	{
 		//-----------------------------------------------------------------------------------------------------------//
@@ -1623,7 +1640,7 @@ private:
 		// 인덱스 버퍼 만들기
 		D3D11_BUFFER_DESC ibd;
 		ibd.Usage          = D3D11_USAGE_IMMUTABLE;
-		ibd.ByteWidth      = sizeof(UINT)* totalIndexCount;
+		ibd.ByteWidth      = sizeof(UINT) * totalIndexCount;
 		ibd.BindFlags      = D3D11_BIND_INDEX_BUFFER; // 인덱스
 		ibd.CPUAccessFlags = 0;
 		ibd.MiscFlags      = 0;
@@ -1632,6 +1649,174 @@ private:
 		iinitData.pSysMem = &indices[0];
 		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
+
+	void Build_PNT_Ani()
+	{
+		//-----------------------------------------------------------------------------------------------------------//
+		// 직전 버텍스 저장용
+		int AfterVtxOffset = 0;
+
+		// 개별 버텍스 오프셋 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 처음이라면
+			if (AfterVtxOffset == 0)
+			{
+				// 현재 버텍스 저장
+				AfterVtxOffset = itor->second->mVertexOffset;
+				itor->second->mVertexOffset = 0;
+			}
+			else
+			{
+				// 내것과, 내 직전 걸 더한다.
+				itor->second->mVertexOffset = AfterVtxOffset;
+				AfterVtxOffset = itor->second->mVertexOffset + itor->second->Vertices.size();
+			}
+		}
+		// 직전 인덱스 저장용
+		int AfterIdxOffset = 0;
+
+		// 개별 인덱스 오프셋 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 처음이라면
+			if (AfterIdxOffset == 0)
+			{
+				// 현재 인덱스 저장
+				AfterIdxOffset = itor->second->mIndexCount;
+				itor->second->mIndexOffset = 0;
+			}
+			else
+			{
+				// 내것과, 내 직전 걸 더한다.
+				itor->second->mIndexOffset = AfterIdxOffset;
+				AfterIdxOffset = itor->second->mIndexOffset + itor->second->mIndexCount;
+			}
+		}
+
+		// 법선벡터 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// itor이 파싱된 모델이라면 넘어간다.
+			if (itor->second->mModelType == e_ParsingModel)
+				continue;
+
+			// 법선벡터 계산
+			CalNormalVtx(itor->second);
+		}
+
+		// 정점 늘리기 & 버텍스 버퍼로 송신
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// itor이 파싱된 모델이라면 넘어간다.
+			if (itor->second->mModelType == e_ParsingModel)
+				continue;
+
+			// 정점 늘리기
+			CalVtxINCAndSet(itor->second);
+		}
+
+		// 탄젠트 공간 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// itor이 파싱된 모델이라면 넘어간다.
+			if (itor->second->mModelType == e_ParsingModel)
+				continue;
+
+			// 탄젠트 공간 계싼
+			CalTangentSpace(itor->second);
+		}
+
+		// 애니 데이터 가중치 계산
+
+
+
+
+
+
+
+
+
+
+
+		// 총 버텍스 사이즈 계산
+		vector<VertexPNTAni> vertices; // 한곳으로 옮기는 작업 ( 가장 큰 버퍼 )
+		UINT totalVertexCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			totalVertexCount += itor->second->Vertices.size();
+		}
+
+		// 전체버퍼 사이즈 늘리기
+		vertices.resize(totalVertexCount);
+
+		// 가장 큰 버퍼로 복사
+		UINT k = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다.
+			for (unsigned int i = 0; i < itor->second->Vertices.size(); ++i, ++k)
+			{
+				vertices[k].Pos      = itor->second->Vertices[i].Position;
+				vertices[k].Tex      = itor->second->Vertices[i].TexUV;
+				vertices[k].Normal   = itor->second->Vertices[i].Normal;
+				vertices[k].Tangent  = itor->second->Vertices[i].TangentU;
+				vertices[k].BiNormal = itor->second->Vertices[i].BiNormal;
+				
+				// 애니메이션 데이터
+				itor->second->weightVtx;
+
+				vertices[k].Weights;
+				vertices[k].BoneIndices[4];
+			}
+		}
+
+		// 버텍스 버퍼 만들기
+		D3D11_BUFFER_DESC vbd;
+		vbd.Usage          = D3D11_USAGE_IMMUTABLE;
+		vbd.ByteWidth      = sizeof(VertexPNTAni)* totalVertexCount;
+		vbd.BindFlags      = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+		vbd.CPUAccessFlags = 0;
+		vbd.MiscFlags      = 0;
+
+		D3D11_SUBRESOURCE_DATA vinitData;
+		vinitData.pSysMem = &vertices[0];
+		HR(cCoreStorage::GetInstance()->md3dDevice->CreateBuffer(&vbd, &vinitData, &mVB));
+
+
+		// 총 인덱스 사이즈 계산
+		UINT totalIndexCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			totalIndexCount += itor->second->Indices.size();
+		}
+
+		// 인덱스 버퍼 만들기
+		std::vector<UINT> indices;
+
+		// 가장 큰 버퍼로 복사
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 이터레이터가 돌면서, 인덱스 크기만큼 더한다.
+			for (unsigned int i = 0; i < itor->second->Indices.size(); ++i)
+			{
+				indices.push_back(itor->second->Indices[i]);
+			}
+		}
+
+		// 인덱스 버퍼 만들기
+		D3D11_BUFFER_DESC ibd;
+		ibd.Usage          = D3D11_USAGE_IMMUTABLE;
+		ibd.ByteWidth      = sizeof(UINT) * totalIndexCount;
+		ibd.BindFlags      = D3D11_BIND_INDEX_BUFFER; // 인덱스
+		ibd.CPUAccessFlags = 0;
+		ibd.MiscFlags      = 0;
+
+		D3D11_SUBRESOURCE_DATA iinitData;
+		iinitData.pSysMem = &indices[0];
+		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
+	}
+
 
 	// 탄젠트 공간 계산
 	void CalTangentSpace(InitMetaData* _MetaData)
@@ -2382,7 +2567,7 @@ public:
 
 		tTexName += "Export/SkinTex/";
 		tTexName += _TexName;
-		tTexName += ".bmp";
+		tTexName += ".png";
 
 		// 이름 저장
 		mSkinTex.mName = _TexName;
@@ -2501,39 +2686,39 @@ public:
 			for (int y = 0; y < _AniSize; ++y) 
 			{
 				// 행, 열 계산
-				UINT rowStart = y * MappedResource.RowPitch / 4;  //열
+				UINT rowStart = y * (MappedResource.RowPitch / 4);  //열 / 4(데이터 접근 단위 FLOAT)
 
-				// 행 쓰기
+				// 행 쓰기 ( 4칸씩 )
 				for (UINT x = 0; x < mSaveBoneData.size(); ++x)
 				{
-					UINT colStart = x * 4 * 4; // (float 4개 * 1개가 4바이트 == 16) * (4픽셀 씩)
+					UINT colStart = x * (16 / 4) * 4; // (float 4개 * 1개가 4바이트 == 16 / 4(데이터 접근 단위 FLOAT)) * (4픽셀 씩)
 					for (int i = 0; i < 4; ++i)
 					{
 						switch (i)
 						{
 						case 0:
-							pTexels[rowStart + colStart + i + 0] = mSkinMtx[y][x]._11;     //R (float 1)
-							pTexels[rowStart + colStart + i + 1] = mSkinMtx[y][x]._12;     //G (float 2)
-							pTexels[rowStart + colStart + i + 2] = mSkinMtx[y][x]._13;     //B (float 3)
-							pTexels[rowStart + colStart + i + 3] = mSkinMtx[y][x]._14;     //A (float 4)
+							pTexels[rowStart + colStart + i * 4 + 0] = mSkinMtx[y][x]._11;     //R (float 1)
+							pTexels[rowStart + colStart + i * 4 + 1] = mSkinMtx[y][x]._12;     //G (float 2)
+							pTexels[rowStart + colStart + i * 4 + 2] = mSkinMtx[y][x]._13;     //B (float 3)
+							pTexels[rowStart + colStart + i * 4 + 3] = mSkinMtx[y][x]._14;     //A (float 4)
 							break;
 						case 1:
-							pTexels[rowStart + colStart + i + 0] = mSkinMtx[y][x]._21;     //R (float 1)
-							pTexels[rowStart + colStart + i + 1] = mSkinMtx[y][x]._22;     //G (float 2)
-							pTexels[rowStart + colStart + i + 2] = mSkinMtx[y][x]._23;     //B (float 3)
-							pTexels[rowStart + colStart + i + 3] = mSkinMtx[y][x]._24;     //A (float 4)
+							pTexels[rowStart + colStart + i * 4 + 0] = mSkinMtx[y][x]._21;     //R (float 1)
+							pTexels[rowStart + colStart + i * 4 + 1] = mSkinMtx[y][x]._22;     //G (float 2)
+							pTexels[rowStart + colStart + i * 4 + 2] = mSkinMtx[y][x]._23;     //B (float 3)
+							pTexels[rowStart + colStart + i * 4 + 3] = mSkinMtx[y][x]._24;     //A (float 4)
 							break;
 						case 2:
-							pTexels[rowStart + colStart + i + 0] = mSkinMtx[y][x]._31;     //R (float 1)
-							pTexels[rowStart + colStart + i + 1] = mSkinMtx[y][x]._32;     //G (float 2)
-							pTexels[rowStart + colStart + i + 2] = mSkinMtx[y][x]._33;     //B (float 3)
-							pTexels[rowStart + colStart + i + 3] = mSkinMtx[y][x]._34;     //A (float 4)
+							pTexels[rowStart + colStart + i * 4 + 0] = mSkinMtx[y][x]._31;     //R (float 1)
+							pTexels[rowStart + colStart + i * 4 + 1] = mSkinMtx[y][x]._32;     //G (float 2)
+							pTexels[rowStart + colStart + i * 4 + 2] = mSkinMtx[y][x]._33;     //B (float 3)
+							pTexels[rowStart + colStart + i * 4 + 3] = mSkinMtx[y][x]._34;     //A (float 4)
 							break;
 						case 3:
-							pTexels[rowStart + colStart + i + 0] = mSkinMtx[y][x]._41;     //R (float 1)
-							pTexels[rowStart + colStart + i + 1] = mSkinMtx[y][x]._42;     //G (float 2)
-							pTexels[rowStart + colStart + i + 2] = mSkinMtx[y][x]._43;     //B (float 3)
-							pTexels[rowStart + colStart + i + 3] = mSkinMtx[y][x]._44;     //A (float 4)
+							pTexels[rowStart + colStart + i * 4 + 0] = mSkinMtx[y][x]._41;     //R (float 1)
+							pTexels[rowStart + colStart + i * 4 + 1] = mSkinMtx[y][x]._42;     //G (float 2)
+							pTexels[rowStart + colStart + i * 4 + 2] = mSkinMtx[y][x]._43;     //B (float 3)
+							pTexels[rowStart + colStart + i * 4 + 3] = mSkinMtx[y][x]._44;     //A (float 4)
 							break;
 						default:
 							cout << "행렬 범위 초과" << endl;
@@ -2555,7 +2740,7 @@ public:
 	{
 		D3DX11SaveTextureToFile(cCoreStorage::GetInstance()->md3dImmediateContext,
 			mSkinTex.mTexture,      //저장할 텍스처
-			D3DX11_IFF_BMP,         //BMP로 저장
+			D3DX11_IFF_PNG,         //png로 저장
 			_TexName.c_str());      //이름
 
 		// 텍스처를 만들었으니, 기존 데이터는 삭제
@@ -2593,7 +2778,7 @@ private:
 		// map으로 옮김
 		for (unsigned int i = 0; i < mSaveBoneData.size(); ++i)
 		{
-			// 회전 누적
+			// 회전키 누적 계산
 			auto _QuaternionArray = mSaveBoneData[i].mAniData.Quaternion;
 			for (unsigned int x = 1; x < _QuaternionArray.size(); ++x)
 			{

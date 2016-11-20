@@ -59,6 +59,29 @@ struct PNTVertexIn
 	uint InstanceId		      : SV_InstanceID;
 };
 
+struct PNTVertexAniIn
+{
+	float3 PosL				  : POSITION;
+	float3 NormalL			  : NORMAL;
+	float2 Tex				  : TEXCOORD;
+	float3 Tangent			  : TANGENT;
+	float3 BiNormal			  : BINORMAL;
+	float3 Weights            : WEIGHTS;
+	uint4 BoneIndices         : BONEINDICES;
+	row_major float4x4 World  : WORLD;
+	uint InstanceId		      : SV_InstanceID;
+};
+
+struct PNTVertexAniOut
+{
+	float4 PosH    : SV_POSITION;
+	float3 PosW    : POSITION0;
+	float3 NormalW : NORMAL;
+	float2 Tex     : TEXCOORD0; // 보정 용도
+	float3 WT      : POSITION1; // 매트릭스 만들기 용도
+	float3 WB      : POSITION2; // 매트릭스 만들기 용도
+};
+
 struct PNTVertexOut
 {
 	float4 PosH    : SV_POSITION;
