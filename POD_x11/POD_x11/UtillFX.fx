@@ -67,8 +67,9 @@ struct PNTVertexAniIn
 	float3 Tangent			  : TANGENT;
 	float3 BiNormal			  : BINORMAL;
 	float3 Weights            : WEIGHTS;
-	uint4 BoneIndices         : BONEINDICES;
+	uint4  BoneIndices        : BONEINDICES;
 	row_major float4x4 World  : WORLD;
+	float2 AniData            : ANIDATA;
 	uint InstanceId		      : SV_InstanceID;
 };
 

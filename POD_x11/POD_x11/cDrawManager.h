@@ -328,7 +328,7 @@ private:
 
 				// 현재 쉐이더 모드 갱신
 				_BeforeShaderMode = itor->second->mShaderMode;
-				_BeforeModelName = itor->second->mCreateName;
+				_BeforeModelName  = itor->second->mCreateName;
 			}
 
 			// 모델 그리기
@@ -395,7 +395,20 @@ private:
 
 					// 쉐이더 모드에 셋팅된 값 가져오기
 					UINT offset[2] = { 0, 0 };
-					UINT stride[2] = { mShaderManager->GetIAStride(), sizeof(XMFLOAT4X4) };
+					UINT stride[2];
+
+					// 애니가 들어간 텍스처는 별도 처리
+					if (_ShaderMode == e_ShaderPongTexAni)
+					{
+						stride[0] = mShaderManager->GetIAStride();
+						stride[1] = sizeof(InsAni);
+					}
+					// 그 외 인스턴스 텍스처
+					else
+					{
+						stride[0] = mShaderManager->GetIAStride();
+						stride[1] = sizeof(XMFLOAT4X4);
+					}
 
 					// 쉐이더 입력조립기 세팅 (Set)
 					mCoreStorage->md3dImmediateContext->IASetInputLayout(mShaderManager->GetInputLayout());

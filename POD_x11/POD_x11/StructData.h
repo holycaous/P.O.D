@@ -119,6 +119,13 @@ struct VertexG
 	XMFLOAT2 Tex;
 };
 
+// 인스턴스 정보
+struct InsAni
+{
+	XMFLOAT4X4 mMtx;
+	XMFLOAT2   mInsAni; // 실행될 애니의 텍스처번호, 프레임 번호
+};
+
 // 구조체 정의
 struct Vertex
 {
@@ -1055,7 +1062,14 @@ public:
 	void ReMakeBuf(string& _name)
 	{
 		ClearInsBuf(_name);
+
 		MakeInsBuf(_name);
+	}
+
+	// 모델 추가
+	void AddModel(string _ModelName, InitMetaData* _ModelData)
+	{
+		mModelList[_ModelName] = _ModelData;
 	}
 
 	// 빌드
@@ -1084,10 +1098,197 @@ public:
 		}
 	}
 
+	//--------------------------------------------------------------------------------------------------//
+	// 스크린 전용
+	//--------------------------------------------------------------------------------------------------//
+	// 스크린 인스턴스 버퍼 생성
+	void MakeScreenInsBuf(InitMetaData* _Screen)
+	{
+		// 인스턴스 버퍼 생성
+		// 월드 매트릭스가 있어야만 생성
+		if (_Screen->mObjData.size())
+		{
+			D3D11_BUFFER_DESC vbd;
+			vbd.Usage               = D3D11_USAGE_DYNAMIC;
+			vbd.ByteWidth           = sizeof(XMFLOAT4X4) * _Screen->mObjData.size();
+			vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+			vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+			vbd.MiscFlags           = 0;
+			vbd.StructureByteStride = 0;
+
+			// 공간할당
+			//mInstancedBuffer[itor->second->mCreateName] = NULL;
+			HR(mCoreStorage->md3dDevice->CreateBuffer(&vbd, 0, &mInstancedBuffer[_Screen->mCreateName]));
+		}
+	}
+
+	// 인스턴스 모델 업데이트
+	void UpdateScreenIns(InitMetaData* _Screen)
+	{
+		// 인스턴스 버퍼 열기 ( 다이나믹 버퍼 )
+		D3D11_MAPPED_SUBRESOURCE mappedData;
+
+		// 해당 모델의 월드 매트릭스가 있을때
+		if (_Screen->mObjData.size())
+		{
+			mCoreStorage->md3dImmediateContext->Map(mInstancedBuffer[_Screen->mCreateName], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
+
+			// << 인스턴스 버퍼 >> 의 "인터페이스"를 얻어온다.
+			XMFLOAT4X4* dataView = reinterpret_cast<XMFLOAT4X4*>(mappedData.pData);
+
+			// 컬링 안함
+			// 매트릭스 수만큼 등록
+			auto tobjMtx = _Screen->mObjData;
+			UINT i = -1;
+			for (auto itor = tobjMtx.begin(); itor != tobjMtx.end(); ++itor)
+			{
+				dataView[++i] = itor->second.mWdMtx;
+			}
+			// 인스턴스 버퍼 닫기
+			mCoreStorage->md3dImmediateContext->Unmap(mInstancedBuffer[_Screen->mCreateName], 0);
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------//
+	// 일반 인스턴스 전용
+	//--------------------------------------------------------------------------------------------------//
+	// 인스턴스 버퍼 생성
+	void MakeInsBuf()
+	{
+		// 해당 쉐이더에 있는 모든 모델들은 인스턴스 버퍼를 만들어야 한다.
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 월드 매트릭스가 있어야만 생성
+			if (itor->second->mObjData.size())
+			{
+				D3D11_BUFFER_DESC vbd;
+
+				// 애니 모델 버퍼
+				if (mShaderMode == e_ShaderPongTexAni)
+				{
+					vbd.Usage               = D3D11_USAGE_DYNAMIC;
+					vbd.ByteWidth           = sizeof(InsAni) * itor->second->mObjData.size();
+					vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+					vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+					vbd.MiscFlags           = 0;
+					vbd.StructureByteStride = 0;
+				}
+				// 일반 모델 버퍼
+				else
+				{
+					vbd.Usage               = D3D11_USAGE_DYNAMIC;
+					vbd.ByteWidth           = sizeof(XMFLOAT4X4) * itor->second->mObjData.size();
+					vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+					vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+					vbd.MiscFlags           = 0;
+					vbd.StructureByteStride = 0;
+				}
+				// 공간할당
+				//mInstancedBuffer[itor->second->mCreateName] = NULL;
+				HR(mCoreStorage->md3dDevice->CreateBuffer(&vbd, 0, &mInstancedBuffer[itor->second->mCreateName]));
+			}
+		}
+	}
+
+	// 인스턴스 버퍼 생성
+	void MakeInsBuf(string& _name)
+	{
+		// 모델 선택
+		auto _selectModel = mModelList[_name];
+
+		// 월드 매트릭스가 있어야만 생성
+		if (_selectModel->mObjData.size())
+		{
+			D3D11_BUFFER_DESC vbd;
+
+			// 애니 모델 버퍼
+			if (mShaderMode == e_ShaderPongTexAni)
+			{
+				vbd.Usage               = D3D11_USAGE_DYNAMIC;
+				vbd.ByteWidth           = sizeof(InsAni) * _selectModel->mObjData.size();
+				vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+				vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+				vbd.MiscFlags           = 0;
+				vbd.StructureByteStride = 0;
+			}
+			// 일반 모델 버퍼
+			else
+			{
+				vbd.Usage               = D3D11_USAGE_DYNAMIC;
+				vbd.ByteWidth           = sizeof(XMFLOAT4X4) * _selectModel->mObjData.size();
+				vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+				vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+				vbd.MiscFlags           = 0;
+				vbd.StructureByteStride = 0;
+			}
+
+			// 공간할당
+			//mInstancedBuffer[itor->second->mCreateName] = NULL;
+			HR(mCoreStorage->md3dDevice->CreateBuffer(&vbd, 0, &mInstancedBuffer[_selectModel->mCreateName]));
+		}
+	}
+
+	// 인스턴스 모델 업데이트
+	void UpdateIns()
+	{
+		// 해당 쉐이더에 있는 모든 모델들은 인스턴스 버퍼를 갱신해야 한다.
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 인스턴스 버퍼 열기 ( 다이나믹 버퍼 )
+			D3D11_MAPPED_SUBRESOURCE mappedData;
+
+			// 해당 모델의 월드 매트릭스가 있을때
+			if (itor->second->mObjData.size())
+			{
+				// 인스턴스 버퍼 열기
+				mCoreStorage->md3dImmediateContext->Map(mInstancedBuffer[itor->second->mCreateName], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
+
+				// 매트릭스 수만큼 등록 (컬링 안함)
+				auto tModelMtx = itor->second->mObjData;
+				UINT i = -1;
+
+				// 애니 모델 쓰기
+				if (mShaderMode == e_ShaderPongTexAni)
+				{
+					// << 인스턴스 버퍼 >> 의 "인터페이스"를 얻어온다.
+					InsAni* dataView = reinterpret_cast<InsAni*>(mappedData.pData);
+
+					// 매트릭스 수만큼 등록 (컬링 안함)
+					for (auto itor2 = tModelMtx.begin(); itor2 != tModelMtx.end(); ++itor2)
+					{
+						// 모델 매트릭스
+						dataView[++i].mMtx = itor2->second.mWdMtx;
+
+						// 모델 애니정보
+						dataView[i].mInsAni.x; // 실행될 애니의 텍스처번호
+						dataView[i].mInsAni.y; // 프레임 번호
+					}
+				}
+				// 일반 모델 쓰기
+				else
+				{
+					// << 인스턴스 버퍼 >> 의 "인터페이스"를 얻어온다.
+					XMFLOAT4X4* dataView = reinterpret_cast<XMFLOAT4X4*>(mappedData.pData);
+
+					// 매트릭스 수만큼 등록 (컬링 안함)
+					for (auto itor2 = tModelMtx.begin(); itor2 != tModelMtx.end(); ++itor2)
+					{
+						dataView[++i] = itor2->second.mWdMtx;
+					}
+				}
+
+				// 인스턴스 버퍼 닫기
+				mCoreStorage->md3dImmediateContext->Unmap(mInstancedBuffer[itor->second->mCreateName], 0);
+			}
+		}
+	}
+
+	//-----------------------------------------------------------------------------------------------------------//
+	// 빌드
+	//-----------------------------------------------------------------------------------------------------------//
 	// 스크린 버퍼 빌드
 	void Build_GScreen(InitMetaData* _Screen)
 	{
-		//-----------------------------------------------------------------------------------------------------------//
 		_Screen->mVertexOffset = 0;
 		_Screen->mIndexOffset  = 0;
 
@@ -1147,140 +1348,6 @@ public:
 		iinitData.pSysMem = &indices[0];
 		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
-
-	// 스크린 인스턴스 버퍼 생성
-	void MakeScreenInsBuf(InitMetaData* _Screen)
-	{
-		// 인스턴스 버퍼 생성
-		// 월드 매트릭스가 있어야만 생성
-		if (_Screen->mObjData.size())
-		{
-			D3D11_BUFFER_DESC vbd;
-			vbd.Usage               = D3D11_USAGE_DYNAMIC;
-			vbd.ByteWidth           = sizeof(XMFLOAT4X4) * _Screen->mObjData.size();
-			vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
-			vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
-			vbd.MiscFlags           = 0;
-			vbd.StructureByteStride = 0;
-
-			// 공간할당
-			//mInstancedBuffer[itor->second->mCreateName] = NULL;
-			HR(mCoreStorage->md3dDevice->CreateBuffer(&vbd, 0, &mInstancedBuffer[_Screen->mCreateName]));
-		}
-	}
-
-	// 인스턴스 모델 업데이트
-	void UpdateScreenIns(InitMetaData* _Screen)
-	{
-		// 인스턴스 버퍼 열기 ( 다이나믹 버퍼 )
-		D3D11_MAPPED_SUBRESOURCE mappedData;
-
-		// 해당 모델의 월드 매트릭스가 있을때
-		if (_Screen->mObjData.size())
-		{
-			mCoreStorage->md3dImmediateContext->Map(mInstancedBuffer[_Screen->mCreateName], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
-
-			// << 인스턴스 버퍼 >> 의 "인터페이스"를 얻어온다.
-			XMFLOAT4X4* dataView = reinterpret_cast<XMFLOAT4X4*>(mappedData.pData);
-
-			// 컬링 안함
-			// 매트릭스 수만큼 등록
-			auto tobjMtx = _Screen->mObjData;
-			UINT i = -1;
-			for (auto itor = tobjMtx.begin(); itor != tobjMtx.end(); ++itor)
-			{
-				dataView[++i] = itor->second.mWdMtx;
-			}
-			// 인스턴스 버퍼 닫기
-			mCoreStorage->md3dImmediateContext->Unmap(mInstancedBuffer[_Screen->mCreateName], 0);
-		}
-	}
-
-	// 모델 추가
-	void AddModel(string _ModelName, InitMetaData* _ModelData)
-	{
-		mModelList[_ModelName] = _ModelData;
-	}
-
-	// 인스턴스 버퍼 생성
-	void MakeInsBuf()
-	{
-		// 해당 쉐이더에 있는 모든 모델들은 인스턴스 버퍼를 만들어야 한다.
-		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
-		{
-			// 월드 매트릭스가 있어야만 생성
-			if (itor->second->mObjData.size())
-			{
-				D3D11_BUFFER_DESC vbd;
-				vbd.Usage               = D3D11_USAGE_DYNAMIC;
-				vbd.ByteWidth           = sizeof(XMFLOAT4X4) * itor->second->mObjData.size();
-				vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
-				vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
-				vbd.MiscFlags           = 0;
-				vbd.StructureByteStride = 0;
-
-				// 공간할당
-				//mInstancedBuffer[itor->second->mCreateName] = NULL;
-				HR(mCoreStorage->md3dDevice->CreateBuffer(&vbd, 0, &mInstancedBuffer[itor->second->mCreateName]));
-			}
-		}
-	}
-
-	// 인스턴스 버퍼 생성
-	void MakeInsBuf(string& _name)
-	{
-		// 모델 선택
-		auto _selectModel = mModelList[_name];
-
-		// 월드 매트릭스가 있어야만 생성
-		if (_selectModel->mObjData.size())
-		{
-			D3D11_BUFFER_DESC vbd;
-			vbd.Usage               = D3D11_USAGE_DYNAMIC;
-			vbd.ByteWidth           = sizeof(XMFLOAT4X4) * _selectModel->mObjData.size();
-			vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
-			vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
-			vbd.MiscFlags           = 0;
-			vbd.StructureByteStride = 0;
-
-			// 공간할당
-			//mInstancedBuffer[itor->second->mCreateName] = NULL;
-			HR(mCoreStorage->md3dDevice->CreateBuffer(&vbd, 0, &mInstancedBuffer[_selectModel->mCreateName]));
-		}
-	}
-
-	// 인스턴스 모델 업데이트
-	void UpdateIns()
-	{
-		// 해당 쉐이더에 있는 모든 모델들은 인스턴스 버퍼를 갱신해야 한다.
-		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
-		{
-			// 인스턴스 버퍼 열기 ( 다이나믹 버퍼 )
-			D3D11_MAPPED_SUBRESOURCE mappedData;
-
-			// 해당 모델의 월드 매트릭스가 있을때
-			if (itor->second->mObjData.size())
-			{
-				mCoreStorage->md3dImmediateContext->Map(mInstancedBuffer[itor->second->mCreateName], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
-
-				// << 인스턴스 버퍼 >> 의 "인터페이스"를 얻어온다.
-				XMFLOAT4X4* dataView = reinterpret_cast<XMFLOAT4X4*>(mappedData.pData);
-
-				// 컬링 안함
-				// 매트릭스 수만큼 등록
-				auto tModelMtx = itor->second->mObjData;
-				UINT i = -1;
-				for (auto itor2 = tModelMtx.begin(); itor2 != tModelMtx.end(); ++itor2)
-				{
-					dataView[++i] = itor2->second.mWdMtx;
-				}
-
-				// 인스턴스 버퍼 닫기
-				mCoreStorage->md3dImmediateContext->Unmap(mInstancedBuffer[itor->second->mCreateName], 0);
-			}
-		}
-	}
-
 
 private:
 	// 모델의 메타데이터( 정보를 가지고 있는) , 저장할 모델 
@@ -1500,7 +1567,6 @@ private:
 		iinitData.pSysMem = &indices[0];
 		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
-
 	void Build_PNT()
 	{
 		//-----------------------------------------------------------------------------------------------------------//
@@ -1649,7 +1715,6 @@ private:
 		iinitData.pSysMem = &indices[0];
 		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
-
 	void Build_PNT_Ani()
 	{
 		//-----------------------------------------------------------------------------------------------------------//
@@ -1853,7 +1918,6 @@ private:
 		iinitData.pSysMem = &indices[0];
 		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
-
 
 	// 탄젠트 공간 계산
 	void CalTangentSpace(InitMetaData* _MetaData)
