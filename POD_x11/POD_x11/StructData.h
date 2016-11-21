@@ -42,6 +42,21 @@ typedef enum
 	e_ShaderValMtxArray = 4
 }SHADER_VAL_TYPE;
 
+// 모델 FSM
+typedef enum
+{
+	e_Idle      = 0,
+	e_Damage    = 1,
+	e_Run       = 2,
+	e_Walk      = 3,
+	e_Death     = 4,
+	e_DeathWait = 5,
+	e_Attack1   = 6,
+	e_Attack2   = 7,
+	e_Attack3   = 8,
+	e_Stun      = 9
+}FSM_TYPE;
+
 // 어떤 텍스처를 로드할 것인가
 typedef enum
 {
@@ -123,7 +138,7 @@ struct VertexG
 struct InsAni
 {
 	XMFLOAT4X4 mMtx;
-	XMFLOAT2   mInsAni; // 실행될 애니의 텍스처번호, 프레임 번호
+	XMFLOAT2   mInsAni; // 실행될 애니의 텍스처번호, 프레임 정보
 };
 
 // 구조체 정의
@@ -255,9 +270,9 @@ public:
 class AniData
 {
 public:
-	vector<KeyVtx> Position;
+	vector<KeyVtx>    Position;
 	vector<RotKeyVtx> Quaternion;
-	vector<KeyVtx> Scale;
+	vector<KeyVtx>    Scale;
 public:
 	~AniData()
 	{
@@ -266,9 +281,9 @@ public:
 
 	void ClearClass()
 	{
-		Position.clear();
+		Position  .clear();
 		Quaternion.clear();
-		Scale.clear();
+		Scale     .clear();
 	}
 };
 
@@ -280,12 +295,19 @@ public:
 	ID3D11Texture2D* mTexture;
 	ID3D11ShaderResourceView* mTexSRV;
 
+	// 애니 정보
+	float mAniType;  // 타입
+	float mStPoint;  // 시작
+	float mEdPoint;  // 끝
 public:
 	SkinTexture()
 	{
 		mTexture = nullptr;
 		mTexSRV  = nullptr;
 		mName.clear();
+
+		mAniType = (float)e_Idle;
+		mStPoint = mEdPoint = 0;
 	}
 
 	~SkinTexture()
@@ -328,6 +350,13 @@ public:
 	int mHP;
 	int mMP;
 
+	// 애니 정보
+	float mAniType;  // 타입
+	float mStPoint;  // 시작
+	float mEdPoint;  // 끝
+	float mFrame;    // 프레임
+
+	float mAniSpeed; // 애니 스피드
 public:
 	ObjData()
 	{
@@ -340,12 +369,69 @@ public:
 
 		// 오브젝트가 동적인지 정적인지
 		mObjMoveAble = e_StaticObj;
+
+		mAniType = (float)e_Idle;
+		mStPoint = mEdPoint = mFrame = 0.0f;
+
+		// 애니메이션 기본 스피드
+		mAniSpeed = 1.0f;
 	}
 	~ObjData()
 	{
 
 	}
 
+	// 애니메이션 스피드 조절
+	void SetAniSpeed(float _aniSpeed)
+	{
+		// 애니메이션 속도는 1보다 커야한다.
+		if (_aniSpeed <= 1)
+			mAniSpeed = 1;
+		else
+			mAniSpeed = _aniSpeed;
+	}
+
+	// 애니타입 변경
+	void SetFSM(float _modelFsm, float _StPoint, float _mEdPoint)
+	{
+		// 애니타입 변경
+		mAniType = _modelFsm;
+
+		// 상태가 변했으면 프레임 초기화 및 애니메이션의 시작과 끝을 가져와야함.
+		mFrame   = 0.0f;
+		mStPoint = _StPoint;
+		mEdPoint = _mEdPoint;
+	}
+
+	// 애니타입 변경
+	void SetFSM(float _modelFsm, float _StPoint, float _mEdPoint, float _Frame)
+	{
+		// 애니타입 변경
+		mAniType = _modelFsm;
+
+		// 상태가 변했으면 프레임 초기화 및 애니메이션의 시작과 끝을 가져와야함.
+		mFrame   = _Frame;
+		mStPoint = _StPoint;
+		mEdPoint = _mEdPoint;
+	}
+
+	// 프레임 셋하기
+	void SetFrame(float _frame)
+	{
+		mFrame = _frame;
+	}
+
+	// 애니 시간 업데이트
+	void Update(float& dt)
+	{
+		// 시간 흘르기
+		mFrame += (dt * mAniSpeed);
+
+		// 마지막보다 크다면, 초기화
+		if (mEdPoint < mFrame)
+			mFrame = mStPoint;
+	}
+	
 	// 위치 반환
 	XMFLOAT3 getPos() const
 	{
@@ -494,7 +580,7 @@ public:
 	bool mAniModel;
 
 	// 스킨 텍스처 (포인터)
-	map<string, SkinTexture*> mSkinTex;
+	map<int, SkinTexture*> mSkinTex;
 
 	// 가중치 데이터
 	vector<WeightVtx> weightVtx;
@@ -867,70 +953,99 @@ public:
 		return mObjData[_uniqueCode].getPos();
 	}
 	
-
-	/*
-	void CreateGrid(float width, float depth, UINT m, UINT n, InitMetaData& meshData)
+	// 오브젝트 FSM 설정
+	void SetFSM(int _unicode, FSM_TYPE _modelFsm)
 	{
-	UINT vertexCount = m*n;
-	UINT faceCount = (m - 1)*(n - 1) * 2;
+		//switch (_modelFsm)
+		//{
+		//default:
+		//case e_Idle:
+		//
+		//	break;
+		//case e_Damage:   
+		//
+		//	break;
+		//case e_Run:
+		//
+		//	break;
+		//case e_Walk:
+		//
+		//	break;
+		//case e_Death:
+		//
+		//	break;
+		//case e_DeathWait:
+		//
+		//	break;
+		//case e_Attack1:
+		//
+		//	break;
+		//case e_Attack2:
+		//
+		//	break;
+		//case e_Attack3:
+		//
+		//	break;
+		//case e_Stun:
+		//
+		//	break;
+		//}
 
-	//
-	// Create the vertices.
-	//
 
-	float halfWidth = 0.5f*width;
-	float halfDepth = 0.5f*depth;
+		float _newType = mSkinTex[_modelFsm]->mAniType;
+		float _StPoint = mSkinTex[_modelFsm]->mStPoint;
+		float _EdPoint = mSkinTex[_modelFsm]->mEdPoint;
 
-	float dx = width / (n - 1);
-	float dz = depth / (m - 1);
+		// 새로운 모델로 세팅
+		mObjData[_unicode].SetFSM(_newType, _StPoint, _EdPoint);
+	}
 
-	float du = 1.0f / (n - 1);
-	float dv = 1.0f / (m - 1);
-
-	meshData.Vertices.resize(vertexCount);
-	for (UINT i = 0; i < m; ++i)
+	// 오브젝트 FSM 설정
+	void SetFSM(int _unicode, FSM_TYPE _modelFsm, float _Frame)
 	{
-	float z = halfDepth - i*dz;
-	for (UINT j = 0; j < n; ++j)
-	{
-	float x = -halfWidth + j*dx;
+		//switch (_modelFsm)
+		//{
+		//default:
+		//case e_Idle:
+		//
+		//	break;
+		//case e_Damage:   
+		//
+		//	break;
+		//case e_Run:
+		//
+		//	break;
+		//case e_Walk:
+		//
+		//	break;
+		//case e_Death:
+		//
+		//	break;
+		//case e_DeathWait:
+		//
+		//	break;
+		//case e_Attack1:
+		//
+		//	break;
+		//case e_Attack2:
+		//
+		//	break;
+		//case e_Attack3:
+		//
+		//	break;
+		//case e_Stun:
+		//
+		//	break;
+		//}
 
-	meshData.Vertices[i*n + j].Position = XMFLOAT3(x, 0.0f, z);
-	meshData.Vertices[i*n + j].Normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	meshData.Vertices[i*n + j].TangentU = XMFLOAT3(1.0f, 0.0f, 0.0f);
 
-	// Stretch texture over grid.
-	meshData.Vertices[i*n + j].TexUV.x = j*du;
-	meshData.Vertices[i*n + j].TexUV.y = i*dv;
+		float _newType = mSkinTex[_modelFsm]->mAniType;
+		float _StPoint = mSkinTex[_modelFsm]->mStPoint;
+		float _EdPoint = mSkinTex[_modelFsm]->mEdPoint;
+
+		// 새로운 모델로 세팅
+		mObjData[_unicode].SetFSM(_newType, _StPoint, _EdPoint, _Frame);
 	}
-	}
-
-	//
-	// Create the indices.
-	//
-
-	meshData.Indices.resize(faceCount * 3); // 3 indices per face
-
-	// Iterate over each quad and compute indices.
-	UINT k = 0;
-	for (UINT i = 0; i < m - 1; ++i)
-	{
-	for (UINT j = 0; j < n - 1; ++j)
-	{
-	meshData.Indices[k] = i*n + j;
-	meshData.Indices[k + 1] = i*n + j + 1;
-	meshData.Indices[k + 2] = (i + 1)*n + j;
-
-	meshData.Indices[k + 3] = (i + 1)*n + j;
-	meshData.Indices[k + 4] = i*n + j + 1;
-	meshData.Indices[k + 5] = (i + 1)*n + j + 1;
-
-	k += 6; // next quad
-	}
-	}
-	}
-	*/
-
 };
 
 // 이펙트 변수
@@ -1243,8 +1358,8 @@ public:
 				// 인스턴스 버퍼 열기
 				mCoreStorage->md3dImmediateContext->Map(mInstancedBuffer[itor->second->mCreateName], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
 
-				// 매트릭스 수만큼 등록 (컬링 안함)
-				auto tModelMtx = itor->second->mObjData;
+				// 모델 데이터 가져오기
+				auto tModelData = itor->second->mObjData;
 				UINT i = -1;
 
 				// 애니 모델 쓰기
@@ -1253,15 +1368,15 @@ public:
 					// << 인스턴스 버퍼 >> 의 "인터페이스"를 얻어온다.
 					InsAni* dataView = reinterpret_cast<InsAni*>(mappedData.pData);
 
-					// 매트릭스 수만큼 등록 (컬링 안함)
-					for (auto itor2 = tModelMtx.begin(); itor2 != tModelMtx.end(); ++itor2)
+					// 등록된 모델 수만큼 등록 (컬링 안함)
+					for (auto itor2 = tModelData.begin(); itor2 != tModelData.end(); ++itor2)
 					{
 						// 모델 매트릭스
 						dataView[++i].mMtx = itor2->second.mWdMtx;
 
 						// 모델 애니정보
-						dataView[i].mInsAni.x; // 실행될 애니의 텍스처번호
-						dataView[i].mInsAni.y; // 프레임 번호
+						dataView[i].mInsAni.x = itor2->second.mAniType; // 실행될 애니의 텍스처번호
+						dataView[i].mInsAni.y = itor2->second.mFrame;   // 프레임 정보
 					}
 				}
 				// 일반 모델 쓰기
@@ -1270,8 +1385,8 @@ public:
 					// << 인스턴스 버퍼 >> 의 "인터페이스"를 얻어온다.
 					XMFLOAT4X4* dataView = reinterpret_cast<XMFLOAT4X4*>(mappedData.pData);
 
-					// 매트릭스 수만큼 등록 (컬링 안함)
-					for (auto itor2 = tModelMtx.begin(); itor2 != tModelMtx.end(); ++itor2)
+					// 등록된 모델 수만큼 등록 (컬링 안함)
+					for (auto itor2 = tModelData.begin(); itor2 != tModelData.end(); ++itor2)
 					{
 						dataView[++i] = itor2->second.mWdMtx;
 					}
@@ -2661,7 +2776,7 @@ public:
 	}
 
 	// 데이터 계산
-	void CalData(string _TexName)
+	void CalData(string _TexName, FSM_TYPE _fsmType)
 	{
 		// 텍스트가 있냐 없냐
 		string tTexName;
@@ -2670,12 +2785,28 @@ public:
 		tTexName += _TexName;
 		tTexName += ".png";
 
+		//--------------------------------------------------------------------------------------------------//
+		// 애니 데이터 채우기
+		//--------------------------------------------------------------------------------------------------//
 		// 이름 저장
 		mSkinTex.mName = _TexName;
 
+		// 애니 타입 저장
+		mSkinTex.mAniType = (float)_fsmType;
+
+		// 애니 처음, 마지막 위치 저장
+		mSkinTex.mStPoint = 0.0f;
+		mSkinTex.mEdPoint = (float)mSaveBoneData[0].mAniData.Position.size();
+
+		//--------------------------------------------------------------------------------------------------//
+		// 파일 경로 문자열
+		//--------------------------------------------------------------------------------------------------//
 		wstring _WsTexName;
 		StringToWchar_t(tTexName.c_str(), _WsTexName);
 
+		//--------------------------------------------------------------------------------------------------//
+		// 텍스처 연결
+		//--------------------------------------------------------------------------------------------------//
 		RetryLoadTex:
 		HRESULT hr = D3DX11CreateShaderResourceViewFromFile(cCoreStorage::GetInstance()->md3dDevice, _WsTexName.c_str(), 0, 0, &mSkinTex.mTexSRV, 0);
 

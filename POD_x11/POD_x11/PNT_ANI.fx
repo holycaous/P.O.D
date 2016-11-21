@@ -135,6 +135,10 @@ technique11 PongTexAni
 	{
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
+
+		// 이 사이에 계산 쉐이더를 넣어보자!!?
+
+
 		SetPixelShader(CompileShader(ps_5_0, PS()));
 	}
 }

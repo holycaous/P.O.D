@@ -9,7 +9,6 @@ class cShaderManager : public cSingleton<cShaderManager>
 {
 	cCoreStorage*  mCoreStorage  = cCoreStorage ::GetInstance();
 	cLightManager* mLightManager = cLightManager::GetInstance();
-	cAniManager*   mAniManager   = cAniManager  ::GetInstance();
 
 	// ·»´õ¸µ ¸ðµå
 	SHADER_TYPE mShaderMode;

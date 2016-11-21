@@ -8,7 +8,6 @@ class cDrawManager : public cSingleton<cDrawManager>
 	cShaderManager*   mShaderManager   = cShaderManager  ::GetInstance();
 	cMaterialManager* mMaterialManager = cMaterialManager::GetInstance();
 	cModelManager*    mModelManager    = cModelManager   ::GetInstance();
-	cAniManager*      mAniManager      = cAniManager     ::GetInstance();
 
 
 	// 어떻게 그릴 것인가

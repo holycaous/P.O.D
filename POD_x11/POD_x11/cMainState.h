@@ -56,10 +56,11 @@ public:
 		//mModelManager->AddModel("Model4", 100.0f, 100.0f, 470.0f );
 
 		// 테스트용
-		//mModelManager->AddModel("Model4",  100.0f, 0.0f,  300.0f);
-		mModelManager->AddModel("Model2",  100.0f, 100.0f,  200.0f);
-		mModelManager->AddModel("Model1",  100.0f, 100.0f,  500.0f);
-		mModelManager->AddModel("Model5",  100.0f, 100.0f,  700.0f);
+		//mModelManager->AddModel(0, "Model4",  100.0f, 0.0f,  300.0f, e_Idle);
+		mModelManager->AddModel(0, "Model2", 100.0f, 100.0f, 200.0f, e_Idle);
+		mModelManager->AddModel(0, "Model1", 100.0f, 100.0f, 500.0f, e_Idle);
+		//mModelManager->AddModel(0, "Model5",   100.0f, 100.0f, 700.0f, e_Idle); 
+		mModelManager->AddModel(0, "Model5",  100.0f, 100.0f,  700.0f, e_Idle);
 		
 		// 본 그려보기 추가
 		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f);
@@ -68,7 +69,7 @@ public:
 		mModelManager->MakeInsbuf();
 
 		// 플레이어 및 카메라 세팅
-		mModelManager->IniPlayer(0, "Model3", 200.0f, 100.0f, 600.0f);
+		mModelManager->IniPlayer(0, "Model3", 200.0f, 100.0f, 600.0f, e_Idle);
 	}	
 
 	// 제거
@@ -84,6 +85,9 @@ public:
 	{
 		// 렌더링 매니저 업데이트
 		mDrawManager->Update(dt);
+		
+		// 모델 매니저 업데이트
+		mModelManager->Update(dt);
 
 		mModelManager->MoveToPlayer(0, "Model2", 10.0f * dt);						  // 플레이어에게 이동
 		mModelManager->MovePoint   (0, "Model5", 100.0f, 100.0f, 100.0f ,10.0f * dt); // 해당 지점으로 이동

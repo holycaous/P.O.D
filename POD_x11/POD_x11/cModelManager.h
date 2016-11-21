@@ -53,12 +53,12 @@ public:
 		CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTexAni);
 
 		// 애니 추가
-		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdle.pod");
-		CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod");
-		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod");
-		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod");
-		CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod");
-			
+		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdle.pod"      , e_Idle);
+		CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"          , e_Idle);
+		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"   , e_Idle);
+		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"       , e_Idle);
+		CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod"      , e_Idle);
+																      
 		// 만들어진 모델 등록
 		ModelRegistration();
 	}
@@ -130,6 +130,32 @@ public:
 
 		// 버퍼 등록
 		AddBuffer();
+		
+		// 애니메이션 연결
+		LinkAni();
+	}
+
+	// 애니메이션 연결
+	void LinkAni()
+	{
+		// 모델을 전부 순회한다.
+		for (map<string, InitMetaData*>::iterator itor = mAllModelData.begin(); itor != mAllModelData.end(); ++itor)
+		{
+			// 애니가 있는 모델 데이터라면 
+			if (itor->second->mShaderMode == e_ShaderPongTexAni)
+			{
+				// 현재 선택한 모델의 애니 데이터
+				auto tAniData = mAniManager->mData[itor->first];
+
+				// 전체 순회
+				for (auto itor2 = tAniData.begin(); itor2 != tAniData.end(); ++itor2)
+				{
+					// 애니메이션 등록
+					int _aniType = (int)itor2->second->mSkinTex.mAniType;
+					itor->second->mSkinTex[_aniType] = &itor2->second->mSkinTex;
+				}
+			}
+		}
 	}
 
 	// 모델 이동하기
@@ -492,7 +518,7 @@ public:
 	}
 
 	// 모델 생성하기
-	void CreateBoneAni(string _Name, string _BoneRoute, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	void CreateBoneAni(string _Name, string _BoneRoute, FSM_TYPE _fsmType, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
 	{
 		//----------------------------------------------------//
 		// 본 데이터 파싱
@@ -508,7 +534,7 @@ public:
 		_TexName += mMyBoneData->mAniName;
 
 		// 데이터 계산
-		mMyBoneData->CalData(_TexName);
+		mMyBoneData->CalData(_TexName, _fsmType);
 
 		// 체인에 연결된 모델에 저장
 		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
@@ -696,6 +722,71 @@ public:
 		_Name.clear();
 	}
 
+	// 모델 추가하기 (애니 FSM)
+	void AddUpdateModel(int _key, string _Name, float _x, float _y, float _z, FSM_TYPE _fsmType, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _moveAble);
+		}
+
+		// 다시 만들기
+		MakeModelInsBuf(_Name);
+
+		_Name.clear();
+	}
+
+	// 모델 추가하기 (애니 FSM)
+	void AddUpdateModel(int _key, string _Name, XMFLOAT4X4 _Mtx, FSM_TYPE _fsmType, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _moveAble);
+		}
+
+		// 다시 만들기
+		MakeModelInsBuf(_Name);
+
+		_Name.clear();
+	}
+
+	// 모델 추가하기 (애니 FSM)
+	void AddUpdateModel(int _key, string _Name, float _x, float _y, float _z, FSM_TYPE _fsmType, float _frame, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _frame, _moveAble);
+		}
+
+		// 다시 만들기
+		MakeModelInsBuf(_Name);
+
+		_Name.clear();
+	}
+
+	// 모델 추가하기 (애니 FSM)
+	void AddUpdateModel(int _key, string _Name, XMFLOAT4X4 _Mtx, FSM_TYPE _fsmType, float _frame, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _frame, _moveAble);
+		}
+
+		// 다시 만들기
+		MakeModelInsBuf(_Name);
+
+		_Name.clear();
+	}
+
+
 	// 모델 제거하기
 	void EraseUpdateModel(int _key, string _Name)
 	{
@@ -764,6 +855,58 @@ public:
 		_Name.clear();
 	}
 
+	// 모델 추가하기 (모델 FSM)
+	void AddModel(int _key, string _Name, float _x, float _y, float _z, FSM_TYPE _fsmType, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _moveAble);
+		}
+
+		_Name.clear();
+	}
+
+	// 모델 추가하기 (모델 FSM)
+	void AddModel(int _key, string _Name, XMFLOAT4X4 _Mtx, FSM_TYPE _fsmType, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _moveAble);
+		}
+
+		_Name.clear();
+	}
+
+	// 모델 추가하기 (모델 FSM)
+	void AddModel(int _key, string _Name, float _x, float _y, float _z, FSM_TYPE _fsmType, float _frame, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _frame, _moveAble);
+		}
+
+		_Name.clear();
+	}
+
+	// 모델 추가하기 (모델 FSM)
+	void AddModel(int _key, string _Name, XMFLOAT4X4 _Mtx, FSM_TYPE _fsmType, float _frame, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _frame, _moveAble);
+		}
+
+		_Name.clear();
+	}
+
 	// 모델 추가하기
 	void AddScreen(float _x, float _y, float _z)
 	{
@@ -810,6 +953,36 @@ public:
 		SetPos   (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
 	}
 
+	// 플레이어 셋팅
+	void IniPlayer(int _key, string _model, float _x, float _y, float _z, FSM_TYPE _fsmType)
+	{
+		gCam.Change3PersonCam();
+		gCam.initCam(_x, _y, _z);
+		AddUpdateModel(_key, _model, _x, _y, _z, _fsmType);
+		
+		mPlayer.mkey       = _key;
+		mPlayer.mModelName = _model;
+		mPlayer.mPos       = gCam.GetThirdPosition();
+
+		SetRotate(mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+		SetPos   (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+	}
+
+	// 플레이어 셋팅
+	void IniPlayer(int _key, string _model, float _x, float _y, float _z, FSM_TYPE _fsmType, float _frame)
+	{
+		gCam.Change3PersonCam();
+		gCam.initCam(_x, _y, _z);
+		AddUpdateModel(_key, _model, _x, _y, _z, _fsmType, _frame);
+		
+		mPlayer.mkey       = _key;
+		mPlayer.mModelName = _model;
+		mPlayer.mPos       = gCam.GetThirdPosition();
+
+		SetRotate(mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+		SetPos   (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+	}
+
 	// 인스턴스 버퍼 만들기
 	void MakeInsbuf()
 	{
@@ -842,8 +1015,19 @@ public:
 		// 모든 모델들에게 일괄적인 명령을 내린다.
 		for (map<string, InitMetaData*>::iterator itor = mAllModelData.begin(); itor != mAllModelData.end(); ++itor)
 		{
+			// 애니메이션 업데이트
+			UpdateAni(itor->second, dt);
+		}
+	}
 
-
+	// 애니메이션 시간 업데이트
+	void UpdateAni(InitMetaData* _itor, float& _dt)
+	{
+		// 오브젝트가 있고, 애니메이션 모델이라면
+		if (_itor->mObjData.size() && _itor->mShaderMode == e_ShaderPongTexAni)
+		{
+			for (unsigned int i = 0; i < _itor->mObjData.size(); ++i)
+				_itor->mObjData[i].Update(_dt);
 		}
 	}
 
@@ -859,8 +1043,41 @@ public:
 		mScreenBuffer->UpdateScreenIns(mScreen);
 	}
 
-private:
+	// FSM 변경
+	void SetFSM(int _unicode, string _Name, FSM_TYPE _modelFsm)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델 모두 FSM 변화
+			string _SlectModel = mModelChain[_Name][i];
 
+			// 애니가 있는 모델이라면,
+			if (mAllModelData[_SlectModel]->mShaderMode == e_ShaderPongTexAni)
+			{
+				mAllModelData[_SlectModel]->SetFSM(_unicode, _modelFsm);
+			}
+		}
+	}
+
+	// FSM 변경
+	void SetFSM(int _unicode, string _Name, FSM_TYPE _modelFsm, float _Frame)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델 모두 FSM 변화
+			string _SlectModel = mModelChain[_Name][i];
+
+			// 애니가 있는 모델이라면,
+			if (mAllModelData[_SlectModel]->mShaderMode == e_ShaderPongTexAni)
+			{
+				mAllModelData[_SlectModel]->SetFSM(_unicode, _modelFsm, _Frame);
+			}
+		}
+	}
+
+private:
 	// 서브 모델들 모두 추가
 	void addSubModel(string& _SlectModel, float& _x, float& _y, float& _z, OBJ_MOVEABLE& _moveAble)
 	{
@@ -900,6 +1117,59 @@ private:
 		// 쉐이더 추가
 		addUseShader(_SlectModel);
 	}
+
+	// 서브 모델들 모두 추가 (애니 FSM)
+	void addSubModel(int _key, string& _SlectModel, float& _x, float& _y, float& _z, FSM_TYPE _fsmType, OBJ_MOVEABLE& _moveAble)
+	{
+		// 체인에 있는 모델 모두 월드매트릭스에 추가
+		mAllModelData[_SlectModel]->AddModel(_key, _x, _y, _z, _moveAble);
+
+		// 애니 모델
+		mAllModelData[_SlectModel]->SetFSM(_key, _fsmType);
+
+		// 쉐이더 추가
+		addUseShader(_SlectModel);
+	}
+
+	// 서브 모델들 모두 추가 (애니 FSM)
+	void addSubModel(int _key, string& _SlectModel, XMFLOAT4X4 _Mtx, FSM_TYPE _fsmType, OBJ_MOVEABLE& _moveAble)
+	{
+		// 체인에 있는 모델 모두 월드매트릭스에 추가
+		mAllModelData[_SlectModel]->AddModel(_key, _Mtx, _moveAble);
+
+		// 애니 모델
+		mAllModelData[_SlectModel]->SetFSM(_key, _fsmType);
+
+		// 쉐이더 추가
+		addUseShader(_SlectModel);
+	}
+
+	// 서브 모델들 모두 추가 (애니 FSM)
+	void addSubModel(int _key, string& _SlectModel, float& _x, float& _y, float& _z, FSM_TYPE _fsmType, float _frame, OBJ_MOVEABLE& _moveAble)
+	{
+		// 체인에 있는 모델 모두 월드매트릭스에 추가
+		mAllModelData[_SlectModel]->AddModel(_key, _x, _y, _z, _moveAble);
+
+		// 애니 모델
+		mAllModelData[_SlectModel]->SetFSM(_key, _fsmType, _frame);
+
+		// 쉐이더 추가
+		addUseShader(_SlectModel);
+	}
+
+	// 서브 모델들 모두 추가 (애니 FSM)
+	void addSubModel(int _key, string& _SlectModel, XMFLOAT4X4 _Mtx, FSM_TYPE _fsmType, float _frame, OBJ_MOVEABLE& _moveAble)
+	{
+		// 체인에 있는 모델 모두 월드매트릭스에 추가
+		mAllModelData[_SlectModel]->AddModel(_key, _Mtx, _moveAble);
+
+		// 애니 모델
+		mAllModelData[_SlectModel]->SetFSM(_key, _fsmType, _frame);
+
+		// 쉐이더 추가
+		addUseShader(_SlectModel);
+	}
+
 
 	// 서브 모델들 삭제
 	void EraseSubModel(int _key, string& _SlectModel)
