@@ -913,6 +913,27 @@ public:
 		mScreen->AddModel(_x, _y, _z, e_StaticObj);
 	}
 
+	// HP 설정
+	void SetHP(int _key, string _Name, float _hp)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			string _SlectModel = mModelChain[_Name][i];
+			mAllModelData[_SlectModel]->SetHp(_key, _hp);
+		}
+	}
+
+	// MP 설정
+	void SetMP(int _key, string _Name, float _mp)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			string _SlectModel = mModelChain[_Name][i];
+			mAllModelData[_SlectModel]->SetMp(_key, _mp);
+		}
+	}
 
 	// 플레이어 전진, 후진
 	XMFLOAT3 PlayerWalk(float _speed)

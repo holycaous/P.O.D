@@ -347,8 +347,8 @@ public:
 	OBJ_MOVEABLE mObjMoveAble;
 
 	// 오브젝트 상태값
-	int mHP;
-	int mMP;
+	float mHP;
+	float mMP;
 
 	// 애니 정보
 	float mAniType;  // 타입
@@ -379,6 +379,18 @@ public:
 	~ObjData()
 	{
 
+	}
+
+	// 체력 설정
+	void SetHp(float _hp)
+	{
+		mHP = _hp;
+	}
+
+	// 마나 설정
+	void SetMp(float _mp)
+	{
+		mMP = _mp;
 	}
 
 	// 애니메이션 스피드 조절
@@ -952,7 +964,19 @@ public:
 	{
 		return mObjData[_uniqueCode].getPos();
 	}
+
+	// HP 설정
+	void SetHp(int _unicode, float _hp)
+	{
+		mObjData[_unicode].SetHp(_hp);
+	}
 	
+	// MP 설정
+	void SetMp(int _unicode, float _Mp)
+	{
+		mObjData[_unicode].SetMp(_Mp);
+	}
+
 	// 오브젝트 FSM 설정
 	void SetFSM(int _unicode, FSM_TYPE _modelFsm)
 	{
