@@ -25,14 +25,14 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexAniOut pin)
 
 	// Sample texture.
 	// 텍셀 구하기
-	DiffuseTex    = gDiffuseTex.Sample(samAnisotropic, pin.Tex);
+	DiffuseTex    = gDiffuseTex .Sample(samAnisotropic, pin.Tex);
 	SpecularTex   = gSpecularTex.Sample(samAnisotropic, pin.Tex);
-	BumpNormalTex = gNormalTex.Sample(samAnisotropic, pin.Tex);
+	BumpNormalTex = gNormalTex  .Sample(samAnisotropic, pin.Tex);
 
 	// 포지션맵 만들기
 	// 좌표를 뷰포트로 옮긴다.
 	float4 PosV = mul(float4(pin.PosW, 1.0f), gView);
-	//float4 PosP = mul(float4(pin.PosW, 1.0f), gViewProj); //<<---------- 뷰 프로젝션으로 넘기고 있음 @@@@@@
+	//float4 PosP = mul(float4(pin.PosW, 1.0f), gViewProj); //<<---------- 뷰 프로젝션으로 넘기고 있음 
 	PosV /= PosV.w; // 데카르트 좌표계로 넘기기 위해 (동차좌표로 보내기 위해)
 	//PosP /= PosP.w;
 
@@ -50,7 +50,7 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexAniOut pin)
 	BumpNormalTex = normalize((BumpNormalTex * 2.0f) - 1.0f);
 
 	//--------------------------------------------------------------//
-	// 노멀 Z 계산 <--------- 이거 아닌거 같음. 예시 맵이 탄젠트.. -_-;; @@@@@@@@@@@@@
+	// 노멀 Z 계산 <--------- 이거 아닌거 같음. 예시 맵이 탄젠트.. -_-;; 
 	//--------------------------------------------------------------//
 	//float NormalZ = sqrt(1 - (pin.NormalW.x * pin.NormalW.x) - (pin.NormalW.y - pin.NormalW.y));
 	//pin.NormalW.z = NormalZ;

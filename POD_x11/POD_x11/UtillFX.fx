@@ -182,6 +182,18 @@ Texture2D gDiffuseTex;
 Texture2D gSpecularTex;
 Texture2D gNormalTex;
 
+// 스킨 텍스처
+Texture2D gIdleTex;
+Texture2D gDamageTex;
+Texture2D gRunTex;
+Texture2D gWalkTex;
+Texture2D gDeathTex;
+Texture2D gDeathWaitTex;
+Texture2D gAttack1Tex;
+Texture2D gAttack2Tex;
+Texture2D gAttack3Tex;
+Texture2D gStunTex;
+
 // G버퍼 텍스처
 Texture2D gGDepthTex;
 Texture2D gGDiffuseTex;

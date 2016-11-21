@@ -130,6 +130,36 @@ public:
 		SetShaderValue(e_ShaderValResource, "gSpecularTex", mNowModel->mSpecularSRV);
 		SetShaderValue(e_ShaderValResource, "gNormalTex"  , mNowModel->mNomalSRV);
 
+		// 애니메이션 쉐이더 업데이트
+		if (mNowModel->mShaderMode == e_ShaderPongTexAni)
+		{
+			// 스킨 텍스처
+			SetShaderValue(e_ShaderValResource, "gIdleTex"		, mNowModel->mSkinTex[e_Idle]->mTexSRV); // 현재 한개만 넣었기 때문에 이렇게함. @@@@@@
+			SetShaderValue(e_ShaderValResource, "gDamageTex"	, mNowModel->mSkinTex[e_Idle]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gRunTex"		, mNowModel->mSkinTex[e_Idle]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gWalkTex"		, mNowModel->mSkinTex[e_Idle]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDeathTex"		, mNowModel->mSkinTex[e_Idle]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDeathWaitTex" , mNowModel->mSkinTex[e_Idle]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gAttack1Tex"	, mNowModel->mSkinTex[e_Idle]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gAttack2Tex"	, mNowModel->mSkinTex[e_Idle]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gAttack3Tex"	, mNowModel->mSkinTex[e_Idle]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gStunTex"	    , mNowModel->mSkinTex[e_Idle]->mTexSRV);
+
+		/*
+		    SetShaderValue(e_ShaderValResource, "gIdleTex"		, mNowModel->mSkinTex[e_Idle     ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDamageTex"	, mNowModel->mSkinTex[e_Damage   ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gRunTex"		, mNowModel->mSkinTex[e_Run      ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gWalkTex"		, mNowModel->mSkinTex[e_Walk     ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDeathTex"		, mNowModel->mSkinTex[e_Death    ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDeathWaitTex" , mNowModel->mSkinTex[e_DeathWait]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gAttack1Tex"	, mNowModel->mSkinTex[e_Attack1  ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gAttack2Tex"	, mNowModel->mSkinTex[e_Attack2  ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gAttack3Tex"	, mNowModel->mSkinTex[e_Attack3  ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gStunTex"	    , mNowModel->mSkinTex[e_Stun     ]->mTexSRV);
+		*/
+
+		}
+
 		// 깊이 버퍼 렌더링용
 		float CamNear = gCam.GetNearZ();
 		float CamFar  = gCam.GetFarZ();
@@ -394,6 +424,17 @@ private:
 		GetShaderValue(tEffectStorage, "gSpecularTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gNormalTex"		   , e_ShaderValResource);
 
+		// 애니 텍스처
+		GetShaderValue(tEffectStorage, "gIdleTex"		   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gDamageTex"		   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gRunTex"		   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gWalkTex"		   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gDeathTex"		   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gDeathWaitTex"	   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gAttack1Tex"	   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gAttack2Tex"	   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gAttack3Tex"	   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gStunTex"	       , e_ShaderValResource);
 
 		// IA 생성
 		CreateIA(tEffectStorage);
