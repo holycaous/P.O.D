@@ -63,30 +63,32 @@ public:
 		ModelRegistration();
 	}
 
-	//// 특정 모델의 본 그리기
-	//void DrawBone(string _modelName, string _aniName)
-	//{
-	//	auto Stroage = mAniManager->mData[_modelName][_aniName].GetLapStorage();
-	//	for (unsigned int i = 0; i < Stroage.size(); ++i)
-	//	{
-	//		AddModel("BOX1", Stroage[i]);
-	//	}
-	//}
-	//
-	//// 특정 모델의 본 그리기
-	//void DrawBone(string _modelName, string _aniName, float _x, float _y, float _z)
-	//{
-	//	auto Stroage = mAniManager->mData[_modelName][_aniName].GetLapStorage();
-	//	for (unsigned int i = 0; i < Stroage.size(); ++i)
-	//	{
-	//		// 위치 값 조정
-	//		Stroage[i]._41 += _x;
-	//		Stroage[i]._42 += _y;
-	//		Stroage[i]._43 += _z;
-	//
-	//		AddModel("BOX1", Stroage[i]);
-	//	}
-	//}
+	// 특정 모델의 본 그리기
+	void DrawBone(string _modelName, string _aniName, int _aniKey)
+	{
+		cAniManager* mAniManager = cAniManager::GetInstance();
+		auto Stroage = mAniManager->mData[_modelName][_aniName]->GetLapStorage(_aniKey);
+		for (unsigned int i = 0; i < Stroage.size(); ++i)
+		{
+			AddModel("BOX1", Stroage[i]);
+		}
+	}
+	
+	// 특정 모델의 본 그리기
+	void DrawBone(string _modelName, string _aniName, float _x, float _y, float _z, int _aniKey)
+	{
+		cAniManager* mAniManager = cAniManager::GetInstance();
+		auto Stroage = mAniManager->mData[_modelName][_aniName]->GetLapStorage(_aniKey);
+		for (unsigned int i = 0; i < Stroage.size(); ++i)
+		{
+			// 위치 값 조정
+			Stroage[i]._41 += _x;
+			Stroage[i]._42 += _y;
+			Stroage[i]._43 += _z;
+	
+			AddModel("BOX1", Stroage[i]);
+		}
+	}
 
 	// 스크린 만들기
 	void CreateScreen()

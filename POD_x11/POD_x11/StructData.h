@@ -2580,10 +2580,10 @@ public:
 		// 애니메이션 데이터 계산
 		int t = mAniData.Position[_key].Key;
 
-		XMVECTOR _scaleKey = XMLoadFloat3(&mAniData.Scale[_key].Vtx);
-		XMVECTOR _rotKey   = XMLoadFloat4(&mAniData.Quaternion[_key].Vtx);
-		XMVECTOR _posKey   = XMLoadFloat3(&mAniData.Position[_key].Vtx);
-		XMVECTOR _zero     = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+		XMVECTOR _scaleKey = XMLoadFloat3(&mAniData.Scale[_key].Vtx);        // 스케일 값
+		XMVECTOR _rotKey   = XMLoadFloat4(&mAniData.Quaternion[_key].Vtx);   // 회전
+		XMVECTOR _posKey   = XMLoadFloat3(&mAniData.Position[_key].Vtx);     // 위치
+		XMVECTOR _zero     = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);			 // 회전 중점
 
 		XMStoreFloat4x4(&mAniMtx, XMMatrixAffineTransformation(_scaleKey, _zero, _rotKey, _posKey));
 
@@ -2615,7 +2615,7 @@ public:
 	}
 
 	// 스킨행렬 만들기, 하향 계산하기 (자식 본)
-	void MakeSkin(int _AniPoint, SkinTree& _SkinTree, vector<vector<XMFLOAT4X4>>& _SkinMtx)
+	void MakeSkin(int _AniPoint, SkinTree& _SkinTree, vector< map<string, XMFLOAT4X4>>& _SkinMtx)
 	{
 		// 사실상 하나 밖에 없음
 		auto itor = _SkinTree.mData.begin();
@@ -2631,22 +2631,18 @@ public:
 		if (!_SkinTree.mParentData.mName.empty())
 		{
 			// P처리
-			tParMtx = XMLoadFloat4x4(&_SkinTree.mParentData.mParentMtx);				
+			tParMtx = XMLoadFloat4x4(&_SkinTree.mParentData.mParentMtx);
 			tResult = XMMatrixMultiply(tResultMtx, tParMtx);
-			XMStoreFloat4x4(&_SkinTree.mParentData.mParentMtx, tResult);
 		}
 		else
-		{
 			tResult = tResultMtx;
-			XMStoreFloat4x4(&_SkinTree.mParentData.mParentMtx, tResult);
-		}
 		
 		// 테스트 (SKIN 에 저장)
 		XMFLOAT4X4 tSkinMtx;
 		XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
 		XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
 
-		_SkinMtx[_AniPoint].push_back(tSkinMtx);
+		_SkinMtx[_AniPoint][itor->first] = tSkinMtx;
 
 		// 자식갯수만큼 반복
 		for (auto itorChild = _SkinTree.mChildData.begin(); itorChild != _SkinTree.mChildData.end(); ++itorChild)
@@ -2660,7 +2656,7 @@ public:
 	}
 
 	// 스킨행렬 만들기, 하향 계산하기 (루트 본)
-	void MakeSkin(int _AniPoint, vector<vector<XMFLOAT4X4>>& _SkinMtx)
+	void MakeSkin(int _AniPoint, vector< map<string, XMFLOAT4X4>>& _SkinMtx)
 	{
 		// 데이터가 다수일 경우.. (루트 빼곤 없을 듯..)
 		//for (auto itor = mData.begin(); itor != mData.end(); ++itor)
@@ -2681,7 +2677,7 @@ public:
 			// 현 본의 LA 처리
 			tResultMtx  = XMMatrixMultiply(tLoclMtx , tAniMtx);
 			tResultMtx2 = XMMatrixMultiply(tLoclMtx2, tAniMtx2);				
-			tResult = XMMatrixMultiply(tResultMtx2, tResultMtx);
+			tResult     = XMMatrixMultiply(tResultMtx2, tResultMtx);
 
 			XMStoreFloat4x4(&mParentData.mParentMtx, tResult);
 
@@ -2690,8 +2686,8 @@ public:
 			XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
 			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
 
-			_SkinMtx[_AniPoint].push_back(tSkinMtx); // 순서 맞추기
-			_SkinMtx[_AniPoint].push_back(tSkinMtx);
+			_SkinMtx[_AniPoint][itor2->first] = tSkinMtx; // 순서 맞추기
+			_SkinMtx[_AniPoint][itor ->first] = tSkinMtx;
 
 			// 자식갯수만큼 반복
 			for (auto itorChild = mChildData.begin(); itorChild != mChildData.end(); ++itorChild)
@@ -2701,6 +2697,106 @@ public:
 
 				// 함수(자식본번지) 애니 키와, AP 넘기기
 				MakeSkin(_AniPoint, itorChild->second, _SkinMtx);
+			}
+		}
+	}
+
+	// 스킨행렬 만들기, 하향 계산하기 (자식 본)
+	void MakeSkin(int _AniPoint, SkinTree& _SkinTree, vector< map<string, XMFLOAT4X4>>& _SkinMtx, vector<vector<XMFLOAT4X4>>& _LAP)
+	{
+		// 사실상 하나 밖에 없음
+		auto itor = _SkinTree.mData.begin();
+
+		XMMATRIX tLoclMtx = XMLoadFloat4x4(&itor->second.mTMLocalMtx);
+		XMMATRIX tAniMtx  = XMLoadFloat4x4(&itor->second.getAniMtx(_AniPoint));
+		XMMATRIX tParMtx, tResultMtx, tResult;
+
+		// 현 본의 LA 처리
+		tResultMtx = XMMatrixMultiply(tLoclMtx, tAniMtx);
+
+		// 부모가 있는가?
+		if (!_SkinTree.mParentData.mName.empty())
+		{
+			// P처리
+			tParMtx = XMLoadFloat4x4(&_SkinTree.mParentData.mParentMtx);
+			tResult = XMMatrixMultiply(tResultMtx, tParMtx);
+		}
+		else
+			tResult = tResultMtx;
+
+		XMStoreFloat4x4(&_SkinTree.mParentData.mParentMtx, tResult);
+
+		// LAP 에 저장
+		XMFLOAT4X4 tLAPMtx;
+		XMStoreFloat4x4(&tLAPMtx, tResult);
+		_LAP[_AniPoint].push_back(tLAPMtx);
+
+		// 테스트 (SKIN 에 저장)
+		XMFLOAT4X4 tSkinMtx;
+		XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
+		XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
+
+		_SkinMtx[_AniPoint][itor->first] = tSkinMtx;
+
+		// 자식갯수만큼 반복
+		for (auto itorChild = _SkinTree.mChildData.begin(); itorChild != _SkinTree.mChildData.end(); ++itorChild)
+		{
+			// 만든 데이터 넘기기
+			itorChild->second.mParentData.mParentMtx = _SkinTree.mParentData.mParentMtx;
+
+			// 함수(자식본번지) 애니 키와, AP 넘기기
+			MakeSkin(_AniPoint, itorChild->second, _SkinMtx, _LAP);
+		}
+	}
+
+	// 스킨행렬 만들기, 하향 계산하기 (루트 본)
+	void MakeSkin(int _AniPoint, vector< map<string, XMFLOAT4X4>>& _SkinMtx, vector<vector<XMFLOAT4X4>>& _LAP)
+	{
+		// 데이터가 다수일 경우.. (루트 빼곤 없을 듯..)
+		//for (auto itor = mData.begin(); itor != mData.end(); ++itor)
+		{
+			auto itor = mData.begin();   // BONE1
+			auto itor2 = ++itor; --itor; // 루트본
+
+			// BONE1
+			XMMATRIX tLoclMtx = XMLoadFloat4x4(&itor->second.mTMLocalMtx);
+			XMMATRIX tAniMtx  = XMLoadFloat4x4(&itor->second.getAniMtx(_AniPoint));
+
+			// 루트 본(NULL)
+			XMMATRIX tLoclMtx2 = XMLoadFloat4x4(&itor2->second.mTMLocalMtx);
+			XMMATRIX tAniMtx2  = XMLoadFloat4x4(&itor2->second.getAniMtx(_AniPoint));
+
+			XMMATRIX tResultMtx, tResultMtx2, tResult;
+
+			// 현 본의 LA 처리
+			tResultMtx  = XMMatrixMultiply(tLoclMtx, tAniMtx);
+			tResultMtx2 = XMMatrixMultiply(tLoclMtx2, tAniMtx2);
+			tResult     = XMMatrixMultiply(tResultMtx2, tResultMtx);
+
+			XMStoreFloat4x4(&mParentData.mParentMtx, tResult);
+
+			// LAP 에 저장
+			XMFLOAT4X4 tLAPMtx;
+			XMStoreFloat4x4(&tLAPMtx, tResult);
+			_LAP[_AniPoint].push_back(tLAPMtx);
+			_LAP[_AniPoint].push_back(tLAPMtx);
+
+			// SKIN 에 저장
+			XMFLOAT4X4 tSkinMtx;
+			XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
+			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
+
+			_SkinMtx[_AniPoint][itor2->first] = tSkinMtx; // 순서 맞추기
+			_SkinMtx[_AniPoint][itor ->first] = tSkinMtx;
+
+			// 자식갯수만큼 반복
+			for (auto itorChild = mChildData.begin(); itorChild != mChildData.end(); ++itorChild)
+			{
+				// 만든 데이터 넘기기
+				itorChild->second.mParentData.mParentMtx = mParentData.mParentMtx;
+
+				// 함수(자식본번지) 애니 키와, AP 넘기기
+				MakeSkin(_AniPoint, itorChild->second, _SkinMtx, _LAP);
 			}
 		}
 	}
@@ -2782,11 +2878,17 @@ public:
 	// 스킨 트리
 	SkinTree mSkinTree;
 
-	// 본 SKin 매트릭스 (계산용)
-	vector<vector<XMFLOAT4X4>> mSkinMtx;
-
 	// 본 SKin 텍스처 (사용)
 	SkinTexture mSkinTex;
+
+	// 본 SKin 매트릭스 (계산용)
+	vector<map<string, XMFLOAT4X4>> mSkinMtx;
+
+	// 본 SKin 매트릭스 (계산용)
+	vector<vector<XMFLOAT4X4>> mRelocSkinMtx;
+
+	// LAP 행렬 (테스트용)
+	vector<vector<XMFLOAT4X4>> mLAP;
 	
 	// 이름
 	char mMainName[BUF_SIZE];
@@ -2898,29 +3000,60 @@ public:
 	// 텍스처 계산
 	void CalTex(int _AniSize)
 	{
-		// 비우기
+		// Skin 비우기
 		for (unsigned int i = 0; i < mSkinMtx.size(); ++i)
 			mSkinMtx[i].clear();
 		mSkinMtx.clear();
 
+		// Skin 비우기2
+		for (unsigned int i = 0; i < mRelocSkinMtx.size(); ++i)
+			mRelocSkinMtx[i].clear();
+		mRelocSkinMtx.clear();
+
+		// LAP 비우기
+		for (unsigned int i = 0; i < mLAP.size(); ++i)
+			mLAP[i].clear();
+		mLAP.clear();
+
 		// 모든 키는 동일한 갯수를 가진다.
 		int _size = mSaveBoneData[0].mAniData.Position.size();
 
-		// 스킨 매트릭스
-		mSkinMtx.resize(_size);
+		// 스킨 & LAP 매트릭스
+		mRelocSkinMtx.resize(_size);
+		mSkinMtx     .resize(_size);
+		mLAP         .resize(_size);
 
-		// 텍스처 쓰기
+		// 스킨 데이터만들기
 		for (int i = 0; i < _AniSize; ++i)
-		{
-			// 스킨 데이터만들기
-			mSkinTree.MakeSkin(i, mSkinMtx);
-		}
+			mSkinTree.MakeSkin(i, mSkinMtx, mLAP);
+
+		// 스킨 데이터 순서에 맞게 재배치
+		RelocSkinData();
 
 		// 텍스처 쓰기
 		WriteTex(_AniSize);
+	}
 
-		// 텍스처 읽기(테스트)
-		ReadeTex(_AniSize);
+	// 스킨 데이터 순서에 맞게 재배치
+	void RelocSkinData()
+	{
+		// 애니메이션 키
+		for (unsigned int i = 0; i < mRelocSkinMtx.size(); ++i)
+		{
+			// 본 갯수
+			for (unsigned int x = 0; x < mSaveBoneData.size(); ++x)
+			{
+				// 이름 선택
+				string _getName = mSaveBoneData[x].mObjName;
+				mRelocSkinMtx[i].push_back(mSkinMtx[i][_getName]);
+			}
+		}
+	}
+
+	// LAP 리턴
+	vector<XMFLOAT4X4>& GetLapStorage(int _aniKey)
+	{
+		return mLAP[_aniKey];
 	}
 
 	// 텍스처 쓰기
@@ -2956,123 +3089,28 @@ public:
 						switch (i)
 						{
 						case 0:
-							pTexels[rowStart + colStart + i * 4 + 0] = mSkinMtx[y][x]._11;     //R (float 1)
-							pTexels[rowStart + colStart + i * 4 + 1] = mSkinMtx[y][x]._12;     //G (float 2)
-							pTexels[rowStart + colStart + i * 4 + 2] = mSkinMtx[y][x]._13;     //B (float 3)
-							pTexels[rowStart + colStart + i * 4 + 3] = mSkinMtx[y][x]._14;     //A (float 4)
+							pTexels[rowStart + colStart + i * 4 + 0] = mRelocSkinMtx[y][x]._11;     //R (float 1)
+							pTexels[rowStart + colStart + i * 4 + 1] = mRelocSkinMtx[y][x]._12;     //G (float 2)
+							pTexels[rowStart + colStart + i * 4 + 2] = mRelocSkinMtx[y][x]._13;     //B (float 3)
+							pTexels[rowStart + colStart + i * 4 + 3] = mRelocSkinMtx[y][x]._14;     //A (float 4)
 							break;
 						case 1:
-							pTexels[rowStart + colStart + i * 4 + 0] = mSkinMtx[y][x]._21;     //R (float 1)
-							pTexels[rowStart + colStart + i * 4 + 1] = mSkinMtx[y][x]._22;     //G (float 2)
-							pTexels[rowStart + colStart + i * 4 + 2] = mSkinMtx[y][x]._23;     //B (float 3)
-							pTexels[rowStart + colStart + i * 4 + 3] = mSkinMtx[y][x]._24;     //A (float 4)
+							pTexels[rowStart + colStart + i * 4 + 0] = mRelocSkinMtx[y][x]._21;     //R (float 1)
+							pTexels[rowStart + colStart + i * 4 + 1] = mRelocSkinMtx[y][x]._22;     //G (float 2)
+							pTexels[rowStart + colStart + i * 4 + 2] = mRelocSkinMtx[y][x]._23;     //B (float 3)
+							pTexels[rowStart + colStart + i * 4 + 3] = mRelocSkinMtx[y][x]._24;     //A (float 4)
 							break;
 						case 2:
-							pTexels[rowStart + colStart + i * 4 + 0] = mSkinMtx[y][x]._31;     //R (float 1)
-							pTexels[rowStart + colStart + i * 4 + 1] = mSkinMtx[y][x]._32;     //G (float 2)
-							pTexels[rowStart + colStart + i * 4 + 2] = mSkinMtx[y][x]._33;     //B (float 3)
-							pTexels[rowStart + colStart + i * 4 + 3] = mSkinMtx[y][x]._34;     //A (float 4)
+							pTexels[rowStart + colStart + i * 4 + 0] = mRelocSkinMtx[y][x]._31;     //R (float 1)
+							pTexels[rowStart + colStart + i * 4 + 1] = mRelocSkinMtx[y][x]._32;     //G (float 2)
+							pTexels[rowStart + colStart + i * 4 + 2] = mRelocSkinMtx[y][x]._33;     //B (float 3)
+							pTexels[rowStart + colStart + i * 4 + 3] = mRelocSkinMtx[y][x]._34;     //A (float 4)
 							break;
 						case 3:
-							pTexels[rowStart + colStart + i * 4 + 0] = mSkinMtx[y][x]._41;     //R (float 1)
-							pTexels[rowStart + colStart + i * 4 + 1] = mSkinMtx[y][x]._42;     //G (float 2)
-							pTexels[rowStart + colStart + i * 4 + 2] = mSkinMtx[y][x]._43;     //B (float 3)
-							pTexels[rowStart + colStart + i * 4 + 3] = mSkinMtx[y][x]._44;     //A (float 4)
-							break;
-						default:
-							cout << "행렬 범위 초과" << endl;
-							break;
-						}
-					}
-				}
-			}
-
-			// 버퍼 닫기
-			cCoreStorage::GetInstance()->md3dImmediateContext->Unmap(mSkinTex.mTexture, D3D11CalcSubresource(0, 0, 1));
-		}
-		else
-			cout << "텍스처 맵핑 실패" << endl;
-	}
-
-	// 텍스처 읽기
-	void ReadeTex(int _AniSize)
-	{
-		D3D11_MAPPED_SUBRESOURCE MappedResource;
-
-		// 버퍼 열기
-		HRESULT hr = cCoreStorage::GetInstance()->md3dImmediateContext->Map(mSkinTex.mTexture, //매핑할 텍스처
-			D3D11CalcSubresource(0, 0, 1),													   //서브 리소스 번호
-			D3D11_MAP_READ,														   //리소스에 쓴다
-			0,
-			&MappedResource);																   //데이터를 쓸 포인터
-
-		// 열기 성공했을때만
-		if (hr == S_OK)
-		{
-			// 데이터 맵핑 레퍼런스 얻기
-			FLOAT* pTexels = (FLOAT*)MappedResource.pData;
-
-			// 열 반복 (애니 키)
-			for (int y = 0; y < _AniSize; ++y)
-			{
-				// 행, 열 계산
-				UINT rowStart = y * (MappedResource.RowPitch / 4);  //열 / 4(데이터 접근 단위 FLOAT)
-
-				// 행 쓰기 ( 4칸씩 )
-				for (UINT x = 0; x < mSaveBoneData.size(); ++x)
-				{
-					UINT colStart = x * (16 / 4) * 4; // (float 4개 * 1개가 4바이트 == 16 / 4(데이터 접근 단위 FLOAT)) * (4픽셀 씩)
-					for (int i = 0; i < 4; ++i)
-					{
-						float _showvalue1, _showvalue2, _showvalue3, _showvalue4;
-						float _showvalue11, _showvalue22, _showvalue33, _showvalue44;
-
-						switch (i)
-						{
-						case 0:
-							_showvalue1 = pTexels[rowStart + colStart + i * 4 + 0];    //R (float 1)
-							_showvalue2 = pTexels[rowStart + colStart + i * 4 + 1];    //G (float 2)
-							_showvalue3 = pTexels[rowStart + colStart + i * 4 + 2];    //B (float 3)
-							_showvalue4 = pTexels[rowStart + colStart + i * 4 + 3];    //A (float 4)
-
-							_showvalue11 = mSkinMtx[y][x]._11;
-							_showvalue22 = mSkinMtx[y][x]._12;
-							_showvalue33 = mSkinMtx[y][x]._13;
-							_showvalue44 = mSkinMtx[y][x]._14;
-
-							break;
-						case 1:
-							_showvalue1 = pTexels[rowStart + colStart + i * 4 + 0];    //R (float 1)
-							_showvalue2 = pTexels[rowStart + colStart + i * 4 + 1];    //G (float 2)
-							_showvalue3 = pTexels[rowStart + colStart + i * 4 + 2];    //B (float 3)
-							_showvalue4 = pTexels[rowStart + colStart + i * 4 + 3];    //A (float 4)
-
-							_showvalue11 = mSkinMtx[y][x]._21;
-							_showvalue22 = mSkinMtx[y][x]._22;
-							_showvalue33 = mSkinMtx[y][x]._23;
-							_showvalue44 = mSkinMtx[y][x]._24;
-							break;									
-						case 2:										
-							_showvalue1 = pTexels[rowStart + colStart + i * 4 + 0];    //R (float 1)
-							_showvalue2 = pTexels[rowStart + colStart + i * 4 + 1];    //G (float 2)
-							_showvalue3 = pTexels[rowStart + colStart + i * 4 + 2];    //B (float 3)
-							_showvalue4 = pTexels[rowStart + colStart + i * 4 + 3];    //A (float 4)
-
-							_showvalue11 = mSkinMtx[y][x]._31;
-							_showvalue22 = mSkinMtx[y][x]._32;
-							_showvalue33 = mSkinMtx[y][x]._33;
-							_showvalue44 = mSkinMtx[y][x]._34;
-							break;									
-						case 3:										
-							_showvalue1 = pTexels[rowStart + colStart + i * 4 + 0];    //R (float 1)
-							_showvalue2 = pTexels[rowStart + colStart + i * 4 + 1];    //G (float 2)
-							_showvalue3 = pTexels[rowStart + colStart + i * 4 + 2];    //B (float 3)
-							_showvalue4 = pTexels[rowStart + colStart + i * 4 + 3];    //A (float 4)
-
-							_showvalue11 = mSkinMtx[y][x]._41;
-							_showvalue22 = mSkinMtx[y][x]._42;
-							_showvalue33 = mSkinMtx[y][x]._43;
-							_showvalue44 = mSkinMtx[y][x]._44;
+							pTexels[rowStart + colStart + i * 4 + 0] = mRelocSkinMtx[y][x]._41;     //R (float 1)
+							pTexels[rowStart + colStart + i * 4 + 1] = mRelocSkinMtx[y][x]._42;     //G (float 2)
+							pTexels[rowStart + colStart + i * 4 + 2] = mRelocSkinMtx[y][x]._43;     //B (float 3)
+							pTexels[rowStart + colStart + i * 4 + 3] = mRelocSkinMtx[y][x]._44;     //A (float 4)
 							break;
 						default:
 							cout << "행렬 범위 초과" << endl;
@@ -3118,7 +3156,16 @@ public:
 		// 본 데이터 삭제
 		mSaveBoneData.clear();
 		mBoneData.clear();
+		
+		// 스킨 매트릭스 삭제 (계산용)
+		for (unsigned int i = 0; i < mSkinMtx.size(); ++i)
+			mSkinMtx[i].clear();
 		mSkinMtx.clear();
+		
+		// LAP 매트릭스 삭제 (테스트용)
+		for (unsigned int i = 0; i < mLAP.size(); ++i)
+			mLAP[i].clear();
+		mLAP.clear();
 
 		// 하이라이키 삭제
 		for (unsigned int i = 0; i < mBoneHierarchy.size(); ++i)
@@ -3134,7 +3181,7 @@ private:
 		for (unsigned int i = 0; i < mSaveBoneData.size(); ++i)
 		{
 			// 회전키 누적 계산
-			auto _QuaternionArray = mSaveBoneData[i].mAniData.Quaternion;
+			vector<RotKeyVtx>& _QuaternionArray = mSaveBoneData[i].mAniData.Quaternion;
 			for (unsigned int x = 1; x < _QuaternionArray.size(); ++x)
 			{
 				// 값을 꺼내온다
@@ -3150,9 +3197,8 @@ private:
 			}
 
 			// 역행렬 만들기 및 저장
-			XMMATRIX tWdMtx = XMLoadFloat4x4(&mSaveBoneData[i].mTMWorldMtx);
-
-			XMVECTOR tDet = XMMatrixDeterminant(tWdMtx);
+			XMMATRIX tWdMtx  = XMLoadFloat4x4(&mSaveBoneData[i].mTMWorldMtx);
+			XMVECTOR tDet    = XMMatrixDeterminant(tWdMtx);
 			XMMATRIX tInvMtx = XMMatrixInverse(&tDet, tWdMtx);
 
 			XMStoreFloat4x4(&mSaveBoneData[i].mInvWorldTMMtx, tInvMtx);

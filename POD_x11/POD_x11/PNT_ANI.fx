@@ -212,23 +212,32 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 	// 최대 4개 까지
 	for (int i = 0; i < 4; ++i)
 	{
-		//-------------------------------------------------------------------------------//
-		// 텍스처 추출
-		//-------------------------------------------------------------------------------//
-		// 본 선택
-		_TexSelect.x = vin.BoneIndices[i] * 4; // 행렬 픽셀이 4칸씩 뛰므로	   // 텍셀 1개 == 한 행 이므로, 4개를 얻어야 함 
-																		   // 그래서 uv처리할때 Tex U쪽에 * 4 이런거 해줘야할 듯 (4개씩 얻고..)
-		// 매트릭스 선택
-		SelectMtx(vin.AniData.x, _TexSelect, _MadeMtx);
+		////-------------------------------------------------------------------------------//
+		//// 텍스처 추출
+		////-------------------------------------------------------------------------------//
+		//// 본 선택
+		//_TexSelect.x = vin.BoneIndices[i] * 4; // 행렬 픽셀이 4칸씩 뛰므로	   // 텍셀 1개 == 한 행 이므로, 4개를 얻어야 함 
+		//																   // 그래서 uv처리할때 Tex U쪽에 * 4 이런거 해줘야할 듯 (4개씩 얻고..)
+		//// 매트릭스 선택
+		//SelectMtx(vin.AniData.x, _TexSelect, _MadeMtx);
 
-		//-------------------------------------------------------------------------------//
-		// 스키닝 계산
-		//-------------------------------------------------------------------------------//
-		_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz;
-		_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)_MadeMtx);
-		_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)_MadeMtx);
-		_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)_MadeMtx);
-		//-------------------------------------------------------------------------------//
+		////-------------------------------------------------------------------------------//
+		//// 스키닝 계산
+		////-------------------------------------------------------------------------------//
+		//_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz;
+		//_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)_MadeMtx);
+		//_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)_MadeMtx);
+		//_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)_MadeMtx);
+		////-------------------------------------------------------------------------------//
+
+
+		//--------------------------------------------------------------------------------//
+		// 테스트 전용
+		//--------------------------------------------------------------------------------//
+		_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), gBoneTransforms[vin.BoneIndices[i]]).xyz;
+		_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)gBoneTransforms[vin.BoneIndices[i]]);
+		_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)gBoneTransforms[vin.BoneIndices[i]]);
+		_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)gBoneTransforms[vin.BoneIndices[i]]);
 
 	}
 
@@ -261,9 +270,35 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 // 버텍스
 PNTVertexAniOut VS(PNTVertexAniIn vin)
 {
+	//--------------------------------------------------------------------------------//
 	// 하드웨어 스키닝 계산
+	//--------------------------------------------------------------------------------//
 	return CalSkin(vin);
+
+	////--------------------------------------------------------------------------------//
+	//// 기존
+	////--------------------------------------------------------------------------------//
+	//PNTVertexAniOut vout;
+
+	//// Transform to world space space.
+	//vout.PosW = mul(float4(vin.PosL, 1.0f), vin.World).xyz;
+	//vout.NormalW = mul(vin.NormalL, (float3x3)vin.World);
+
+	//// Transform to homogeneous clip space.
+	//vout.PosH = mul(float4(vout.PosW, 1.0f), gViewProj);
+
+	//// Output vertex attributes for interpolation across triangle.
+	//// 어차피 변환결과는 같음.
+	//vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
+
+	//// 매트릭스 만들기 용도
+	//vout.WT = mul(vin.Tangent, (float3x3)vin.World);
+	//vout.WB = mul(vin.BiNormal, (float3x3)vin.World);
+
+	//return vout;
 }
+
+
 
 // 두번째 매개변수를 통해, 텍스처 사용 유무를 가른다.
 PS_GBUFFER_OUT PS(PNTVertexAniOut pin)/* : SV_Target*/

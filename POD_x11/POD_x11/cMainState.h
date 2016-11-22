@@ -62,7 +62,7 @@ public:
 		mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
 		
 		// 본 그려보기 추가
-		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f);
+		//mModelManager->DrawBone("Model5", "Idle", 100.0f, 100.0f, 700.0f, 5); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
 
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
@@ -89,7 +89,7 @@ public:
 		mModelManager->Update(dt);
 
 		mModelManager->MoveToPlayer(0, "Model2", 10.0f * dt);						  // 플레이어에게 이동
-		mModelManager->MovePoint   (0, "Model5", 100.0f, 100.0f, 100.0f ,10.0f * dt); // 해당 지점으로 이동
+		//mModelManager->MovePoint   (0, "Model5", 100.0f, 100.0f, 100.0f ,10.0f * dt); // 해당 지점으로 이동
 
 		// 플레이어 액션
 		PlayerAction(dt);

@@ -250,3 +250,11 @@ SamplerState samLinear
 	AddressU = Wrap;
 	AddressV = Wrap;
 };
+
+
+
+// Å×½ºÆ®
+cbuffer cbSkinned
+{
+	float4x4 gBoneTransforms[96];
+};
