@@ -2918,6 +2918,9 @@ public:
 
 		// 텍스처 쓰기
 		WriteTex(_AniSize);
+
+		// 텍스처 읽기(테스트)
+		ReadeTex(_AniSize);
 	}
 
 	// 텍스처 쓰기
@@ -2990,6 +2993,102 @@ public:
 		else
 			cout << "텍스처 맵핑 실패" << endl;
 	}
+
+	// 텍스처 읽기
+	void ReadeTex(int _AniSize)
+	{
+		D3D11_MAPPED_SUBRESOURCE MappedResource;
+
+		// 버퍼 열기
+		HRESULT hr = cCoreStorage::GetInstance()->md3dImmediateContext->Map(mSkinTex.mTexture, //매핑할 텍스처
+			D3D11CalcSubresource(0, 0, 1),													   //서브 리소스 번호
+			D3D11_MAP_READ,														   //리소스에 쓴다
+			0,
+			&MappedResource);																   //데이터를 쓸 포인터
+
+		// 열기 성공했을때만
+		if (hr == S_OK)
+		{
+			// 데이터 맵핑 레퍼런스 얻기
+			FLOAT* pTexels = (FLOAT*)MappedResource.pData;
+
+			// 열 반복 (애니 키)
+			for (int y = 0; y < _AniSize; ++y)
+			{
+				// 행, 열 계산
+				UINT rowStart = y * (MappedResource.RowPitch / 4);  //열 / 4(데이터 접근 단위 FLOAT)
+
+				// 행 쓰기 ( 4칸씩 )
+				for (UINT x = 0; x < mSaveBoneData.size(); ++x)
+				{
+					UINT colStart = x * (16 / 4) * 4; // (float 4개 * 1개가 4바이트 == 16 / 4(데이터 접근 단위 FLOAT)) * (4픽셀 씩)
+					for (int i = 0; i < 4; ++i)
+					{
+						float _showvalue1, _showvalue2, _showvalue3, _showvalue4;
+						float _showvalue11, _showvalue22, _showvalue33, _showvalue44;
+
+						switch (i)
+						{
+						case 0:
+							_showvalue1 = pTexels[rowStart + colStart + i * 4 + 0];    //R (float 1)
+							_showvalue2 = pTexels[rowStart + colStart + i * 4 + 1];    //G (float 2)
+							_showvalue3 = pTexels[rowStart + colStart + i * 4 + 2];    //B (float 3)
+							_showvalue4 = pTexels[rowStart + colStart + i * 4 + 3];    //A (float 4)
+
+							_showvalue11 = mSkinMtx[y][x]._11;
+							_showvalue22 = mSkinMtx[y][x]._12;
+							_showvalue33 = mSkinMtx[y][x]._13;
+							_showvalue44 = mSkinMtx[y][x]._14;
+
+							break;
+						case 1:
+							_showvalue1 = pTexels[rowStart + colStart + i * 4 + 0];    //R (float 1)
+							_showvalue2 = pTexels[rowStart + colStart + i * 4 + 1];    //G (float 2)
+							_showvalue3 = pTexels[rowStart + colStart + i * 4 + 2];    //B (float 3)
+							_showvalue4 = pTexels[rowStart + colStart + i * 4 + 3];    //A (float 4)
+
+							_showvalue11 = mSkinMtx[y][x]._21;
+							_showvalue22 = mSkinMtx[y][x]._22;
+							_showvalue33 = mSkinMtx[y][x]._23;
+							_showvalue44 = mSkinMtx[y][x]._24;
+							break;									
+						case 2:										
+							_showvalue1 = pTexels[rowStart + colStart + i * 4 + 0];    //R (float 1)
+							_showvalue2 = pTexels[rowStart + colStart + i * 4 + 1];    //G (float 2)
+							_showvalue3 = pTexels[rowStart + colStart + i * 4 + 2];    //B (float 3)
+							_showvalue4 = pTexels[rowStart + colStart + i * 4 + 3];    //A (float 4)
+
+							_showvalue11 = mSkinMtx[y][x]._31;
+							_showvalue22 = mSkinMtx[y][x]._32;
+							_showvalue33 = mSkinMtx[y][x]._33;
+							_showvalue44 = mSkinMtx[y][x]._34;
+							break;									
+						case 3:										
+							_showvalue1 = pTexels[rowStart + colStart + i * 4 + 0];    //R (float 1)
+							_showvalue2 = pTexels[rowStart + colStart + i * 4 + 1];    //G (float 2)
+							_showvalue3 = pTexels[rowStart + colStart + i * 4 + 2];    //B (float 3)
+							_showvalue4 = pTexels[rowStart + colStart + i * 4 + 3];    //A (float 4)
+
+							_showvalue11 = mSkinMtx[y][x]._41;
+							_showvalue22 = mSkinMtx[y][x]._42;
+							_showvalue33 = mSkinMtx[y][x]._43;
+							_showvalue44 = mSkinMtx[y][x]._44;
+							break;
+						default:
+							cout << "행렬 범위 초과" << endl;
+							break;
+						}
+					}
+				}
+			}
+
+			// 버퍼 닫기
+			cCoreStorage::GetInstance()->md3dImmediateContext->Unmap(mSkinTex.mTexture, D3D11CalcSubresource(0, 0, 1));
+		}
+		else
+			cout << "텍스처 맵핑 실패" << endl;
+	}
+
 
 	// 텍스처 저장
 	void SaveTex(wstring& _TexName)

@@ -155,7 +155,6 @@ struct SURFACE_DATA
 	float4 PositionTex;
 };
 
-
 // ∂Û¿Ã∆Æ
 DirectionalLight gDirLight;
 PointLight       gPointLight;
