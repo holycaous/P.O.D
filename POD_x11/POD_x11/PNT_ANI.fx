@@ -74,12 +74,13 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexAniOut pin)
 	//--------------------------------------------------------------//
 	// 포지션 맵 저장
 	//--------------------------------------------------------------//
+
 	// 1.
 	//Out.Position = PosV;
-
+	//
 	// 2.
 	//Out.Position = float4(PosP.xyz, 1.0f) * 0.5 + 0.5; // PosP <---
-
+	//
 	// 3.
 	Out.Position = float4(pin.PosW, 1.0f);	             // PosW <---
 
@@ -94,10 +95,25 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexAniOut pin)
 	return Out;
 }
 
+
+// 스키닝 계산
+PNTVertexAniOut CalSkin(PNTVertexAniIn vin, PNTVertexAniOut vout)
+{
+
+
+
+
+	// Sample texture. ( 텍셀 구하기 )
+	float4 testTex = float4(1, 1, 1, 1);
+	testTex = gDiffuseTex.Sample(samAnisotropic, vout.Tex);
+
+	return vout;
+}
+
 // 버텍스
 PNTVertexAniOut VS(PNTVertexAniIn vin)
 {
-	PNTVertexOut vout;
+	PNTVertexAniOut vout;
 
 	// Transform to world space space.
 	vout.PosW    = mul(float4(vin.PosL, 1.0f), vin.World).xyz;
@@ -114,7 +130,8 @@ PNTVertexAniOut VS(PNTVertexAniIn vin)
 	vout.WT = mul(vin.Tangent , (float3x3)vin.World);
 	vout.WB = mul(vin.BiNormal, (float3x3)vin.World);
 
-	return vout;
+	// 하드웨어 스키닝 계산
+	return CalSkin(vin, vout);
 }
 
 // 두번째 매개변수를 통해, 텍스처 사용 유무를 가른다.
@@ -124,21 +141,13 @@ PS_GBUFFER_OUT PS(PNTVertexAniOut pin)/* : SV_Target*/
 	return PackGBuffer(pin);
 }
 
-
-// 여러개의 라이트를 만든다.
-// 매개변수를 직접적으로 설정함으로써, 골라 쓸 수 있게 만듬.
-
-// 라이트 + 텍스처 버전
+// 셰이더 본문
 technique11 PongTexAni
 {
 	pass P0
 	{
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
-
-		// 이 사이에 계산 쉐이더를 넣어보자!!?
-
-
 		SetPixelShader(CompileShader(ps_5_0, PS()));
 	}
 }

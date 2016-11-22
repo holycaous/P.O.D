@@ -99,20 +99,20 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	// 화면에 빛을 안비추는 방법..
 	// 디렉셔널 라이트
 	float3 gDirectionLight_Dir = -normalize(gDirLight.Direction);
-		DotNomalMap = saturate(dot(sData.TanNormalTex.xyz, gDirectionLight_Dir));
+	DotNomalMap = saturate(dot(sData.TanNormalTex.xyz, gDirectionLight_Dir));
 	
 	// 테스트 1
 	// 포인트 라이트
 	float gPointLight_Length = length(gPointLight.Position.xyz - sData.PositionTex.xyz);
 	
 	// 거리 확인
-	[flatten]
+	//[flatten]
 	//if (gPointLight_Length < gPointLight.Range)
-	{
+	//{
 		// 라이트 영역내에 있다면,
 		float3 gPointLight_Dir = normalize(gPointLight.Position.xyz - sData.PositionTex.xyz);
 			DotNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir));		 		 // +=
-	}
+	//}
 	
 	////// 스팟 라이트
 	//float gSpotLight_Length = length(sData.PositionTex.xyz - gSpotLight.Position.xyz);

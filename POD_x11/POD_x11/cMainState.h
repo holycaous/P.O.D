@@ -59,8 +59,7 @@ public:
 		//mModelManager->AddModel(0, "Model4",  100.0f, 0.0f,  300.0f, e_Idle);
 		mModelManager->AddModel(0, "Model2", 100.0f, 100.0f, 200.0f, e_Idle);
 		mModelManager->AddModel(0, "Model1", 100.0f, 100.0f, 500.0f, e_Idle);
-		//mModelManager->AddModel(0, "Model5",   100.0f, 100.0f, 700.0f, e_Idle); 
-		mModelManager->AddModel(0, "Model5",  100.0f, 100.0f,  700.0f, e_Idle);
+		mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
 		
 		// 본 그려보기 추가
 		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f);

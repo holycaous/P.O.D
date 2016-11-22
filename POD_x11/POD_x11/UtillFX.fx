@@ -66,21 +66,21 @@ struct PNTVertexAniIn
 	float2 Tex				  : TEXCOORD;
 	float3 Tangent			  : TANGENT;
 	float3 BiNormal			  : BINORMAL;
-	float3 Weights            : WEIGHTS;
-	uint4  BoneIndices        : BONEINDICES;
+	float3 Weights            : WEIGHTS;		 // 애니메이션 가중치
+	uint4  BoneIndices        : BONEINDICES;	 // 애니메이션 영향 본 인덱스
 	row_major float4x4 World  : WORLD;
-	float2 AniData            : ANIDATA;
+	float2 AniData            : ANIDATA;		 // 애니 텍스처 번호, 현재 프레임
 	uint InstanceId		      : SV_InstanceID;
 };
 
 struct PNTVertexAniOut
 {
-	float4 PosH    : SV_POSITION;
-	float3 PosW    : POSITION0;
-	float3 NormalW : NORMAL;
-	float2 Tex     : TEXCOORD0; // 보정 용도
-	float3 WT      : POSITION1; // 매트릭스 만들기 용도
-	float3 WB      : POSITION2; // 매트릭스 만들기 용도
+	float4 PosH         : SV_POSITION;
+	float3 PosW         : POSITION0;
+	float3 NormalW      : NORMAL;
+	float2 Tex          : TEXCOORD0;   // 보정 용도
+	float3 WT           : POSITION1;   // 매트릭스 만들기 용도
+	float3 WB           : POSITION2;   // 매트릭스 만들기 용도
 };
 
 struct PNTVertexOut
