@@ -2578,13 +2578,12 @@ public:
 		XMFLOAT4X4 mAniMtx;
 
 		// 애니메이션 데이터 계산
-		int t = mAniData.Position[_key].Key;
-
 		XMVECTOR _scaleKey = XMLoadFloat3(&mAniData.Scale[_key].Vtx);        // 스케일 값
 		XMVECTOR _rotKey   = XMLoadFloat4(&mAniData.Quaternion[_key].Vtx);   // 회전
 		XMVECTOR _posKey   = XMLoadFloat3(&mAniData.Position[_key].Vtx);     // 위치
 		XMVECTOR _zero     = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);			 // 회전 중점
 
+		// 아핀변환 행렬		
 		XMStoreFloat4x4(&mAniMtx, XMMatrixAffineTransformation(_scaleKey, _zero, _rotKey, _posKey));
 
 		return mAniMtx;
@@ -2640,7 +2639,7 @@ public:
 		// 테스트 (SKIN 에 저장)
 		XMFLOAT4X4 tSkinMtx;
 		XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
-		XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
+		XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tInvWDMtx, tResult));
 
 		_SkinMtx[_AniPoint][itor->first] = tSkinMtx;
 
@@ -2684,7 +2683,7 @@ public:
 			// SKIN 에 저장
 			XMFLOAT4X4 tSkinMtx;
 			XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
-			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
+			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tInvWDMtx, tResult));
 
 			_SkinMtx[_AniPoint][itor2->first] = tSkinMtx; // 순서 맞추기
 			_SkinMtx[_AniPoint][itor ->first] = tSkinMtx;
@@ -2734,7 +2733,7 @@ public:
 		// 테스트 (SKIN 에 저장)
 		XMFLOAT4X4 tSkinMtx;
 		XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
-		XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
+		XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tInvWDMtx, tResult));
 
 		_SkinMtx[_AniPoint][itor->first] = tSkinMtx;
 
@@ -2784,7 +2783,7 @@ public:
 			// SKIN 에 저장
 			XMFLOAT4X4 tSkinMtx;
 			XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
-			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tResult, tInvWDMtx));
+			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tInvWDMtx, tResult));
 
 			_SkinMtx[_AniPoint][itor2->first] = tSkinMtx; // 순서 맞추기
 			_SkinMtx[_AniPoint][itor ->first] = tSkinMtx;
