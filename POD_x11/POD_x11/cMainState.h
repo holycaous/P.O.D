@@ -69,6 +69,9 @@ public:
 
 		// 플레이어 및 카메라 세팅
 		mModelManager->IniPlayer(0, "Model3", 200.0f, 100.0f, 600.0f, e_Idle);
+
+		// FSM 상태바꾸기
+		mModelManager->SetFSM(0, "Model3", e_Idle);
 	}	
 
 	// 제거

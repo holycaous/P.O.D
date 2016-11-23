@@ -242,7 +242,7 @@ public:
 		_FinModelLoc.clear();
 	}
 
-	// 내 포맷으로 읽는다.(데이터) // <--- 테스트
+	// 내 포맷으로 읽는다.(데이터)
 	void ReadDataMyFormat_Model(string _FinExportModelData)
 	{
 		// 이진 파일 열기
@@ -492,6 +492,14 @@ public:
 	{
 		// 버텍스
 		_InitMetaData.Vertices = mMyMeshData.vertices;
+
+		// 테스트
+		//for (unsigned int i = 0; i < mMyMeshData.vertices.size(); ++i)
+		//{
+		//	_InitMetaData.Vertices[i].Position.x = mMyMeshData.vertices[i].Position.x;
+		//	_InitMetaData.Vertices[i].Position.y = mMyMeshData.vertices[i].Position.z;
+		//	_InitMetaData.Vertices[i].Position.z = mMyMeshData.vertices[i].Position.y;
+		//}
 
 		// 인덱스
 		for (unsigned int i = 0; i < mMyMeshData.indices.size(); ++i)

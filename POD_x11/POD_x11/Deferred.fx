@@ -110,8 +110,8 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	//if (gPointLight_Length < gPointLight.Range)
 	//{
 		// 라이트 영역내에 있다면,
-		float3 gPointLight_Dir = normalize(gPointLight.Position.xyz - sData.PositionTex.xyz);
-			DotNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir));		 		 // +=
+	float3 gPointLight_Dir = normalize(gPointLight.Position.xyz - sData.PositionTex.xyz);
+	   	   DotNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir));		 		 // +=
 	//}
 	
 	////// 스팟 라이트
@@ -154,9 +154,7 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 		diffuse += D * (gPointLight_Length - 0.2 < 0.0 ? 0.0 : gPointLight_Length - 0.2);
 		spec    += S * (gPointLight_Length - 0.2 < 0.0 ? 0.0 : gPointLight_Length - 0.2);
 	//}
-	
-	
-	
+
 
 	//// 스폿 라이트
 	//if (gSpotLight_Length < gSpotLight.Range)
@@ -190,7 +188,7 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	// 법선맵만 출력
 	//litColor = DotNomalMap;
 	//return litColor;
-
+	//
 	//---------------------------------------------------------//
 	// 테스트 3
 	// 이것저것 출력

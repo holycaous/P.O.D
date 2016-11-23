@@ -138,7 +138,7 @@ struct VertexG
 struct InsAni
 {
 	XMFLOAT4X4 mMtx;
-	XMFLOAT2   mInsAni; // 실행될 애니의 텍스처번호, 프레임 정보
+	XMFLOAT4   mInsAni; // 실행될 애니의 텍스처번호, 프레임 정보
 };
 
 // 구조체 정의
@@ -299,6 +299,10 @@ public:
 	float mAniType;  // 타입
 	float mStPoint;  // 시작
 	float mEdPoint;  // 끝
+
+	float mTexWidth;  // 텍스처 너비
+	float mTexHeight; // 텍스처 높이
+
 public:
 	SkinTexture()
 	{
@@ -308,6 +312,7 @@ public:
 
 		mAniType = (float)e_Idle;
 		mStPoint = mEdPoint = 0;
+		mTexWidth = mTexHeight = 0;
 	}
 
 	~SkinTexture()
@@ -355,6 +360,9 @@ public:
 	float mStPoint;  // 시작
 	float mEdPoint;  // 끝
 	float mFrame;    // 프레임
+
+	float mTexWidth;  // 텍스처 너비
+	float mTexHeight; // 텍스처 높이
 
 	float mAniSpeed; // 애니 스피드
 public:
@@ -404,7 +412,7 @@ public:
 	}
 
 	// 애니타입 변경
-	void SetFSM(float _modelFsm, float _StPoint, float _mEdPoint)
+	void SetFSM(float _modelFsm, float _StPoint, float _mEdPoint, float _TexWidth, float _TexHeight)
 	{
 		// 애니타입 변경
 		mAniType = _modelFsm;
@@ -413,10 +421,14 @@ public:
 		mFrame   = 0.0f;
 		mStPoint = _StPoint;
 		mEdPoint = _mEdPoint;
+
+		// 텍스처 크기 갱신
+		mTexWidth  = _TexWidth;
+		mTexHeight = _TexHeight;
 	}
 
 	// 애니타입 변경
-	void SetFSM(float _modelFsm, float _StPoint, float _mEdPoint, float _Frame)
+	void SetFSM(float _modelFsm, float _StPoint, float _mEdPoint, float _TexWidth, float _TexHeight, float _Frame)
 	{
 		// 애니타입 변경
 		mAniType = _modelFsm;
@@ -425,6 +437,10 @@ public:
 		mFrame   = _Frame;
 		mStPoint = _StPoint;
 		mEdPoint = _mEdPoint;
+
+		// 텍스처 크기 갱신
+		mTexWidth  = _TexWidth;
+		mTexHeight = _TexHeight;
 	}
 
 	// 프레임 셋하기
@@ -437,7 +453,17 @@ public:
 	void Update(float& dt)
 	{
 		// 시간 흘르기
-		mFrame += (dt * mAniSpeed);
+		//mFrame += (dt * mAniSpeed);
+
+		// 테스트용
+		static int i = 0;
+		if (i < 8)
+			++i;
+		else
+		{
+			i = 0;
+			mFrame += mAniSpeed;
+		}
 
 		// 마지막보다 크다면, 초기화
 		if (mEdPoint < mFrame)
@@ -1017,12 +1043,14 @@ public:
 		//}
 
 
-		float _newType = mSkinTex[_modelFsm]->mAniType;
-		float _StPoint = mSkinTex[_modelFsm]->mStPoint;
-		float _EdPoint = mSkinTex[_modelFsm]->mEdPoint;
+		float _newType   = mSkinTex[_modelFsm]->mAniType;
+		float _StPoint   = mSkinTex[_modelFsm]->mStPoint;
+		float _EdPoint   = mSkinTex[_modelFsm]->mEdPoint;
+		float _TexWidth  = mSkinTex[_modelFsm]->mTexWidth;
+		float _TexHeight = mSkinTex[_modelFsm]->mTexHeight;
 
 		// 새로운 모델로 세팅
-		mObjData[_unicode].SetFSM(_newType, _StPoint, _EdPoint);
+		mObjData[_unicode].SetFSM(_newType, _StPoint, _EdPoint, _TexWidth, _TexHeight);
 	}
 
 	// 오브젝트 FSM 설정
@@ -1064,12 +1092,14 @@ public:
 		//}
 
 
-		float _newType = mSkinTex[_modelFsm]->mAniType;
-		float _StPoint = mSkinTex[_modelFsm]->mStPoint;
-		float _EdPoint = mSkinTex[_modelFsm]->mEdPoint;
+		float _newType   = mSkinTex[_modelFsm]->mAniType;
+		float _StPoint   = mSkinTex[_modelFsm]->mStPoint;
+		float _EdPoint   = mSkinTex[_modelFsm]->mEdPoint;
+		float _TexWidth  = mSkinTex[_modelFsm]->mTexWidth;
+		float _TexHeight = mSkinTex[_modelFsm]->mTexHeight;
 
 		// 새로운 모델로 세팅
-		mObjData[_unicode].SetFSM(_newType, _StPoint, _EdPoint, _Frame);
+		mObjData[_unicode].SetFSM(_newType, _StPoint, _EdPoint, _TexWidth, _TexHeight, _Frame);
 	}
 };
 
@@ -1400,8 +1430,10 @@ public:
 						dataView[++i].mMtx = itor2->second.mWdMtx;
 
 						// 모델 애니정보
-						dataView[i].mInsAni.x = itor2->second.mAniType; // 실행될 애니의 텍스처번호
-						dataView[i].mInsAni.y = itor2->second.mFrame;   // 프레임 정보
+						dataView[i].mInsAni.x = itor2->second.mAniType;    // 실행될 애니의 텍스처번호
+						dataView[i].mInsAni.y = itor2->second.mFrame;      // 프레임 정보
+						dataView[i].mInsAni.z = itor2->second.mTexWidth;   // 텍스처 너비
+						dataView[i].mInsAni.w = itor2->second.mTexHeight;  // 텍스처 높이
 					}
 				}
 				// 일반 모델 쓰기
@@ -1968,44 +2000,44 @@ private:
 						case 0:
 							if (itor->second->weightVtx[i].Bone.size() > x)
 							{
-								vertices[k].Weights.x = itor->second->weightVtx[i].Bone[x].Weight;
-								vertices[k].BoneIndices[0] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+								vertices[k].Weights.x      = itor->second->weightVtx[i].Bone[x].Weight;
+								vertices[k].BoneIndices[x] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
 							}
 							else
 							{
-								vertices[k].Weights.x = 0.0f;
-								vertices[k].BoneIndices[0] = 0;
+								vertices[k].Weights.x      = 0.0f;
+								vertices[k].BoneIndices[x] = 0;
 							}
 							break;
 						case 1:
 							if (itor->second->weightVtx[i].Bone.size() > x)
 							{
-								vertices[k].Weights.y = itor->second->weightVtx[i].Bone[x].Weight;
-								vertices[k].BoneIndices[1] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+								vertices[k].Weights.y      = itor->second->weightVtx[i].Bone[x].Weight;
+								vertices[k].BoneIndices[x] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
 							}
 							else
 							{
-								vertices[k].Weights.y = 0.0f;
-								vertices[k].BoneIndices[1] = 0;
+								vertices[k].Weights.y      = 0.0f;
+								vertices[k].BoneIndices[x] = 0;
 							}
 							break;
 						case 2:
 							if (itor->second->weightVtx[i].Bone.size() > x)
 							{
-								vertices[k].Weights.z = itor->second->weightVtx[i].Bone[x].Weight;
-								vertices[k].BoneIndices[2] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+								vertices[k].Weights.z      = itor->second->weightVtx[i].Bone[x].Weight;
+								vertices[k].BoneIndices[x] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
 							}
 							else
 							{
-								vertices[k].Weights.z = 0.0f;
-								vertices[k].BoneIndices[2] = 0;
+								vertices[k].Weights.z      = 0.0f;
+								vertices[k].BoneIndices[x] = 0;
 							}
 							break;
 						case 3:
 							if (itor->second->weightVtx[i].Bone.size() > x)
-								vertices[k].BoneIndices[3] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+								vertices[k].BoneIndices[x] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
 							else
-								vertices[k].BoneIndices[3] = 0;
+								vertices[k].BoneIndices[x] = 0;
 							break;
 						}
 					}
@@ -2578,12 +2610,24 @@ public:
 	{
 		XMFLOAT4X4 mAniMtx;
 
+		//XMFLOAT4 _CRot = mAniData.Quaternion[_key].Vtx;
+		//XMFLOAT3 _CPos = mAniData.Position[_key].Vtx;
+
+		//mAniData.Quaternion[_key].Vtx.x = _CRot.y;
+		//mAniData.Quaternion[_key].Vtx.y = _CRot.z;
+		//mAniData.Quaternion[_key].Vtx.z = _CRot.y;
+		//mAniData.Position[_key].Vtx.x   = _CPos.y;
+		//mAniData.Position[_key].Vtx.y   = _CPos.x;
+		//mAniData.Position[_key].Vtx.z   = _CPos.z;
+
+
+		
 		// 애니메이션 데이터 계산
 		XMVECTOR _scaleKey = XMLoadFloat3(&mAniData.Scale[_key].Vtx);        // 스케일 값
 		XMVECTOR _rotKey   = XMLoadFloat4(&mAniData.Quaternion[_key].Vtx);   // 회전
 		XMVECTOR _posKey   = XMLoadFloat3(&mAniData.Position[_key].Vtx);     // 위치
 		XMVECTOR _zero     = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);			 // 회전 중점
-
+		
 		// 아핀변환 행렬		
 		XMStoreFloat4x4(&mAniMtx, XMMatrixAffineTransformation(_scaleKey, _zero, _rotKey, _posKey));
 
@@ -2924,6 +2968,10 @@ public:
 		mSkinTex.mStPoint = 0.0f;
 		mSkinTex.mEdPoint = (float)mSaveBoneData[0].mAniData.Position.size();
 
+		// 애니 해상도
+		mSkinTex.mTexWidth  = (float)mSaveBoneData.size() * 4;
+		mSkinTex.mTexHeight = (float)mSaveBoneData[0].mAniData.Position.size();
+
 		//--------------------------------------------------------------------------------------------------//
 		// 파일 경로 문자열
 		//--------------------------------------------------------------------------------------------------//
@@ -3086,6 +3134,12 @@ public:
 					UINT colStart = x * (16 / 4) * 4; // (float 4개 * 1개가 4바이트 == 16 / 4(데이터 접근 단위 FLOAT)) * (4픽셀 씩)
 					for (int i = 0; i < 4; ++i)
 					{
+						// 테스트 전용
+						int curTex1 = rowStart + colStart + i * 4 + 0;
+						int curTex2 = rowStart + colStart + i * 4 + 1;
+						int curTex3 = rowStart + colStart + i * 4 + 2;
+						int curTex4 = rowStart + colStart + i * 4 + 3;
+
 						switch (i)
 						{
 						case 0:
@@ -3190,11 +3244,32 @@ private:
 				XMVECTOR ResultRot;
 
 				// 사원수 회전을 누적시킨다.
-				ResultRot = XMQuaternionMultiply(beforeRot, CurrentRot);
+				ResultRot = XMQuaternionMultiply(CurrentRot, beforeRot);
 
 				// 저장한다
 				XMStoreFloat4(&_QuaternionArray[x].Vtx, ResultRot);
 			}
+
+			// 이동 누적 해제 계산
+			vector<KeyVtx>& _PositionArray = mSaveBoneData[i].mAniData.Position;
+			for (unsigned int x = _PositionArray.size() - 1; x > 0; --x)
+			{
+				// 값을 꺼내온다
+				XMVECTOR beforePos  = XMLoadFloat3(&_PositionArray[x - 1].Vtx); // 직전
+				XMVECTOR CurrentPos = XMLoadFloat3(&_PositionArray[x].Vtx);     // 현재
+				XMVECTOR ResultPos;
+
+				// 이동을 누적 해제시킨다.
+				ResultPos = beforePos - CurrentPos;
+
+				// 저장한다
+				XMStoreFloat3(&_PositionArray[x].Vtx, ResultPos);
+			}
+
+			// 이거 문제있을수 있음 ( 강제 오프셋 초기화 )
+			mSaveBoneData[i].mAniData.Position[0].Vtx.x = 0.0f;
+			mSaveBoneData[i].mAniData.Position[0].Vtx.y = 0.0f;
+			mSaveBoneData[i].mAniData.Position[0].Vtx.z = 0.0f;
 
 			// 역행렬 만들기 및 저장
 			XMMATRIX tWdMtx  = XMLoadFloat4x4(&mSaveBoneData[i].mTMWorldMtx);

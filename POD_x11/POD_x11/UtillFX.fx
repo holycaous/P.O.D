@@ -69,7 +69,7 @@ struct PNTVertexAniIn
 	float3 Weights            : WEIGHTS;		 // 애니메이션 가중치
 	uint4  BoneIndices        : BONEINDICES;	 // 애니메이션 영향 본 인덱스
 	row_major float4x4 World  : WORLD;
-	float2 AniData            : ANIDATA;		 // 애니 텍스처 번호, 현재 프레임
+	float4 AniData            : ANIDATA;		 // 애니 텍스처 번호, 현재 프레임, 텍스처 너비, 텍스처 높이
 	uint InstanceId		      : SV_InstanceID;
 };
 
@@ -81,6 +81,7 @@ struct PNTVertexAniOut
 	float2 Tex          : TEXCOORD0;   // 보정 용도
 	float3 WT           : POSITION1;   // 매트릭스 만들기 용도
 	float3 WB           : POSITION2;   // 매트릭스 만들기 용도
+	float2 AniData      : ANIDATA;	   // 애니 텍스처 번호, 현재 프레임
 };
 
 struct PNTVertexOut
@@ -251,10 +252,3 @@ SamplerState samLinear
 	AddressV = Wrap;
 };
 
-
-
-// 테스트
-cbuffer cbSkinned
-{
-	float4x4 gBoneTransforms[96];
-};

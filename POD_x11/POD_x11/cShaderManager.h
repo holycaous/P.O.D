@@ -145,11 +145,6 @@ public:
 			SetShaderValue(e_ShaderValResource, "gAttack3Tex"	, mNowModel->mSkinTex[e_Idle]->mTexSRV);
 			SetShaderValue(e_ShaderValResource, "gStunTex"	    , mNowModel->mSkinTex[e_Idle]->mTexSRV);
 
-			// 테스트
-			cAniManager* mAniManager = cAniManager::GetInstance();
-			int size = mAniManager->mData[mNowModel->mCreateName]["Idle"]->mRelocSkinMtx[0].size();
-			SetShaderMtxArray(e_ShaderValMtxArray, "gBoneTransforms", &mAniManager->mData[mNowModel->mCreateName]["Idle"]->mRelocSkinMtx[0][0], size);
-
 		/*
 		    SetShaderValue(e_ShaderValResource, "gIdleTex"		, mNowModel->mSkinTex[e_Idle     ]->mTexSRV);
 			SetShaderValue(e_ShaderValResource, "gDamageTex"	, mNowModel->mSkinTex[e_Damage   ]->mTexSRV);
@@ -428,10 +423,7 @@ private:
 		GetShaderValue(tEffectStorage, "gDiffuseTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gSpecularTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gNormalTex"		   , e_ShaderValResource);
-
-		// 테스트 전용
-		GetShaderValue(tEffectStorage, "gBoneTransforms"   , e_ShaderValMtxArray);
-
+		
 		// 애니 텍스처
 		GetShaderValue(tEffectStorage, "gIdleTex"		   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gDamageTex"		   , e_ShaderValResource);
@@ -542,7 +534,7 @@ private:
 				{ "WORLD"      , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 				{ "WORLD"      , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 				{ "WORLD"      , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-				{ "ANIDATA"    , 0, DXGI_FORMAT_R32G32_FLOAT      , 1, 64                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 }	
+				{ "ANIDATA"    , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 64                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 }	
 				// 인스턴스데이터에 애니 텍스처 번호, 프레임번호 넘겨야함
 			};
 			// Create the input layout

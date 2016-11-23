@@ -7,6 +7,63 @@
 #include "LightHelper.fx"
 
 
+// 애니 상태에 따른 색상혼합
+void curAniState(float2 AniData, inout float4 _DiffuseTex)
+{
+	// 애니메이션 텍스처 선택 (매트릭스 만들기)
+	switch (AniData.x)
+	{
+		// e_Idle = 0, e_Run = 2, e_Walk = 3, e_Attack1 = 6, e_Attack2 = 7, e_Attack3 = 8
+		default:
+		case 0:
+		case 2:
+		case 3:
+		case 6:
+		case 7:
+		case 8:
+			break;
+
+		// e_Damage (red)
+		case 1:
+			// 지속 프레임
+			if (AniData.y < 0.2f)
+			{
+				_DiffuseTex.x  *= 2.0f;
+				_DiffuseTex.xy *= 1.2f;
+			}
+			break;
+
+		// e_Death (gray)
+		case 4:
+			{
+			    float3 _incDownColor = _DiffuseTex.xyz / AniData.y;
+			    float3 _stdDownColor = _DiffuseTex.xyz * 0.2f;
+
+				// 일정 색상까지만
+				if (_incDownColor.x > _stdDownColor.x)
+				    _DiffuseTex.xyz = _incDownColor;
+				else
+					_DiffuseTex.xyz = _stdDownColor;
+			}
+			break;
+
+		// e_DeathWait (gray)
+		case 5:
+			_DiffuseTex.xyz *= 0.2f;
+			break;
+
+		// e_Stun (yellow)
+		case 9:
+			// 지속 프레임
+			if (AniData.y < 0.2f) // 프레임
+			{
+				_DiffuseTex.xy *= 2.0f;
+				_DiffuseTex.z  *= 1.2f;
+			}
+			break;
+	}
+}
+
 // G 버퍼 패킹
 PS_GBUFFER_OUT PackGBuffer(PNTVertexAniOut pin)
 {
@@ -67,6 +124,9 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexAniOut pin)
 	//TangentNormal.z = TangetNormalZ;
 	//--------------------------------------------------------------//
 
+	// 현재 애니 상태에 DiffuseTex 색상혼합
+	curAniState(pin.AniData, DiffuseTex);
+
 	// 출력	
 	Out.Depth = Depth;
 	Out.Color = DiffuseTex;
@@ -97,19 +157,21 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexAniOut pin)
 
 
 // 텍스처 선택
-void GetTexMtx(Texture2D _selectTex, float2 _TexSelect, inout float4x4 _Mtx)
+void GetTexMtx(Texture2D _selectTex, float2 _TexSelect, float _TexWidth, inout float4x4 _Mtx)
 {
-	// Tex 행 꺼내기
-	float4 tex_col1 = _selectTex.SampleLevel(samLinear, _TexSelect, 0);
+	// 텍셀에 순차적으로 접근하는 방법: 1 / (텍스쳐 너비 - 1.0f) <-- [-1.0f는 300 텍스처는 0~299까지 이므로..]
 
-	++_TexSelect.x;
-	float4 tex_col2 = _selectTex.SampleLevel(samLinear, _TexSelect, 0);
+	// Tex 행 꺼내기 // samInputImage, samLinear
+	float4 tex_col1 = _selectTex.SampleLevel(samInputImage, _TexSelect, 0);
 
-	++_TexSelect.x;
-	float4 tex_col3 = _selectTex.SampleLevel(samLinear, _TexSelect, 0);
+	_TexSelect.x += 1 / (_TexWidth - 1.0f);
+	float4 tex_col2 = _selectTex.SampleLevel(samInputImage, _TexSelect, 0);
 
-	++_TexSelect.x;
-	float4 tex_col4 = _selectTex.SampleLevel(samLinear, _TexSelect, 0);
+	_TexSelect.x += 1 / (_TexWidth - 1.0f);
+	float4 tex_col3 = _selectTex.SampleLevel(samInputImage, _TexSelect, 0);
+
+	_TexSelect.x += 1 / (_TexWidth - 1.0f);
+	float4 tex_col4 = _selectTex.SampleLevel(samInputImage, _TexSelect, 0);
 
 	// 매트릭스 만들기
 	_Mtx._11 = tex_col1.x; 	_Mtx._12 = tex_col1.y; 	_Mtx._13 = tex_col1.z; 	_Mtx._14 = tex_col1.w;
@@ -119,7 +181,7 @@ void GetTexMtx(Texture2D _selectTex, float2 _TexSelect, inout float4x4 _Mtx)
 }
 
 // 매트릭스 선택
-void SelectMtx(float _Anikey, float2 _TexSelect, inout float4x4 _Mtx)
+void SelectMtx(float _Anikey, float2 _TexSelect, float _TexWidth, inout float4x4 _Mtx)
 {
 	// 애니메이션 텍스처 선택 (매트릭스 만들기)
 	switch (_Anikey)
@@ -128,52 +190,52 @@ void SelectMtx(float _Anikey, float2 _TexSelect, inout float4x4 _Mtx)
 		default:
 		case 0:
 			// Tex 행 꺼내기
-			GetTexMtx(gIdleTex, _TexSelect, _Mtx);
+			GetTexMtx(gIdleTex, _TexSelect, _TexWidth, _Mtx);
 			break;
 
 		// e_Damage = 1,
 		case 1:
-			GetTexMtx(gDamageTex, _TexSelect, _Mtx);
+			GetTexMtx(gDamageTex, _TexSelect, _TexWidth, _Mtx);
 			break;
 
 		// e_Run = 2,
 		case 2:
-			GetTexMtx(gRunTex, _TexSelect, _Mtx);
+			GetTexMtx(gRunTex, _TexSelect, _TexWidth, _Mtx);
 			break;
 
 		// e_Walk = 3,
 		case 3:
-			GetTexMtx(gWalkTex, _TexSelect, _Mtx);
+			GetTexMtx(gWalkTex, _TexSelect, _TexWidth, _Mtx);
 			break;
 
 		// e_Death = 4,
 		case 4:
-			GetTexMtx(gDeathTex, _TexSelect, _Mtx);
+			GetTexMtx(gDeathTex, _TexSelect, _TexWidth, _Mtx);
 			break;
 
 		// e_DeathWait = 5,
 		case 5:
-			GetTexMtx(gDeathWaitTex, _TexSelect, _Mtx);
+			GetTexMtx(gDeathWaitTex, _TexSelect, _TexWidth, _Mtx);
 			break;
 
 		// e_Attack1 = 6,
 		case 6:
-			GetTexMtx(gAttack1Tex, _TexSelect, _Mtx);
+			GetTexMtx(gAttack1Tex, _TexSelect, _TexWidth, _Mtx);
 			break;
 
 		// e_Attack2 = 7,
 		case 7:
-			GetTexMtx(gAttack2Tex, _TexSelect, _Mtx);
+			GetTexMtx(gAttack2Tex, _TexSelect, _TexWidth, _Mtx);
 			break;
 
 		// e_Attack3 = 8,
 		case 8:
-			GetTexMtx(gAttack3Tex, _TexSelect, _Mtx);
+			GetTexMtx(gAttack3Tex, _TexSelect, _TexWidth, _Mtx);
 			break;
 
 		// e_Stun = 9
 		case 9:
-			GetTexMtx(gStunTex, _TexSelect, _Mtx);
+			GetTexMtx(gStunTex, _TexSelect, _TexWidth, _Mtx);
 			break;
 	}
 }
@@ -207,38 +269,29 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 
 	// 애니 키 선택
 	float2 _TexSelect;
-	_TexSelect.y = (int)_AniKey;           // int형으로 받아서, 뒤에꺼 다버림 (테스트 전용) <-- 나중에 보간해줘야함 - 0.12, 0.5 이런거
+	_TexSelect.y = _AniKey / (vin.AniData.w - 1.0f);   // int형으로 받아서, 뒤에꺼 다버림 (테스트 전용) <-- 나중에 보간해줘야함 - 0.12, 0.5 이런거
 
 	// 최대 4개 까지
 	for (int i = 0; i < 4; ++i)
 	{
-		////-------------------------------------------------------------------------------//
-		//// 텍스처 추출
-		////-------------------------------------------------------------------------------//
-		//// 본 선택
-		//_TexSelect.x = vin.BoneIndices[i] * 4; // 행렬 픽셀이 4칸씩 뛰므로	   // 텍셀 1개 == 한 행 이므로, 4개를 얻어야 함 
-		//																   // 그래서 uv처리할때 Tex U쪽에 * 4 이런거 해줘야할 듯 (4개씩 얻고..)
-		//// 매트릭스 선택
-		//SelectMtx(vin.AniData.x, _TexSelect, _MadeMtx);
+		//-------------------------------------------------------------------------------//
+		// 텍스처 추출
+		//-------------------------------------------------------------------------------//
+		// 본 선택							                             
+													  					      // 행렬 픽셀이 4칸씩 뛰므로	( 텍셀 1개 == 한 행 이므로, 4개를 얻어야 함 ) 
+		_TexSelect.x = (vin.BoneIndices[i] * 4) / (vin.AniData.z - 1.0f);     // 그래서 uv처리할때 Tex U쪽에 * 4 이런거 해줘야할 듯 (4개씩 얻고..)
 
-		////-------------------------------------------------------------------------------//
-		//// 스키닝 계산
-		////-------------------------------------------------------------------------------//
-		//_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz;
+		// 매트릭스 선택
+		SelectMtx(vin.AniData.x, _TexSelect, vin.AniData.z, _MadeMtx);
+		
+		//-------------------------------------------------------------------------------//
+		// 스키닝 계산
+		//-------------------------------------------------------------------------------//
+		_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz;
 		//_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)_MadeMtx);
 		//_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)_MadeMtx);
 		//_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)_MadeMtx);
-		////-------------------------------------------------------------------------------//
-
-
-		//--------------------------------------------------------------------------------//
-		// 테스트 전용
-		//--------------------------------------------------------------------------------//
-		_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), gBoneTransforms[vin.BoneIndices[i]]).xyz;
-		_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)gBoneTransforms[vin.BoneIndices[i]]);
-		_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)gBoneTransforms[vin.BoneIndices[i]]);
-		_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)gBoneTransforms[vin.BoneIndices[i]]);
-
+		//-------------------------------------------------------------------------------//
 	}
 
 	//--------------------------------------------------------------------------------//
@@ -246,22 +299,30 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 	//--------------------------------------------------------------------------------//
 	// 최종적으로 여기다 스키닝 된 정점 정보를 덮어 써야함.
 
-	// Transform to world space space.
 	vout.PosW    = mul(float4(_PosL, 1.0f), vin.World).xyz;        // W
-	vout.NormalW = mul(_NormalL, (float3x3)gWorldInvTranspose);    // W  // 역전치월드를 로컬에 곱해주면, 오로지 회전 부분만 로컬 노멀에 적용, (회전유지, 이동X, 스케일 1로 초기화)
+	//vout.NormalW = mul(_NormalL, (float3x3)gWorldInvTranspose);    // W  // 역전치월드를 로컬에 곱해주면, 오로지 회전 부분만 로컬 노멀에 적용, (회전유지, 이동X, 스케일 1로 초기화)
 	
 	// 매트릭스 만들기 용도
-	vout.WT = mul(_TanL     , (float3x3)vin.World);	               // W
-	vout.WB = mul(_BiNormalL, (float3x3)vin.World);	               // W
+	//vout.WT = mul(_TanL     , (float3x3)vin.World);	               // W
+	//vout.WB = mul(_BiNormalL, (float3x3)vin.World);	               // W
 
 	// 동차절단공간으로 변환
 	vout.PosH = mul(float4(vout.PosW, 1.0f), gViewProj); // WVP
 
 	// 어차피 변환결과는 같음. ( 거의 로컬 TM 행렬임 )
 	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
+
+	// 애니 데이터 정보
+	vout.AniData = vin.AniData.xy;
+
 	//--------------------------------------------------------------------------------//
+	// 디퍼드 렌더링이기때문에.. 딱히 저 위에 안해줘도..??
+	//--------------------------------------------------------------------------------//
+	vout.NormalW = mul(vin.NormalL, (float3x3)vin.World);
 
-
+	// 매트릭스 만들기 용도
+	vout.WT = mul(vin.Tangent , (float3x3)vin.World);
+	vout.WB = mul(vin.BiNormal, (float3x3)vin.World);
 
 	return vout;
 }
@@ -270,35 +331,8 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 // 버텍스
 PNTVertexAniOut VS(PNTVertexAniIn vin)
 {
-	//--------------------------------------------------------------------------------//
-	// 하드웨어 스키닝 계산
-	//--------------------------------------------------------------------------------//
 	return CalSkin(vin);
-
-	////--------------------------------------------------------------------------------//
-	//// 기존
-	////--------------------------------------------------------------------------------//
-	//PNTVertexAniOut vout;
-
-	//// Transform to world space space.
-	//vout.PosW = mul(float4(vin.PosL, 1.0f), vin.World).xyz;
-	//vout.NormalW = mul(vin.NormalL, (float3x3)vin.World);
-
-	//// Transform to homogeneous clip space.
-	//vout.PosH = mul(float4(vout.PosW, 1.0f), gViewProj);
-
-	//// Output vertex attributes for interpolation across triangle.
-	//// 어차피 변환결과는 같음.
-	//vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
-
-	//// 매트릭스 만들기 용도
-	//vout.WT = mul(vin.Tangent, (float3x3)vin.World);
-	//vout.WB = mul(vin.BiNormal, (float3x3)vin.World);
-
-	//return vout;
 }
-
-
 
 // 두번째 매개변수를 통해, 텍스처 사용 유무를 가른다.
 PS_GBUFFER_OUT PS(PNTVertexAniOut pin)/* : SV_Target*/
