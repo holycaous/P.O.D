@@ -161,23 +161,23 @@ void GetTexMtx(Texture2D _selectTex, float2 _TexSelect, float _TexWidth, inout f
 {
 	// 텍셀에 순차적으로 접근하는 방법: 1 / (텍스쳐 너비 - 1.0f) <-- [-1.0f는 300 텍스처는 0~299까지 이므로..]
 
-	// Tex 행 꺼내기 // samInputImage, samLinear
-	float4 tex_col1 = _selectTex.SampleLevel(samInputImage, _TexSelect, 0);
+	// Tex 행 꺼내기 
+	float4 tex_col1 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
 	_TexSelect.x += 1 / (_TexWidth - 1.0f);
-	float4 tex_col2 = _selectTex.SampleLevel(samInputImage, _TexSelect, 0);
+	float4 tex_col2 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
 	_TexSelect.x += 1 / (_TexWidth - 1.0f);
-	float4 tex_col3 = _selectTex.SampleLevel(samInputImage, _TexSelect, 0);
+	float4 tex_col3 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
 	_TexSelect.x += 1 / (_TexWidth - 1.0f);
-	float4 tex_col4 = _selectTex.SampleLevel(samInputImage, _TexSelect, 0);
+	float4 tex_col4 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
 	// 매트릭스 만들기
-	_Mtx._11 = tex_col1.x; 	_Mtx._12 = tex_col1.y; 	_Mtx._13 = tex_col1.z; 	_Mtx._14 = tex_col1.w;
-	_Mtx._21 = tex_col2.x; 	_Mtx._22 = tex_col2.y; 	_Mtx._23 = tex_col2.z; 	_Mtx._24 = tex_col2.w;
-	_Mtx._31 = tex_col3.x; 	_Mtx._32 = tex_col3.y; 	_Mtx._33 = tex_col3.z; 	_Mtx._34 = tex_col3.w;
-	_Mtx._41 = tex_col4.x; 	_Mtx._42 = tex_col4.y; 	_Mtx._43 = tex_col4.z; 	_Mtx._44 = tex_col4.w;
+	_Mtx._11 = tex_col1.x; 	 _Mtx._12 = tex_col1.y; 	_Mtx._13 = tex_col1.z;  	_Mtx._14 = tex_col1.w;
+	_Mtx._21 = tex_col2.x; 	 _Mtx._22 = tex_col2.y; 	_Mtx._23 = tex_col2.z;  	_Mtx._24 = tex_col2.w;
+	_Mtx._31 = tex_col3.x; 	 _Mtx._32 = tex_col3.y; 	_Mtx._33 = tex_col3.z;  	_Mtx._34 = tex_col3.w;
+	_Mtx._41 = tex_col4.x; 	 _Mtx._42 = tex_col4.y; 	_Mtx._43 = tex_col4.z;  	_Mtx._44 = tex_col4.w;
 }
 
 // 매트릭스 선택
@@ -254,7 +254,7 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 
 
 	// 현재 프레임이 애니 키 
-	float    _AniKey  = vin.AniData.y;
+	float    _AniKey  = 0; // vin.AniData.y;
 	float4x4 _MadeMtx = { 1.0f, 0.0f, 0.0f, 0.0f, 
 		                  0.0f, 1.0f, 0.0f, 0.0f,
 					      0.0f, 0.0f, 1.0f, 0.0f,
@@ -269,7 +269,7 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 
 	// 애니 키 선택
 	float2 _TexSelect;
-	_TexSelect.y = _AniKey / (vin.AniData.w - 1.0f);   // int형으로 받아서, 뒤에꺼 다버림 (테스트 전용) <-- 나중에 보간해줘야함 - 0.12, 0.5 이런거
+	_TexSelect.y = (float)((int)_AniKey) / (vin.AniData.w - 1.0f);  // 일단, 소수부 버리기 나중에 보간 해줘야함
 
 	// 최대 4개 까지
 	for (int i = 0; i < 4; ++i)
@@ -278,8 +278,8 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 		// 텍스처 추출
 		//-------------------------------------------------------------------------------//
 		// 본 선택							                             
-													  					      // 행렬 픽셀이 4칸씩 뛰므로	( 텍셀 1개 == 한 행 이므로, 4개를 얻어야 함 ) 
-		_TexSelect.x = (vin.BoneIndices[i] * 4) / (vin.AniData.z - 1.0f);     // 그래서 uv처리할때 Tex U쪽에 * 4 이런거 해줘야할 듯 (4개씩 얻고..)
+													  					         // 행렬 픽셀이 4칸씩 뛰므로	( 텍셀 1개 == 한 행 이므로, 4개를 얻어야 함 ) 
+		_TexSelect.x = (vin.BoneIndices[i] * 4.0f) / (vin.AniData.z - 1.0f);     // 그래서 uv처리할때 Tex U쪽에 * 4 이런거 해줘야할 듯 (4개씩 얻고..)
 
 		// 매트릭스 선택
 		SelectMtx(vin.AniData.x, _TexSelect, vin.AniData.z, _MadeMtx);

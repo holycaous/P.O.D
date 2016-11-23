@@ -252,3 +252,11 @@ SamplerState samLinear
 	AddressV = Wrap;
 };
 
+SamplerState samPoint
+{
+	Filter = MIN_MAG_MIP_POINT;
+
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+

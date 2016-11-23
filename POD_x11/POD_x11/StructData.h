@@ -2775,7 +2775,7 @@ public:
 		XMStoreFloat4x4(&tLAPMtx, tResult);
 		_LAP[_AniPoint].push_back(tLAPMtx);
 
-		// 테스트 (SKIN 에 저장)
+		// SKIN 에 저장
 		XMFLOAT4X4 tSkinMtx;
 		XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
 		XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tInvWDMtx, tResult));
@@ -3048,6 +3048,9 @@ public:
 	// 텍스처 계산
 	void CalTex(int _AniSize)
 	{
+		//--------------------------------------------------------------------------//
+		// 초기화
+		//--------------------------------------------------------------------------//
 		// Skin 비우기
 		for (unsigned int i = 0; i < mSkinMtx.size(); ++i)
 			mSkinMtx[i].clear();
@@ -3062,6 +3065,8 @@ public:
 		for (unsigned int i = 0; i < mLAP.size(); ++i)
 			mLAP[i].clear();
 		mLAP.clear();
+		//--------------------------------------------------------------------------//
+		//map<string, NodeBone> mBoneData;
 
 		// 모든 키는 동일한 갯수를 가진다.
 		int _size = mSaveBoneData[0].mAniData.Position.size();
@@ -3134,37 +3139,37 @@ public:
 					UINT colStart = x * (16 / 4) * 4; // (float 4개 * 1개가 4바이트 == 16 / 4(데이터 접근 단위 FLOAT)) * (4픽셀 씩)
 					for (int i = 0; i < 4; ++i)
 					{
-						// 테스트 전용
-						int curTex1 = rowStart + colStart + i * 4 + 0;
-						int curTex2 = rowStart + colStart + i * 4 + 1;
-						int curTex3 = rowStart + colStart + i * 4 + 2;
-						int curTex4 = rowStart + colStart + i * 4 + 3;
+						// 픽셀 선택
+						int _sTex1 = rowStart + colStart + (i * 4) + 0;
+						int _sTex2 = rowStart + colStart + (i * 4) + 1;
+						int _sTex3 = rowStart + colStart + (i * 4) + 2;
+						int _sTex4 = rowStart + colStart + (i * 4) + 3;
 
 						switch (i)
 						{
 						case 0:
-							pTexels[rowStart + colStart + i * 4 + 0] = mRelocSkinMtx[y][x]._11;     //R (float 1)
-							pTexels[rowStart + colStart + i * 4 + 1] = mRelocSkinMtx[y][x]._12;     //G (float 2)
-							pTexels[rowStart + colStart + i * 4 + 2] = mRelocSkinMtx[y][x]._13;     //B (float 3)
-							pTexels[rowStart + colStart + i * 4 + 3] = mRelocSkinMtx[y][x]._14;     //A (float 4)
+							pTexels[_sTex1] = mRelocSkinMtx[y][x]._11;     //R (float 1)
+							pTexels[_sTex2] = mRelocSkinMtx[y][x]._12;     //G (float 2)
+							pTexels[_sTex3] = mRelocSkinMtx[y][x]._13;     //B (float 3)
+							pTexels[_sTex4] = mRelocSkinMtx[y][x]._14;     //A (float 4)
 							break;
 						case 1:
-							pTexels[rowStart + colStart + i * 4 + 0] = mRelocSkinMtx[y][x]._21;     //R (float 1)
-							pTexels[rowStart + colStart + i * 4 + 1] = mRelocSkinMtx[y][x]._22;     //G (float 2)
-							pTexels[rowStart + colStart + i * 4 + 2] = mRelocSkinMtx[y][x]._23;     //B (float 3)
-							pTexels[rowStart + colStart + i * 4 + 3] = mRelocSkinMtx[y][x]._24;     //A (float 4)
+							pTexels[_sTex1] = mRelocSkinMtx[y][x]._21;     //R (float 1)
+							pTexels[_sTex2] = mRelocSkinMtx[y][x]._22;     //G (float 2)
+							pTexels[_sTex3] = mRelocSkinMtx[y][x]._23;     //B (float 3)
+							pTexels[_sTex4] = mRelocSkinMtx[y][x]._24;     //A (float 4)
 							break;
 						case 2:
-							pTexels[rowStart + colStart + i * 4 + 0] = mRelocSkinMtx[y][x]._31;     //R (float 1)
-							pTexels[rowStart + colStart + i * 4 + 1] = mRelocSkinMtx[y][x]._32;     //G (float 2)
-							pTexels[rowStart + colStart + i * 4 + 2] = mRelocSkinMtx[y][x]._33;     //B (float 3)
-							pTexels[rowStart + colStart + i * 4 + 3] = mRelocSkinMtx[y][x]._34;     //A (float 4)
+							pTexels[_sTex1] = mRelocSkinMtx[y][x]._31;     //R (float 1)
+							pTexels[_sTex2] = mRelocSkinMtx[y][x]._32;     //G (float 2)
+							pTexels[_sTex3] = mRelocSkinMtx[y][x]._33;     //B (float 3)
+							pTexels[_sTex4] = mRelocSkinMtx[y][x]._34;     //A (float 4)
 							break;
 						case 3:
-							pTexels[rowStart + colStart + i * 4 + 0] = mRelocSkinMtx[y][x]._41;     //R (float 1)
-							pTexels[rowStart + colStart + i * 4 + 1] = mRelocSkinMtx[y][x]._42;     //G (float 2)
-							pTexels[rowStart + colStart + i * 4 + 2] = mRelocSkinMtx[y][x]._43;     //B (float 3)
-							pTexels[rowStart + colStart + i * 4 + 3] = mRelocSkinMtx[y][x]._44;     //A (float 4)
+							pTexels[_sTex1] = mRelocSkinMtx[y][x]._41;     //R (float 1)
+							pTexels[_sTex2] = mRelocSkinMtx[y][x]._42;     //G (float 2)
+							pTexels[_sTex3] = mRelocSkinMtx[y][x]._43;     //B (float 3)
+							pTexels[_sTex4] = mRelocSkinMtx[y][x]._44;     //A (float 4)
 							break;
 						default:
 							cout << "행렬 범위 초과" << endl;
@@ -3250,26 +3255,26 @@ private:
 				XMStoreFloat4(&_QuaternionArray[x].Vtx, ResultRot);
 			}
 
-			// 이동 누적 해제 계산
-			vector<KeyVtx>& _PositionArray = mSaveBoneData[i].mAniData.Position;
-			for (unsigned int x = _PositionArray.size() - 1; x > 0; --x)
-			{
-				// 값을 꺼내온다
-				XMVECTOR beforePos  = XMLoadFloat3(&_PositionArray[x - 1].Vtx); // 직전
-				XMVECTOR CurrentPos = XMLoadFloat3(&_PositionArray[x].Vtx);     // 현재
-				XMVECTOR ResultPos;
-
-				// 이동을 누적 해제시킨다.
-				ResultPos = beforePos - CurrentPos;
-
-				// 저장한다
-				XMStoreFloat3(&_PositionArray[x].Vtx, ResultPos);
-			}
-
-			// 이거 문제있을수 있음 ( 강제 오프셋 초기화 )
-			mSaveBoneData[i].mAniData.Position[0].Vtx.x = 0.0f;
-			mSaveBoneData[i].mAniData.Position[0].Vtx.y = 0.0f;
-			mSaveBoneData[i].mAniData.Position[0].Vtx.z = 0.0f;
+			//// 이동 누적 해제 계산
+			//vector<KeyVtx>& _PositionArray = mSaveBoneData[i].mAniData.Position;
+			//for (unsigned int x = _PositionArray.size() - 1; x > 0; --x)
+			//{
+			//	// 값을 꺼내온다
+			//	XMVECTOR beforePos  = XMLoadFloat3(&_PositionArray[x - 1].Vtx); // 직전
+			//	XMVECTOR CurrentPos = XMLoadFloat3(&_PositionArray[x].Vtx);     // 현재
+			//	XMVECTOR ResultPos;
+			//
+			//	// 이동을 누적 해제시킨다.
+			//	ResultPos = beforePos - CurrentPos;
+			//
+			//	// 저장한다
+			//	XMStoreFloat3(&_PositionArray[x].Vtx, ResultPos);
+			//}
+			//
+			//// 이거 문제있을수 있음 ( 강제 오프셋 초기화 )
+			//mSaveBoneData[i].mAniData.Position[0].Vtx.x = 0.0f;
+			//mSaveBoneData[i].mAniData.Position[0].Vtx.y = 0.0f;
+			//mSaveBoneData[i].mAniData.Position[0].Vtx.z = 0.0f;
 
 			// 역행렬 만들기 및 저장
 			XMMATRIX tWdMtx  = XMLoadFloat4x4(&mSaveBoneData[i].mTMWorldMtx);

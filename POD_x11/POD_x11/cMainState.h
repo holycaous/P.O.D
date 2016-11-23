@@ -61,8 +61,13 @@ public:
 		mModelManager->AddModel(0, "Model1", 100.0f, 100.0f, 500.0f, e_Idle);
 		mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
 		
-		// 본 그려보기 추가
-		//mModelManager->DrawBone("Model5", "Idle", 100.0f, 100.0f, 700.0f, 5); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
+		//// 본 그려보기 추가
+		//for (int i = 0; i < 101; ++i)
+		//	mModelManager->DrawBone("Model1", "Idle", 100.0f, 200.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
+
+
+		// 모델 1에 본 겹쳐서 그려보기
+		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f, 0); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
 
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
@@ -71,7 +76,7 @@ public:
 		mModelManager->IniPlayer(0, "Model3", 200.0f, 100.0f, 600.0f, e_Idle);
 
 		// FSM 상태바꾸기
-		mModelManager->SetFSM(0, "Model3", e_Idle);
+		//mModelManager->SetFSM(0, "Model3", e_Idle);
 	}	
 
 	// 제거
@@ -89,9 +94,9 @@ public:
 		mDrawManager->Update(dt);
 		
 		// 모델 매니저 업데이트
-		mModelManager->Update(dt);
+		//mModelManager->Update(dt);
 
-		mModelManager->MoveToPlayer(0, "Model2", 10.0f * dt);						  // 플레이어에게 이동
+		//mModelManager->MoveToPlayer(0, "Model2", 10.0f * dt);						  // 플레이어에게 이동
 		//mModelManager->MovePoint   (0, "Model5", 100.0f, 100.0f, 100.0f ,10.0f * dt); // 해당 지점으로 이동
 
 		// 플레이어 액션
