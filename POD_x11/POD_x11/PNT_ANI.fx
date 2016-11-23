@@ -254,7 +254,7 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 
 
 	// 현재 프레임이 애니 키 
-	float    _AniKey  = 0; // vin.AniData.y;
+	float    _AniKey  = vin.AniData.y;
 	float4x4 _MadeMtx = { 1.0f, 0.0f, 0.0f, 0.0f, 
 		                  0.0f, 1.0f, 0.0f, 0.0f,
 					      0.0f, 0.0f, 1.0f, 0.0f,
