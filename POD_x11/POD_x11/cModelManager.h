@@ -248,6 +248,36 @@ public:
 	}
 
 	// 해당 위치로 이동
+	void MovePoint(int _uniqueCode, string _Name, float _x, float _y, float _z, float _speed)
+	{
+		// 체인에 있는 모델 하나만 선택해서 방향 보냄
+		XMFLOAT3 ptDir;
+		XMStoreFloat3(&ptDir, mAllModelData[mModelChain[_Name][0]]->GetPointDir(_uniqueCode, _x, _y, _z));
+
+		XMFLOAT3 tPos = GetPos(_uniqueCode, _Name);
+
+		// 거리 계산
+		XMFLOAT3 _lengthPos;
+		_lengthPos.x = tPos.x - _x;
+		_lengthPos.y = tPos.y - _y;
+		_lengthPos.z = tPos.z - _z;
+
+		XMVECTOR _length = XMVector3Length(XMLoadFloat3(&_lengthPos));
+		XMStoreFloat3(&_lengthPos, _length);
+
+		// 해당 거리보다 커야 실행
+		if (_lengthPos.x > 20)
+		{
+			tPos.x = tPos.x + ptDir.x * _speed;
+			tPos.y = tPos.y + ptDir.y * _speed;
+			tPos.z = tPos.z + ptDir.z * _speed;
+
+			SetRotate(_uniqueCode, _Name, tPos);
+			SetPos   (_uniqueCode, _Name, tPos);
+		}
+	}
+
+	// 해당 위치로 이동
 	void MovePoint(int _uniqueCode, string _Name, XMFLOAT3 _pos, float _speed)
 	{
 		// 체인에 있는 모델 하나만 선택해서 방향 보냄
@@ -256,12 +286,25 @@ public:
 
 		XMFLOAT3 tPos = GetPos(_uniqueCode, _Name);
 
-		tPos.x = tPos.x + ptDir.x * _speed;
-		tPos.y = tPos.y + ptDir.y * _speed;
-		tPos.z = tPos.z + ptDir.z * _speed;
+		// 거리 계산
+		XMFLOAT3 _lengthPos;
+		_lengthPos.x = tPos.x - _pos.x;
+		_lengthPos.y = tPos.y - _pos.y;
+		_lengthPos.z = tPos.z - _pos.z;
 
-		SetRotate(_uniqueCode, _Name, tPos);
-		SetPos   (_uniqueCode, _Name, tPos);
+		XMVECTOR _length = XMVector3Length(XMLoadFloat3(&_lengthPos));
+		XMStoreFloat3(&_lengthPos, _length);
+
+		// 해당 거리보다 커야 실행
+		if (_lengthPos.x > 20)
+		{
+			tPos.x = tPos.x + ptDir.x * _speed;
+			tPos.y = tPos.y + ptDir.y * _speed;
+			tPos.z = tPos.z + ptDir.z * _speed;
+
+			SetRotate(_uniqueCode, _Name, tPos);
+			SetPos   (_uniqueCode, _Name, tPos);
+		}
 	}
 
 	// 해당 위치로 이동
@@ -273,31 +316,26 @@ public:
 
 		XMFLOAT3 tPos = GetPos(_uniqueCode, _Name);
 
-		tPos.x = tPos.x + ptDir.x * _speed;
-		tPos.y = tPos.y + ptDir.y * _speed;
-		tPos.z = tPos.z + ptDir.z * _speed;
+		// 거리 계산
+		XMFLOAT3 _lengthPos;
+		_lengthPos.x = tPos.x - mPlayer.mPos.x;
+		_lengthPos.y = tPos.y - mPlayer.mPos.y;
+		_lengthPos.z = tPos.z - mPlayer.mPos.z;
 
-		SetRotate(_uniqueCode, _Name, tPos);
-		SetPos   (_uniqueCode, _Name, tPos);
+		XMVECTOR _length = XMVector3Length(XMLoadFloat3(&_lengthPos));
+		XMStoreFloat3(&_lengthPos, _length);
+
+		// 해당 거리보다 커야 실행
+		if (_lengthPos.x > 20)
+		{
+			tPos.x = tPos.x + ptDir.x * _speed;
+			tPos.y = tPos.y + ptDir.y * _speed;
+			tPos.z = tPos.z + ptDir.z * _speed;
+
+			SetRotate(_uniqueCode, _Name, tPos);
+			SetPos   (_uniqueCode, _Name, tPos);
+		}
 	}
-
-	// 해당 위치로 이동
-	void MovePoint(int _uniqueCode, string _Name, float _x, float _y, float _z, float _speed)
-	{
-		// 체인에 있는 모델 하나만 선택해서 방향 보냄
-		XMFLOAT3 ptDir;
-		XMStoreFloat3(&ptDir, mAllModelData[mModelChain[_Name][0]]->GetPointDir(_uniqueCode, _x, _y, _z));
-
-		XMFLOAT3 tPos = GetPos(_uniqueCode, _Name);
-
-		tPos.x = tPos.x + ptDir.x * _speed;
-		tPos.y = tPos.y + ptDir.y * _speed;
-		tPos.z = tPos.z + ptDir.z * _speed;
-
-		SetRotate(_uniqueCode, _Name, tPos);
-		SetPos   (_uniqueCode, _Name, tPos);
-	}
-
 
 	// 모델 위치 값
 	XMFLOAT3 GetPos(int _uniqueCode, string _Name)

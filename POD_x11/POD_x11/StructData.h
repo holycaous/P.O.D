@@ -902,12 +902,13 @@ public:
 		XMVECTOR tObjLook  = XMLoadFloat3(&mObjData[_uniqueCode].getLookDir());
 		XMVECTOR tObjUp    = XMLoadFloat3(&mObjData[_uniqueCode].getUpDir());
 		XMVECTOR tObjRight = XMLoadFloat3(&mObjData[_uniqueCode].getRightDir());
+		XMVECTOR tEpsilon = { 0.05f, 0.05f, 0.05f };
 
 		// 회전 방향을 얻는다(좌, 우) - 스칼라 삼중적
 		float tRadius = XMVectorGetX(XMVector3Dot(tObjUp, XMVector3Cross(tObjLook, tfromPointLookDir)));
 
 		// 회전할만한 가치가 있는가?
-		if (tRadius > Rotatelimit || tRadius < -Rotatelimit)
+		if ((tRadius > Rotatelimit || tRadius < -Rotatelimit) || !XMVector3NearEqual(tfromPointLookDir, tObjLook, tEpsilon))
 		{
 			// 빠른쪽을 기준으로 회전 행렬을 만든다.
 			XMMATRIX tRotMtx;
@@ -921,7 +922,7 @@ public:
 			XMStoreFloat3(&tFiRightDir, XMVector3TransformNormal(tObjRight, tRotMtx));
 
 			// 각 방향벡터에 적용한다.
-			mObjData[_uniqueCode].setLookDir(tFinLookDir.x, tFinLookDir.y, tFinLookDir.z);
+			mObjData[_uniqueCode].setLookDir (tFinLookDir.x, tFinLookDir.y, tFinLookDir.z);
 			mObjData[_uniqueCode].setRightDir(tFiRightDir.x, tFiRightDir.y, tFiRightDir.z);
 		}
 	}
