@@ -256,7 +256,7 @@ public:
 class WeightVtx
 {
 public:
-	int TagetIdx;
+	int TgVtxIdx;
 	vector<BoneData> Bone;
 
 public:
@@ -1989,8 +1989,11 @@ private:
 				vertices[k].Tangent  = itor->second->Vertices[i].TangentU;
 				vertices[k].BiNormal = itor->second->Vertices[i].BiNormal;
 				
-				// 애니메이션 데이터
-				if (itor->second->weightVtx.size() > i) // 혹시몰라 만들어둔 안전장치
+				// 선택된 모델의 가중치 데이터
+				vector<WeightVtx>& _sModelWeight = itor->second->weightVtx;
+
+				// 정점별 가중치 갯수
+				if (_sModelWeight.size() > i) // 혹시몰라 만들어둔 안전장치
 				{
 					for (unsigned int x = 0; x < 4; ++x)
 					{
@@ -1998,10 +2001,10 @@ private:
 						switch (x)
 						{
 						case 0:
-							if (itor->second->weightVtx[i].Bone.size() > x)
+							if (_sModelWeight[i].Bone.size() > x)
 							{
-								vertices[k].Weights.x      = itor->second->weightVtx[i].Bone[x].Weight;
-								vertices[k].BoneIndices[x] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+								vertices[k].Weights.x      = _sModelWeight[i].Bone[x].Weight;
+								vertices[k].BoneIndices[x] = (BYTE)_sModelWeight[i].Bone[x].ID;
 							}
 							else
 							{
@@ -2010,10 +2013,10 @@ private:
 							}
 							break;
 						case 1:
-							if (itor->second->weightVtx[i].Bone.size() > x)
+							if (_sModelWeight[i].Bone.size() > x)
 							{
-								vertices[k].Weights.y      = itor->second->weightVtx[i].Bone[x].Weight;
-								vertices[k].BoneIndices[x] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+								vertices[k].Weights.y      = _sModelWeight[i].Bone[x].Weight;
+								vertices[k].BoneIndices[x] = (BYTE)_sModelWeight[i].Bone[x].ID;
 							}
 							else
 							{
@@ -2022,10 +2025,10 @@ private:
 							}
 							break;
 						case 2:
-							if (itor->second->weightVtx[i].Bone.size() > x)
+							if (_sModelWeight[i].Bone.size() > x)
 							{
-								vertices[k].Weights.z      = itor->second->weightVtx[i].Bone[x].Weight;
-								vertices[k].BoneIndices[x] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+								vertices[k].Weights.z      = _sModelWeight[i].Bone[x].Weight;
+								vertices[k].BoneIndices[x] = (BYTE)_sModelWeight[i].Bone[x].ID;
 							}
 							else
 							{
@@ -2034,8 +2037,8 @@ private:
 							}
 							break;
 						case 3:
-							if (itor->second->weightVtx[i].Bone.size() > x)
-								vertices[k].BoneIndices[x] = (BYTE)itor->second->weightVtx[i].Bone[x].ID;
+							if (_sModelWeight[i].Bone.size() > x)
+								vertices[k].BoneIndices[x] = (BYTE)_sModelWeight[i].Bone[x].ID;
 							else
 								vertices[k].BoneIndices[x] = 0;
 							break;

@@ -299,8 +299,8 @@ public:
 
 		for (int i = 0; i < len; ++i)
 		{
-			// Å¸°Ù ÀÎµ¦½º
-			fread(&mMyMeshData.weightVtx[i].TagetIdx, sizeof(int), 1, mFilePointer);
+			// Å¸°Ù ¹öÅØ½º ÀÎµ¦½º
+			fread(&mMyMeshData.weightVtx[i].TgVtxIdx, sizeof(int), 1, mFilePointer);
 
 			// º» µ¥ÀÌÅÍ ÃÑ Å©±â
 			int Bonelen = 0;
