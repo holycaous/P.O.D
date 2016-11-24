@@ -125,7 +125,7 @@ struct VertexPNTAni
 	XMFLOAT3 Tangent;
 	XMFLOAT3 BiNormal;
 	XMFLOAT3 Weights;
-	BYTE     BoneIndices[4];
+	UINT     BoneIndices[4];
 };
 
 struct VertexG
@@ -2004,7 +2004,7 @@ private:
 							if (_sModelWeight[i].Bone.size() > x)
 							{
 								vertices[k].Weights.x      = _sModelWeight[i].Bone[x].Weight;
-								vertices[k].BoneIndices[x] = (BYTE)_sModelWeight[i].Bone[x].ID;
+								vertices[k].BoneIndices[x] = _sModelWeight[i].Bone[x].ID;
 							}
 							else
 							{
@@ -2015,8 +2015,8 @@ private:
 						case 1:
 							if (_sModelWeight[i].Bone.size() > x)
 							{
-								vertices[k].Weights.y      = _sModelWeight[i].Bone[x].Weight;
-								vertices[k].BoneIndices[x] = (BYTE)_sModelWeight[i].Bone[x].ID;
+								vertices[k].Weights.y      =  _sModelWeight[i].Bone[x].Weight;
+								vertices[k].BoneIndices[x] = _sModelWeight[i].Bone[x].ID;
 							}
 							else
 							{
@@ -2028,7 +2028,7 @@ private:
 							if (_sModelWeight[i].Bone.size() > x)
 							{
 								vertices[k].Weights.z      = _sModelWeight[i].Bone[x].Weight;
-								vertices[k].BoneIndices[x] = (BYTE)_sModelWeight[i].Bone[x].ID;
+								vertices[k].BoneIndices[x] = _sModelWeight[i].Bone[x].ID;
 							}
 							else
 							{
@@ -2038,7 +2038,7 @@ private:
 							break;
 						case 3:
 							if (_sModelWeight[i].Bone.size() > x)
-								vertices[k].BoneIndices[x] = (BYTE)_sModelWeight[i].Bone[x].ID;
+								vertices[k].BoneIndices[x] = _sModelWeight[i].Bone[x].ID;
 							else
 								vertices[k].BoneIndices[x] = 0;
 							break;

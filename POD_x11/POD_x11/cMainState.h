@@ -73,7 +73,7 @@ public:
 		// 본 테스트
 		//--------------------------------------------------------------------------------------------------------------------//
 		mModelManager->AddModel(0, "Model1"     , 100.0f, 100.0f, 500.0f, e_Idle);
-		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f, 18);
+		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f, 100);
 
 
 		mModelManager->AddModel(0, "Model5"     , 100.0f, 100.0f, 700.0f, e_Idle);

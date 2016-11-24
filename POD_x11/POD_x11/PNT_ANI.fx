@@ -279,7 +279,7 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 		//-------------------------------------------------------------------------------//
 		// 본 선택							                             
 													  					         // 행렬 픽셀이 4칸씩 뛰므로	( 텍셀 1개 == 한 행 이므로, 4개를 얻어야 함 ) 
-		_TexSelect.x = (vin.BoneIndices[i] * 4.0f) / (vin.AniData.z - 1.0f);     // 그래서 uv처리할때 Tex U쪽에 * 4 이런거 해줘야할 듯 (4개씩 얻고..)
+		_TexSelect.x = ((float)vin.BoneIndices[i] * 4.0f) / (vin.AniData.z - 1.0f);     // 그래서 uv처리할때 Tex U쪽에 * 4 이런거 해줘야할 듯 (4개씩 얻고..)
 
 		// 매트릭스 선택
 		SelectMtx(vin.AniData.x, _TexSelect, vin.AniData.z, _MadeMtx);
