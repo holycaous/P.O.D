@@ -2541,7 +2541,7 @@ public:
 class BoneParentData
 {
 public:
-	string mName;          // 내 부모의 이름
+	string mName;    // 내 부모의 이름
 	XMFLOAT4X4 mLAP; // 내가 아래 자식에게 보낼 매트릭스
 public:
 	BoneParentData()
@@ -2624,13 +2624,26 @@ public:
 		//mAniData.Position[_key].Vtx.z   = _CPos.z;
 		
 		// 애니메이션 데이터 계산
-		XMVECTOR _scaleKey = XMLoadFloat3(&mAniData.Scale[_key].Vtx);        // 스케일 값
+		//XMVECTOR _scaleKey = XMLoadFloat3(&mAniData.Scale[_key].Vtx);        // 스케일 값
 		XMVECTOR _rotKey   = XMLoadFloat4(&mAniData.Quaternion[_key].Vtx);   // 회전
-		XMVECTOR _posKey   = XMLoadFloat3(&mAniData.Position[_key].Vtx);     // 위치
-		XMVECTOR _zero     = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);			 // 회전 중점
-		
+		//XMVECTOR _posKey   = XMLoadFloat3(&mAniData.Position[_key].Vtx);     // 위치
+		//XMVECTOR _zero     = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);			 // 회전 중점
+
 		// 아핀변환 행렬		
-		XMStoreFloat4x4(&mAniMtx, XMMatrixAffineTransformation(_scaleKey, _zero, _rotKey, _posKey));
+		//XMStoreFloat4x4(&mAniMtx, XMMatrixAffineTransformation(_scaleKey, _zero, _rotKey, _posKey));
+
+		// 주어진 사원수로 회전행렬을 구한다.
+		XMStoreFloat4x4(&mAniMtx, XMMatrixRotationQuaternion(_rotKey));
+
+		// 이동 적용
+		mAniMtx._41 = mAniData.Position[_key].Vtx.x;
+		mAniMtx._42 = mAniData.Position[_key].Vtx.y;
+		mAniMtx._43 = mAniData.Position[_key].Vtx.z;
+		
+		// 스케일 적용
+		mAniMtx._11 *= mAniData.Scale[_key].Vtx.x;
+		mAniMtx._22 *= mAniData.Scale[_key].Vtx.y;
+		mAniMtx._33 *= mAniData.Scale[_key].Vtx.z;
 
 		return mAniMtx;
 	}
@@ -2660,34 +2673,52 @@ public:
 	}
 
 	// 스킨행렬 만들기, 하향 계산하기 (자식 본)
-	void MakeSkin(int _AniPoint, SkinTree& _SkinTree, vector< map<string, XMFLOAT4X4>>& _SkinMtx, vector<vector<XMFLOAT4X4>>& _LAP)
+	void MakeSkin(int _AniPoint, SkinTree& _SkinTree, vector< map<string, XMFLOAT4X4>>& _SkinMtx, vector< map<string, XMFLOAT4X4>>& _LAP)
 	{
-		// 사실상 하나 밖에 없음
-		auto itor = _SkinTree.mData.begin();
+		// 선택된 자식 본
+		auto itor = _SkinTree.mData.begin(); // 사실상 하나 밖에 없음
+
+		// 애니 매트릭스
+		auto _aniMtx = itor->second.getAniMtx(_AniPoint);
 
 		XMMATRIX tLoclMtx = XMLoadFloat4x4(&itor->second.mTMLocalMtx);
-		XMMATRIX tAniMtx  = XMLoadFloat4x4(&itor->second.getAniMtx(_AniPoint));
+		XMMATRIX tAniMtx  = XMLoadFloat4x4(&_aniMtx);
 		XMMATRIX tParMtx, tResultMtx, tResult;
 
 		// 현 본의 LA 처리
 		tResultMtx = XMMatrixMultiply(tLoclMtx, tAniMtx);
 
-		// 부모가 있는가?
-		if (!_SkinTree.mParentData.mName.empty())
+		XMFLOAT4X4 _tResultMtx;
+		XMStoreFloat4x4(&_tResultMtx, tResultMtx);
+
+		//-------------------------------------------------------------------------------------//
+		// 만약 pos키값이 없으면 local TM의 좌표를 사용한다
+		//-------------------------------------------------------------------------------------//
+		if (_aniMtx._41 == 0.0f && _aniMtx._42 == 0.0f && _aniMtx._43 == 0.0f)
 		{
-			// P처리
-			tParMtx = XMLoadFloat4x4(&_SkinTree.mParentData.mLAP);
-			tResult = XMMatrixMultiply(tResultMtx, tParMtx); // LAP
+			_tResultMtx._41 = itor->second.mTMLocalMtx._41;
+			_tResultMtx._42 = itor->second.mTMLocalMtx._42;
+			_tResultMtx._43 = itor->second.mTMLocalMtx._43;
 		}
-		else
-			tResult = tResultMtx;
+		else	// pos키값을 좌표값으로 적용한다(이렇게 하지 않으면 TM의 pos성분이 두번적용된다)
+		{
+			_tResultMtx._41 = _aniMtx._41;
+			_tResultMtx._42 = _aniMtx._42;
+			_tResultMtx._43 = _aniMtx._43;
+		}
+		//-------------------------------------------------------------------------------------//
+		tResultMtx = XMLoadFloat4x4(&_tResultMtx);
 
-
-		// 자식에게 넘길 데이터 저장
+	
+		// P처리 (부모 데이터 누적)
+		tParMtx = XMLoadFloat4x4(&_SkinTree.mParentData.mLAP);
+		tResult = XMMatrixMultiply(tResultMtx, tParMtx); // LAP
+	
+		// 자식에게 넘길 데이터로 저장
 		XMStoreFloat4x4(&_SkinTree.mParentData.mLAP, tResult); // _SkinTree.mParentData.mLAP 는 내가 아래 자식에게 보낼 매트릭스 저장공간
 
 		// LAP 에 저장
-		_LAP[_AniPoint].push_back(_SkinTree.mParentData.mLAP);
+		_LAP[_AniPoint][itor->first] = _SkinTree.mParentData.mLAP;
 
 		// SKIN 에 저장
 		XMFLOAT4X4 tSkinMtx;
@@ -2707,7 +2738,7 @@ public:
 	}
 
 	// 스킨행렬 만들기, 하향 계산하기 (루트 본)
-	void MakeSkin(int _AniPoint, vector< map<string, XMFLOAT4X4>>& _SkinMtx, vector<vector<XMFLOAT4X4>>& _LAP)
+	void MakeSkin(int _AniPoint, vector< map<string, XMFLOAT4X4>>& _SkinMtx, vector< map<string, XMFLOAT4X4>>& _LAP)
 	{
 		// 데이터가 다수일 경우.. (루트 빼곤 없을 듯..)
 		//for (auto itor = mData.begin(); itor != mData.end(); ++itor)
@@ -2715,40 +2746,85 @@ public:
 			auto itor = mData.begin();   // Dummy_root
 			auto itor2 = ++itor; --itor; // NULL
 
+			// 애니 매트릭스
+			auto _aniMtx  = itor ->second.getAniMtx(_AniPoint);	  // Dummy_root
+			auto _aniMtx2 = itor2->second.getAniMtx(_AniPoint);	  // NULL
+
 			// Dummy_root
 			XMMATRIX tLoclMtx = XMLoadFloat4x4(&itor->second.mTMLocalMtx);
-			XMMATRIX tAniMtx  = XMLoadFloat4x4(&itor->second.getAniMtx(_AniPoint));
+			XMMATRIX tAniMtx  = XMLoadFloat4x4(&_aniMtx);
 
 			// NULL
 			XMMATRIX tLoclMtx2 = XMLoadFloat4x4(&itor2->second.mTMLocalMtx);
-			XMMATRIX tAniMtx2  = XMLoadFloat4x4(&itor2->second.getAniMtx(_AniPoint));
+			XMMATRIX tAniMtx2  = XMLoadFloat4x4(&_aniMtx2);
 
-			XMMATRIX tResultMtx, tResultMtx2, tResult;
+			XMMATRIX tResultMtx, tResultMtx2;
 
 			// 현 본의 LA 처리
-			tResultMtx  = XMMatrixMultiply(tLoclMtx, tAniMtx);
+			tResultMtx  = XMMatrixMultiply(tLoclMtx , tAniMtx);
 			tResultMtx2 = XMMatrixMultiply(tLoclMtx2, tAniMtx2);
-			//tResult     = XMMatrixMultiply(tResultMtx ,tResultMtx2);
-			tResult = XMMatrixMultiply(tResultMtx2, tResultMtx);
 
-			// 자식에게 넘길 데이터 저장
-			XMStoreFloat4x4(&mParentData.mLAP, tResult);
+			XMFLOAT4X4 _tResultMtx, _tResultMtx2;
+			XMStoreFloat4x4(&_tResultMtx , tResultMtx);	 // Dummy_root
+			XMStoreFloat4x4(&_tResultMtx2, tResultMtx2); // NULL
 
-			// LAP 에 저장
-			_LAP[_AniPoint].push_back(mParentData.mLAP);
-			_LAP[_AniPoint].push_back(mParentData.mLAP);
+			//-------------------------------------------------------------------------------------//
+			// 만약 pos키값이 없으면 local TM의 좌표를 사용한다
+			//-------------------------------------------------------------------------------------//
+			// Dummy_root
+			if (_aniMtx._41 == 0.0f && _aniMtx._42 == 0.0f && _aniMtx._43 == 0.0f)
+			{
+				_tResultMtx._41 = itor->second.mTMLocalMtx._41;
+				_tResultMtx._42 = itor->second.mTMLocalMtx._42;
+				_tResultMtx._43 = itor->second.mTMLocalMtx._43;
+			}
+			else	// pos키값을 좌표값으로 적용한다(이렇게 하지 않으면 TM의 pos성분이 두번적용된다)
+			{
+				_tResultMtx._41 = _aniMtx._41;
+				_tResultMtx._42 = _aniMtx._42;
+				_tResultMtx._43 = _aniMtx._43;
+			}
+
+			// NULL
+			if (_aniMtx2._41 == 0.0f && _aniMtx2._42 == 0.0f && _aniMtx2._43 == 0.0f)
+			{
+				_tResultMtx2._41 = itor2->second.mTMLocalMtx._41;
+				_tResultMtx2._42 = itor2->second.mTMLocalMtx._42;
+				_tResultMtx2._43 = itor2->second.mTMLocalMtx._43;
+			}
+			else	// pos키값을 좌표값으로 적용한다(이렇게 하지 않으면 TM의 pos성분이 두번적용된다)
+			{
+				_tResultMtx2._41 = _aniMtx2._41;
+				_tResultMtx2._42 = _aniMtx2._42;
+				_tResultMtx2._43 = _aniMtx2._43;
+			}
+			//-------------------------------------------------------------------------------------//
+
+			tResultMtx  = XMLoadFloat4x4(&_tResultMtx);	  // Dummy_root
+			tResultMtx2 = XMLoadFloat4x4(&_tResultMtx2);  // NULL
+
+			// LAP 에 저장 (자식에게 넘길 데이터 저장)
+			XMStoreFloat4x4(&mParentData.mLAP, tResultMtx);	    // Dummy_root
+			_LAP[_AniPoint][itor ->first] = mParentData.mLAP;
+
+			XMStoreFloat4x4(&mParentData.mLAP, tResultMtx2);	// NULL
+			_LAP[_AniPoint][itor2->first] = mParentData.mLAP;
 
 			// SKIN 에 저장
 			XMFLOAT4X4 tSkinMtx;
 			XMMATRIX tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
-			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tInvWDMtx, tResult));
-			_SkinMtx[_AniPoint][itor2->first] = tSkinMtx; // Dummy_root
-			_SkinMtx[_AniPoint][itor ->first] = tSkinMtx; // NULL
+			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tInvWDMtx, tResultMtx));
+			_SkinMtx[_AniPoint][itor ->first] = tSkinMtx; // Dummy_root
+
+			tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
+			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tInvWDMtx, tResultMtx2));
+			_SkinMtx[_AniPoint][itor2->first] = tSkinMtx; // NULL
 
 			// 자식 map 갯수만큼 반복
 			for (auto itorChild = mChildData.begin(); itorChild != mChildData.end(); ++itorChild)
 			{
 				// 선택된 자식에, 부모 데이터 넘기기
+				XMStoreFloat4x4(&mParentData.mLAP, tResultMtx); // Dummy_root
 				itorChild->second.mParentData.mLAP = mParentData.mLAP;
 
 				// 함수(자식본번지) 애니 키와, AP 넘기기
@@ -2844,7 +2920,10 @@ public:
 	vector<vector<XMFLOAT4X4>> mRelocSkinMtx;
 
 	// LAP 행렬 (테스트용)
-	vector<vector<XMFLOAT4X4>> mLAP;
+	vector<map<string, XMFLOAT4X4>> mLAP;
+
+	// LAP 행렬 (테스트용)
+	vector<vector<XMFLOAT4X4>> mRelocLAP;
 	
 	// 이름
 	char mMainName[BUF_SIZE];
@@ -2922,6 +3001,86 @@ public:
 		_WsTexName.clear();
 	}
 
+	// LAP 리턴
+	vector<XMFLOAT4X4>& GetLapStorage(int _aniKey)
+	{
+		return mRelocLAP[_aniKey];
+	}
+
+	void ClearClass()
+	{
+		// 본 데이터 삭제
+		mSaveBoneData.clear();
+		mBoneData.clear();
+		
+		// 계산용 변수 비우기
+		ClearCalValue();
+
+		// 하이라이키 삭제
+		for (unsigned int i = 0; i < mBoneHierarchy.size(); ++i)
+			mBoneHierarchy[i].clear();
+		mBoneHierarchy.clear();
+	}
+
+private:
+	// 데이터 재배치
+	void RelocationData()
+	{
+		// map으로 옮김
+		for (unsigned int i = 0; i < mSaveBoneData.size(); ++i)
+		{
+			// 회전키 누적 계산
+			vector<RotKeyVtx>& _QuaternionArray = mSaveBoneData[i].mAniData.Quaternion;
+			for (unsigned int x = 1; x < _QuaternionArray.size(); ++x)
+			{
+				// 값을 꺼내온다
+				XMVECTOR beforeRot  = XMLoadFloat4(&_QuaternionArray[x - 1].Vtx); // 직전
+				XMVECTOR CurrentRot = XMLoadFloat4(&_QuaternionArray[x].Vtx);     // 현재
+				XMVECTOR ResultRot;
+
+				// 사원수 회전을 누적시킨다.
+				ResultRot = XMQuaternionMultiply(CurrentRot, beforeRot);
+
+				// 저장한다
+				XMStoreFloat4(&_QuaternionArray[x].Vtx, ResultRot);
+			}
+
+			//// 이동 누적 해제 계산
+			//vector<KeyVtx>& _PositionArray = mSaveBoneData[i].mAniData.Position;
+			//for (unsigned int x = _PositionArray.size() - 1; x > 0; --x)
+			//{
+			//	// 값을 꺼내온다
+			//	XMVECTOR beforePos  = XMLoadFloat3(&_PositionArray[x - 1].Vtx); // 직전
+			//	XMVECTOR CurrentPos = XMLoadFloat3(&_PositionArray[x].Vtx);     // 현재
+			//	XMVECTOR ResultPos;
+			//
+			//	// 이동을 누적 해제시킨다.
+			//	ResultPos = beforePos - CurrentPos;
+			//
+			//	// 저장한다
+			//	XMStoreFloat3(&_PositionArray[x].Vtx, ResultPos);
+			//}
+			//
+			//// 이거 문제있을수 있음 ( 강제 오프셋 초기화 )
+			//mSaveBoneData[i].mAniData.Position[0].Vtx.x = 0.0f;
+			//mSaveBoneData[i].mAniData.Position[0].Vtx.y = 0.0f;
+			//mSaveBoneData[i].mAniData.Position[0].Vtx.z = 0.0f;
+
+			// 역행렬 만들기 및 저장
+			XMMATRIX tWdMtx  = XMLoadFloat4x4(&mSaveBoneData[i].mTMWorldMtx);
+			XMVECTOR tDet    = XMMatrixDeterminant(tWdMtx);
+			XMMATRIX tInvMtx = XMMatrixInverse(&tDet, tWdMtx);
+
+			XMStoreFloat4x4(&mSaveBoneData[i].mInvWorldTMMtx, tInvMtx);
+
+			// 키에 맞게 재배치
+			string tString = mSaveBoneData[i].mObjName;
+			mBoneData[tString] = mSaveBoneData[i];
+			tString.clear();
+		}
+	}
+
+	
 	// 스킨 텍스처 만들기
 	void MakSkinTex(wstring& _TexName)
 	{
@@ -2980,8 +3139,8 @@ public:
 	// 스킨 데이터 순서에 맞게 재배치
 	void RelocSkinData()
 	{
-		// 애니메이션 키
-		for (unsigned int i = 0; i < mRelocSkinMtx.size(); ++i)
+		// 애니메이션 키 갯수 만큼
+		for (unsigned int i = 0; i < mSkinMtx.size(); ++i)
 		{
 			// 본 갯수
 			for (unsigned int x = 0; x < mSaveBoneData.size(); ++x)
@@ -2989,16 +3148,12 @@ public:
 				// 이름 선택
 				string _getName = mSaveBoneData[x].mObjName;
 				mRelocSkinMtx[i].push_back(mSkinMtx[i][_getName]);
+				mRelocLAP[i].push_back(mLAP[i][_getName]);
 			}
 		}
 	}
 
-	// LAP 리턴
-	vector<XMFLOAT4X4>& GetLapStorage(int _aniKey)
-	{
-		return mLAP[_aniKey];
-	}
-
+	
 	// 텍스처 쓰기
 	void WriteTex(int _AniSize)
 	{
@@ -3117,6 +3272,11 @@ public:
 		for (unsigned int i = 0; i < mLAP.size(); ++i)
 			mLAP[i].clear();
 		mLAP.clear();
+
+		// LAP 비우기
+		for (unsigned int i = 0; i < mRelocLAP.size(); ++i)
+			mRelocLAP[i].clear();
+		mRelocLAP.clear();
 	}
 
 	// 계산용 변수 공간확보
@@ -3129,79 +3289,7 @@ public:
 		mRelocSkinMtx.resize(_size);
 		mSkinMtx     .resize(_size);
 		mLAP         .resize(_size);
-	}
-
-	void ClearClass()
-	{
-		// 본 데이터 삭제
-		mSaveBoneData.clear();
-		mBoneData.clear();
-		
-		// 계산용 변수 비우기
-		ClearCalValue();
-
-		// 하이라이키 삭제
-		for (unsigned int i = 0; i < mBoneHierarchy.size(); ++i)
-			mBoneHierarchy[i].clear();
-		mBoneHierarchy.clear();
-	}
-
-private:
-	// 데이터 재배치
-	void RelocationData()
-	{
-		// map으로 옮김
-		for (unsigned int i = 0; i < mSaveBoneData.size(); ++i)
-		{
-			// 회전키 누적 계산
-			vector<RotKeyVtx>& _QuaternionArray = mSaveBoneData[i].mAniData.Quaternion;
-			for (unsigned int x = 1; x < _QuaternionArray.size(); ++x)
-			{
-				// 값을 꺼내온다
-				XMVECTOR beforeRot  = XMLoadFloat4(&_QuaternionArray[x - 1].Vtx); // 직전
-				XMVECTOR CurrentRot = XMLoadFloat4(&_QuaternionArray[x].Vtx);     // 현재
-				XMVECTOR ResultRot;
-
-				// 사원수 회전을 누적시킨다.
-				ResultRot = XMQuaternionMultiply(CurrentRot, beforeRot);
-
-				// 저장한다
-				XMStoreFloat4(&_QuaternionArray[x].Vtx, ResultRot);
-			}
-
-			//// 이동 누적 해제 계산
-			//vector<KeyVtx>& _PositionArray = mSaveBoneData[i].mAniData.Position;
-			//for (unsigned int x = _PositionArray.size() - 1; x > 0; --x)
-			//{
-			//	// 값을 꺼내온다
-			//	XMVECTOR beforePos  = XMLoadFloat3(&_PositionArray[x - 1].Vtx); // 직전
-			//	XMVECTOR CurrentPos = XMLoadFloat3(&_PositionArray[x].Vtx);     // 현재
-			//	XMVECTOR ResultPos;
-			//
-			//	// 이동을 누적 해제시킨다.
-			//	ResultPos = beforePos - CurrentPos;
-			//
-			//	// 저장한다
-			//	XMStoreFloat3(&_PositionArray[x].Vtx, ResultPos);
-			//}
-			//
-			//// 이거 문제있을수 있음 ( 강제 오프셋 초기화 )
-			//mSaveBoneData[i].mAniData.Position[0].Vtx.x = 0.0f;
-			//mSaveBoneData[i].mAniData.Position[0].Vtx.y = 0.0f;
-			//mSaveBoneData[i].mAniData.Position[0].Vtx.z = 0.0f;
-
-			// 역행렬 만들기 및 저장
-			XMMATRIX tWdMtx  = XMLoadFloat4x4(&mSaveBoneData[i].mTMWorldMtx);
-			XMVECTOR tDet    = XMMatrixDeterminant(tWdMtx);
-			XMMATRIX tInvMtx = XMMatrixInverse(&tDet, tWdMtx);
-
-			XMStoreFloat4x4(&mSaveBoneData[i].mInvWorldTMMtx, tInvMtx);
-
-			// 키에 맞게 재배치
-			string tString = mSaveBoneData[i].mObjName;
-			mBoneData[tString] = mSaveBoneData[i];
-			tString.clear();
-		}
+		mRelocLAP    .resize(_size);
 	}
 
 	// 변환 함수

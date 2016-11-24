@@ -9,7 +9,7 @@
 #define DEBUG_MODE
 
 // 프로그램을 벗어나면 렌더링 중지
-#define WINDOW_DISABLE_NO_RENDER
+//#define WINDOW_DISABLE_NO_RENDER
 
 #include <iostream>
 #include <windows.h>

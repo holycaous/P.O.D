@@ -269,7 +269,7 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 
 	// 애니 키 선택
 	float2 _TexSelect;
-	_TexSelect.y = (float)((int)_AniKey) / (vin.AniData.w - 1.0f);  // 일단, 소수부 버리기 나중에 보간 해줘야함
+	_TexSelect.y = _AniKey / (vin.AniData.w - 1.0f);  // 일단, 소수부 버리기 나중에 보간 해줘야함
 
 	// 최대 4개 까지
 	for (int i = 0; i < 4; ++i)
@@ -287,7 +287,9 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 		//-------------------------------------------------------------------------------//
 		// 스키닝 계산
 		//-------------------------------------------------------------------------------//
-		_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz;
+		float4 Skined_pos = mul(float4(vin.PosL, 1.0f), _MadeMtx);
+		_PosL += _weight[i] * (Skined_pos.xyz / Skined_pos.w);
+		//_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz;
 		//_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)_MadeMtx);
 		//_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)_MadeMtx);
 		//_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)_MadeMtx);
@@ -299,7 +301,7 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 	//--------------------------------------------------------------------------------//
 	// 최종적으로 여기다 스키닝 된 정점 정보를 덮어 써야함.
 
-	vout.PosW    = mul(float4(_PosL, 1.0f), vin.World).xyz;        // W
+	vout.PosW    = mul(float4(_PosL, 1.0f), vin.World).xyz;          // W
 	//vout.NormalW = mul(_NormalL, (float3x3)gWorldInvTranspose);    // W  // 역전치월드를 로컬에 곱해주면, 오로지 회전 부분만 로컬 노멀에 적용, (회전유지, 이동X, 스케일 1로 초기화)
 	
 	// 매트릭스 만들기 용도

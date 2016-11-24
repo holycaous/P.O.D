@@ -58,12 +58,28 @@ public:
 		// 테스트용
 		//mModelManager->AddModel(0, "Model4",  100.0f, 0.0f,  300.0f, e_Idle);
 		mModelManager->AddModel(0, "Model2", 100.0f, 100.0f, 200.0f, e_Idle);
-		mModelManager->AddModel(0, "Model1", 100.0f, 100.0f, 500.0f, e_Idle);
-		mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
+		//mModelManager->AddModel(0, "Model1", 100.0f, 100.0f, 500.0f, e_Idle);
+		//mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
 		
 		//// 본 그려보기 추가
 		//for (int i = 0; i < 101; ++i)
-		//	mModelManager->DrawBone("Model1", "Idle", 100.0f, 200.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
+		//	mModelManager->DrawBone("Model1", "Idle", 200.0f, 100.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
+
+		//for (int i = 0; i < 20; ++i)
+		//	mModelManager->DrawBone("Model5", "Idle", 300.0f, 100.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
+
+
+		//--------------------------------------------------------------------------------------------------------------------//
+		// 본 테스트
+		//--------------------------------------------------------------------------------------------------------------------//
+		mModelManager->AddModel(0, "Model1"     , 100.0f, 100.0f, 500.0f, e_Idle);
+		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f, 18);
+
+
+		mModelManager->AddModel(0, "Model5"     , 100.0f, 100.0f, 700.0f, e_Idle);
+		//mModelManager->DrawBone("Model5", "Idle", 100.0f, 100.0f, 700.0f, 18);
+		
+		//--------------------------------------------------------------------------------------------------------------------//
 
 
 		// 해당 인스턴스 버퍼를 만들겠당..
@@ -71,6 +87,7 @@ public:
 
 		// 플레이어 및 카메라 세팅
 		mModelManager->IniPlayer(0, "Model3", 200.0f, 100.0f, 600.0f, e_Idle);
+		mModelManager->SetScale (0, "Model3", 0.001f, 0.001f, 0.001f);
 
 		// FSM 상태바꾸기
 		//mModelManager->SetFSM(0, "Model3", e_Idle);
