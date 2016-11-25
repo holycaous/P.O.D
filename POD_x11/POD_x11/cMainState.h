@@ -62,10 +62,12 @@ public:
 		//mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
 		
 		//// 본 그려보기 추가
-		//for (int i = 0; i < 101; ++i)
-		//	mModelManager->DrawBone("Model1", "Idle", 200.0f, 100.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
-
-		//for (int i = 0; i < 20; ++i)
+		for (int y = 1; y < 7; ++y)
+		{
+			for (int i = 0; i < 16; ++i)
+				mModelManager->DrawBone("Model1", "Idle", 200.0f, 100.0f * y, 50 * i, i * y); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
+		}
+		//for (int i = 0; i < 21; ++i)
 		//	mModelManager->DrawBone("Model5", "Idle", 300.0f, 100.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
 
 
@@ -73,7 +75,7 @@ public:
 		// 본 테스트
 		//--------------------------------------------------------------------------------------------------------------------//
 		mModelManager->AddModel(0, "Model1"     , 100.0f, 100.0f, 500.0f, e_Idle);
-		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f, 100);
+		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f, 62);
 
 
 		mModelManager->AddModel(0, "Model5"     , 100.0f, 100.0f, 700.0f, e_Idle);
@@ -111,7 +113,7 @@ public:
 		mDrawManager->Update(dt);
 		
 		// 모델 매니저 업데이트
-		mModelManager->Update(dt);
+		//mModelManager->Update(dt);
 
 		// 플레이어 액션
 		PlayerAction(dt);

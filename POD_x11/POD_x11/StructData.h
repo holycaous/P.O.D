@@ -2612,6 +2612,8 @@ public:
 	XMFLOAT4X4 getAniMtx(int& _key)
 	{
 		XMFLOAT4X4 mAniMtx;
+		XMMATRIX I = XMMatrixIdentity();
+		XMStoreFloat4x4(&mAniMtx, I);
 
 		//XMFLOAT4 _CRot = mAniData.Quaternion[_key].Vtx;
 		//XMFLOAT3 _CPos = mAniData.Position[_key].Vtx;
@@ -3029,8 +3031,14 @@ private:
 		// map으로 옮김
 		for (unsigned int i = 0; i < mSaveBoneData.size(); ++i)
 		{
-			// 회전키 누적 계산
+			// 회전 누적 계산
 			vector<RotKeyVtx>& _QuaternionArray = mSaveBoneData[i].mAniData.Quaternion;
+
+			_QuaternionArray[0].Vtx.x = 0.0f;
+			_QuaternionArray[0].Vtx.y = 0.0f;
+			_QuaternionArray[0].Vtx.z = 0.0f;
+			_QuaternionArray[0].Vtx.w = 1.0f;
+
 			for (unsigned int x = 1; x < _QuaternionArray.size(); ++x)
 			{
 				// 값을 꺼내온다
@@ -3039,7 +3047,7 @@ private:
 				XMVECTOR ResultRot;
 
 				// 사원수 회전을 누적시킨다.
-				ResultRot = XMQuaternionMultiply(CurrentRot, beforeRot);
+				ResultRot = XMQuaternionMultiply(beforeRot, CurrentRot);
 
 				// 저장한다
 				XMStoreFloat4(&_QuaternionArray[x].Vtx, ResultRot);
@@ -3147,8 +3155,8 @@ private:
 			{
 				// 이름 선택
 				string _getName = mSaveBoneData[x].mObjName;
-				mRelocSkinMtx[i].push_back(mSkinMtx[i][_getName]);
-				mRelocLAP[i].push_back(mLAP[i][_getName]);
+				mRelocSkinMtx[i].push_back(mSkinMtx[i][_getName]); // i번키에, 선택된 본을 넣어라 
+				mRelocLAP    [i].push_back(mLAP    [i][_getName]);
 			}
 		}
 	}
