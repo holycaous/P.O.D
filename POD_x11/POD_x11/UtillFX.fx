@@ -260,3 +260,8 @@ SamplerState samPoint
 	AddressV = CLAMP;
 };
 
+// 테스트 전용
+cbuffer cbSkinned
+{
+	float4x4 gBoneTransforms[96];
+};

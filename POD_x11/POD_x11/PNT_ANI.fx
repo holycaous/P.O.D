@@ -278,7 +278,7 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 		// 텍스처 추출
 		//-------------------------------------------------------------------------------//
 		// 본 선택							                             
-													  					         // 행렬 픽셀이 4칸씩 뛰므로	( 텍셀 1개 == 한 행 이므로, 4개를 얻어야 함 ) 
+													  					                // 행렬 픽셀이 4칸씩 뛰므로	( 텍셀 1개 == 한 행 이므로, 4개를 얻어야 함 ) 
 		_TexSelect.x = ((float)vin.BoneIndices[i] * 4.0f) / (vin.AniData.z - 1.0f);     // 그래서 uv처리할때 Tex U쪽에 * 4 이런거 해줘야할 듯 (4개씩 얻고..)
 
 		// 매트릭스 선택
@@ -287,12 +287,21 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 		//-------------------------------------------------------------------------------//
 		// 스키닝 계산
 		//-------------------------------------------------------------------------------//
-		float4 Skined_pos = mul(float4(vin.PosL, 1.0f), _MadeMtx);
-		_PosL += _weight[i] * (Skined_pos.xyz / Skined_pos.w);
+		
+		// 1.
+		//float4 Skined_pos = mul(float4(vin.PosL, 1.0f), _MadeMtx);
+		//_PosL += _weight[i] * (Skined_pos.xyz / Skined_pos.w);
+
+		// 2.
 		//_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz;
 		//_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)_MadeMtx);
 		//_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)_MadeMtx);
 		//_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)_MadeMtx);
+
+
+		// 테스트용
+		_PosL += _weight[i] * mul(float4(vin.PosL, 1.0f), gBoneTransforms[vin.BoneIndices[i]]).xyz;
+
 		//-------------------------------------------------------------------------------//
 	}
 

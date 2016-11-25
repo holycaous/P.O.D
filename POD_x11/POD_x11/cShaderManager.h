@@ -145,6 +145,14 @@ public:
 			SetShaderValue(e_ShaderValResource, "gAttack3Tex"	, mNowModel->mSkinTex[e_Idle]->mTexSRV);
 			SetShaderValue(e_ShaderValResource, "gStunTex"	    , mNowModel->mSkinTex[e_Idle]->mTexSRV);
 
+
+
+			// 테스트
+			vector<XMFLOAT4X4>& _SkinMtx = cAniManager::GetInstance()->mData[mNowModel->mCreateName]["Idle"]->GetSkinStorage(70);
+			SetShaderMtxArray(e_ShaderValMtxArray, "gBoneTransforms", &_SkinMtx[0], _SkinMtx.size());
+
+
+
 		/*
 		    SetShaderValue(e_ShaderValResource, "gIdleTex"		, mNowModel->mSkinTex[e_Idle     ]->mTexSRV);
 			SetShaderValue(e_ShaderValResource, "gDamageTex"	, mNowModel->mSkinTex[e_Damage   ]->mTexSRV);
@@ -423,6 +431,9 @@ private:
 		GetShaderValue(tEffectStorage, "gDiffuseTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gSpecularTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gNormalTex"		   , e_ShaderValResource);
+
+		// 테스트
+		GetShaderValue(tEffectStorage, "gBoneTransforms"   , e_ShaderValMtxArray);
 		
 		// 애니 텍스처
 		GetShaderValue(tEffectStorage, "gIdleTex"		   , e_ShaderValResource);

@@ -1353,8 +1353,8 @@ public:
 					vbd.MiscFlags           = 0;
 					vbd.StructureByteStride = 0;
 				}
+
 				// 공간할당
-				//mInstancedBuffer[itor->second->mCreateName] = NULL;
 				HR(mCoreStorage->md3dDevice->CreateBuffer(&vbd, 0, &mInstancedBuffer[itor->second->mCreateName]));
 			}
 		}
@@ -1393,7 +1393,6 @@ public:
 			}
 
 			// 공간할당
-			//mInstancedBuffer[itor->second->mCreateName] = NULL;
 			HR(mCoreStorage->md3dDevice->CreateBuffer(&vbd, 0, &mInstancedBuffer[_selectModel->mCreateName]));
 		}
 	}
@@ -2015,7 +2014,7 @@ private:
 						case 1:
 							if (_sModelWeight[i].Bone.size() > x)
 							{
-								vertices[k].Weights.y      =  _sModelWeight[i].Bone[x].Weight;
+								vertices[k].Weights.y      = _sModelWeight[i].Bone[x].Weight;
 								vertices[k].BoneIndices[x] = _sModelWeight[i].Bone[x].ID;
 							}
 							else
@@ -3007,6 +3006,12 @@ public:
 	vector<XMFLOAT4X4>& GetLapStorage(int _aniKey)
 	{
 		return mRelocLAP[_aniKey];
+	}
+
+	// 스킨 행렬 리턴
+	vector<XMFLOAT4X4>& GetSkinStorage(int _aniKey)
+	{
+		return mRelocSkinMtx[_aniKey];
 	}
 
 	void ClearClass()
