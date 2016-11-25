@@ -2818,7 +2818,7 @@ public:
 			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tInvWDMtx, tResultMtx));
 			_SkinMtx[_AniPoint][itor ->first] = tSkinMtx; // Dummy_root
 
-			tInvWDMtx = XMLoadFloat4x4(&itor->second.mInvWorldTMMtx);
+			tInvWDMtx = XMLoadFloat4x4(&itor2->second.mInvWorldTMMtx);
 			XMStoreFloat4x4(&tSkinMtx, XMMatrixMultiply(tInvWDMtx, tResultMtx2));
 			_SkinMtx[_AniPoint][itor2->first] = tSkinMtx; // NULL
 

@@ -53,20 +53,18 @@ public:
 		//mModelManager->AddModel("Model1", 100.0f, 100.0f, 200.0f );
 		//mModelManager->AddModel("Model2", 100.0f, 100.0f, 250.0f ); // <-- 모든 모델의 유니크코드는 0번부터 시작
 		//mModelManager->AddModel("Model3", 100.0f, 100.0f, 470.0f ); //     동일한 모델을 또 만들면 유니크 코드가 1씩 증가함 
-		//mModelManager->AddModel("Model4", 100.0f, 100.0f, 470.0f );
+		//mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 470.0f, e_Idle);
 
 		// 테스트용
-		//mModelManager->AddModel(0, "Model4",  100.0f, 0.0f,  300.0f, e_Idle);
+		mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 300.0f, e_Idle);
 		mModelManager->AddModel(0, "Model2", 100.0f, 100.0f, 200.0f, e_Idle);
-		//mModelManager->AddModel(0, "Model1", 100.0f, 100.0f, 500.0f, e_Idle);
+		mModelManager->AddModel(1, "Model3", 100.0f, 100.0f, 400.0f, e_Idle);
 		//mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
 		
 		//// 본 그려보기 추가
-		for (int y = 1; y < 7; ++y)
-		{
-			for (int i = 0; i < 16; ++i)
-				mModelManager->DrawBone("Model1", "Idle", 200.0f, 100.0f * y, 50 * i, i * y); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
-		}
+		//for (int i = 0; i < 101; ++i)
+		//	mModelManager->DrawBone("Model1", "Idle", 200.0f, 100.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
+
 		//for (int i = 0; i < 21; ++i)
 		//	mModelManager->DrawBone("Model5", "Idle", 300.0f, 100.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
 
@@ -113,7 +111,7 @@ public:
 		mDrawManager->Update(dt);
 		
 		// 모델 매니저 업데이트
-		//mModelManager->Update(dt);
+		mModelManager->Update(dt);
 
 		// 플레이어 액션
 		PlayerAction(dt);
