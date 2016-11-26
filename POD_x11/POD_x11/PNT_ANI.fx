@@ -6,7 +6,6 @@
 
 #include "LightHelper.fx"
 
-
 // 애니 상태에 따른 색상혼합
 void curAniState(float2 AniData, inout float4 _DiffuseTex)
 {
@@ -155,29 +154,41 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexAniOut pin)
 	return Out;
 }
 
-
 // 텍스처 선택
 void GetTexMtx(Texture2D _selectTex, float2 _TexSelect, float _TexWidth, inout float4x4 _Mtx)
 {
 	// 텍셀에 순차적으로 접근하는 방법: 1 / (텍스쳐 너비 - 1.0f) <-- [-1.0f는 300 텍스처는 0~299까지 이므로..]
+	// Tex 행 꺼내기 - tex2Dlod, Load
 
-	// Tex 행 꺼내기 
 	float4 tex_col1 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
-	_TexSelect.x += 1 / (_TexWidth - 1.0f);
+	_TexSelect.x += (1.0f / (_TexWidth - 1.0f));
 	float4 tex_col2 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
-	_TexSelect.x += 1 / (_TexWidth - 1.0f);
+	_TexSelect.x += (1.0f / (_TexWidth - 1.0f));
 	float4 tex_col3 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
-	_TexSelect.x += 1 / (_TexWidth - 1.0f);
+	_TexSelect.x += (1.0f / (_TexWidth - 1.0f));
 	float4 tex_col4 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
+	//// Tex 행 꺼내기 - tex2Dlod, Load
+	//float4 tex_col1 = _selectTex.Load(uint3(_TexSelect.x , _TexSelect.y, 0));
+	//
+	////_TexSelect.x += 1.0f / (_TexWidth - 1.0f);
+	//float4 tex_col2 = _selectTex.Load(uint3(_TexSelect.x + 1, _TexSelect.y, 0));
+	//
+	////_TexSelect.x += 1.0f / (_TexWidth - 1.0f);
+	//float4 tex_col3 = _selectTex.Load(uint3(_TexSelect.x + 2, _TexSelect.y, 0));
+	//
+	////_TexSelect.x += 1.0f / (_TexWidth - 1.0f);
+	//float4 tex_col4 = _selectTex.Load(uint3(_TexSelect.x + 3, _TexSelect.y, 0));
+	
 	// 매트릭스 만들기
 	_Mtx._11 = tex_col1.x; 	 _Mtx._12 = tex_col1.y; 	_Mtx._13 = tex_col1.z;  	_Mtx._14 = tex_col1.w;
 	_Mtx._21 = tex_col2.x; 	 _Mtx._22 = tex_col2.y; 	_Mtx._23 = tex_col2.z;  	_Mtx._24 = tex_col2.w;
 	_Mtx._31 = tex_col3.x; 	 _Mtx._32 = tex_col3.y; 	_Mtx._33 = tex_col3.z;  	_Mtx._34 = tex_col3.w;
 	_Mtx._41 = tex_col4.x; 	 _Mtx._42 = tex_col4.y; 	_Mtx._43 = tex_col4.z;  	_Mtx._44 = tex_col4.w;
+
 }
 
 // 매트릭스 선택
@@ -254,7 +265,6 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 
 
 	// 현재 프레임이 애니 키 
-	float    _AniKey  = vin.AniData.y;
 	float4x4 _MadeMtx = { 1.0f, 0.0f, 0.0f, 0.0f, 
 		                  0.0f, 1.0f, 0.0f, 0.0f,
 					      0.0f, 0.0f, 1.0f, 0.0f,
@@ -269,7 +279,7 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 
 	// 애니 키 선택
 	float2 _TexSelect;
-	_TexSelect.y = _AniKey / (vin.AniData.w - 1.0f);  // 일단, 소수부 버리기 나중에 보간 해줘야함
+	_TexSelect.y = vin.AniData.y / (vin.AniData.w - 1.0f);  // 일단, 소수부 버리기 나중에 보간 해줘야함
 
 	// 최대 4개 까지
 	for (int i = 0; i < 4; ++i)
@@ -293,14 +303,14 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 		//_PosL += _weight[i] * (Skined_pos.xyz / Skined_pos.w);
 
 		// 2.
-		//_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz;
+		_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz;
 		//_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)_MadeMtx);
 		//_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)_MadeMtx);
 		//_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)_MadeMtx);
 
 
-		// 테스트용
-		_PosL += _weight[i] * mul(float4(vin.PosL, 1.0f), gBoneTransforms[vin.BoneIndices[i]]).xyz;
+		// 테스트용 (버퍼 이용한거)
+		//_PosL += _weight[i] * mul(float4(vin.PosL, 1.0f), gBoneTransforms[vin.BoneIndices[i]]).xyz;
 
 		//-------------------------------------------------------------------------------//
 	}

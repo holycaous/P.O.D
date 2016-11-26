@@ -45,6 +45,11 @@ public:
 		mShader[mShaderMode]->mfxResource[_Name]->SetResource(_value);
 	}
 
+	void SetShaderValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, SHADER_TYPE _ShaderMode, ID3D11ShaderResourceView* _value)
+	{
+		mShader[_ShaderMode]->mfxResource[_Name]->SetResource(_value);
+	}
+
 	// 스킨 행렬 저장
 	void SetShaderMtxArray(SHADER_VAL_TYPE _ValueEnum, char* _Name, XMFLOAT4X4* _Mtx, int _MtxSize)
 	{
@@ -134,7 +139,7 @@ public:
 		if (mNowModel->mShaderMode == e_ShaderPongTexAni)
 		{
 			// 스킨 텍스처
-			SetShaderValue(e_ShaderValResource, "gIdleTex"		, mNowModel->mSkinTex[e_Idle]->mTexSRV); // 현재 한개만 넣었기 때문에 이렇게함. @@@@@@
+			SetShaderValue(e_ShaderValResource, "gIdleTex"      , mNowModel->mSkinTex[e_Idle]->mTexSRV); // 현재 한개만 넣었기 때문에 이렇게함. @@@@@@
 			SetShaderValue(e_ShaderValResource, "gDamageTex"	, mNowModel->mSkinTex[e_Idle]->mTexSRV);
 			SetShaderValue(e_ShaderValResource, "gRunTex"		, mNowModel->mSkinTex[e_Idle]->mTexSRV);
 			SetShaderValue(e_ShaderValResource, "gWalkTex"		, mNowModel->mSkinTex[e_Idle]->mTexSRV);
@@ -146,11 +151,9 @@ public:
 			SetShaderValue(e_ShaderValResource, "gStunTex"	    , mNowModel->mSkinTex[e_Idle]->mTexSRV);
 
 
-
-			// 테스트
-			vector<XMFLOAT4X4>& _SkinMtx = cAniManager::GetInstance()->mData[mNowModel->mCreateName]["Idle"]->GetSkinStorage(70);
-			SetShaderMtxArray(e_ShaderValMtxArray, "gBoneTransforms", &_SkinMtx[0], _SkinMtx.size());
-
+			// 테스트 (스킨 잘 되나)
+			//vector<XMFLOAT4X4>& _SkinMtx = cAniManager::GetInstance()->mData[mNowModel->mCreateName]["Idle"]->GetSkinStorage(0); // 애니키 번호
+			//SetShaderMtxArray(e_ShaderValMtxArray, "gBoneTransforms", &_SkinMtx[0], _SkinMtx.size());
 
 
 		/*
@@ -433,7 +436,7 @@ private:
 		GetShaderValue(tEffectStorage, "gNormalTex"		   , e_ShaderValResource);
 
 		// 테스트
-		GetShaderValue(tEffectStorage, "gBoneTransforms"   , e_ShaderValMtxArray);
+		//GetShaderValue(tEffectStorage, "gBoneTransforms"   , e_ShaderValMtxArray);
 		
 		// 애니 텍스처
 		GetShaderValue(tEffectStorage, "gIdleTex"		   , e_ShaderValResource);

@@ -95,6 +95,7 @@ typedef enum
 
 }OBJ_MOVEABLE;
 
+
 // 버텍스 구조
 struct VertexPC
 {
@@ -365,6 +366,9 @@ public:
 	float mTexHeight; // 텍스처 높이
 
 	float mAniSpeed; // 애니 스피드
+
+	// 임시 
+	float mFrameCouunt;
 public:
 	ObjData()
 	{
@@ -383,6 +387,9 @@ public:
 
 		// 애니메이션 기본 스피드
 		mAniSpeed = 1.0f;
+
+		// 임시
+		mFrameCouunt = 0.0f;
 	}
 	~ObjData()
 	{
@@ -456,12 +463,11 @@ public:
 		//mFrame += (dt * mAniSpeed);
 
 		// 테스트용
-		static int i = 0;
-		if (i < 8)
-			++i;
+		if (mFrameCouunt < 8.0f)
+			++mFrameCouunt;
 		else
 		{
-			i = 0;
+			mFrameCouunt = 0.0f;
 			mFrame += mAniSpeed;
 		}
 
@@ -2945,7 +2951,7 @@ public:
 
 		tTexName += "Export/SkinTex/";
 		tTexName += _TexName;
-		tTexName += ".png";
+		tTexName += ".dds";
 
 		//--------------------------------------------------------------------------------------------------//
 		// 애니 데이터 채우기
@@ -2974,7 +2980,22 @@ public:
 		// 텍스처 연결
 		//--------------------------------------------------------------------------------------------------//
 		RetryLoadTex:
-		HRESULT hr = D3DX11CreateShaderResourceViewFromFile(cCoreStorage::GetInstance()->md3dDevice, _WsTexName.c_str(), 0, 0, &mSkinTex.mTexSRV, 0);
+		D3DX11_IMAGE_LOAD_INFO _info;
+		_info.Width          = (UINT)mSkinTex.mTexWidth;
+		_info.Height         = (UINT)mSkinTex.mTexHeight; 
+		_info.Depth			 = 0;
+		_info.FirstMipLevel  = 0;
+		_info.MipLevels      = 1;
+		_info.Usage          = D3D11_USAGE_DEFAULT;
+		_info.BindFlags      = D3D11_BIND_SHADER_RESOURCE;
+		_info.CpuAccessFlags = 0;
+		_info.MiscFlags      = 0;
+		_info.Format         = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		_info.Filter         = D3DX11_FILTER_POINT;
+		_info.MipFilter      = D3DX11_FILTER_POINT;
+		_info.pSrcInfo       = NULL;
+
+		HRESULT hr = D3DX11CreateShaderResourceViewFromFile(cCoreStorage::GetInstance()->md3dDevice, _WsTexName.c_str(), &_info, 0, &mSkinTex.mTexSRV, 0);
 
 		// 텍스처가 없다
 		if (hr == D3D11_ERROR_FILE_NOT_FOUND)
@@ -2990,7 +3011,7 @@ public:
 
 			// 스킨 텍스처 만들기
 			MakSkinTex(_WsTexName);
-			
+
 			// 텍스처 스킨 다시 로딩
 			goto RetryLoadTex;
 		}
@@ -3113,20 +3134,22 @@ private:
 	// 텍스처 생성
 	void CreateTex(int _AniSize)
 	{
-		D3D11_TEXTURE2D_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
+		D3D11_TEXTURE2D_DESC TextureDesc;
+		ZeroMemory(&TextureDesc, sizeof(TextureDesc));
 
-		desc.Width            = mSaveBoneData.size() * 4; // 옆으로 행렬 나열 (행 4칸씩, 1개)
-		desc.Height           = _AniSize;				  // 애니 사이즈 만큼 (초)
-		desc.MipLevels        = 1;                             
-		desc.ArraySize        = 1;                             
-		desc.Format           = DXGI_FORMAT_R32G32B32A32_FLOAT;
-		desc.SampleDesc.Count = 1;                             
-		desc.Usage            = D3D11_USAGE_DYNAMIC;
-		desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
-		desc.CPUAccessFlags   = D3D11_CPU_ACCESS_WRITE;
+		TextureDesc.Width              = mSaveBoneData.size() * 4; // 옆으로 행렬 나열 (행 4칸씩, 1개)
+		TextureDesc.Height             = _AniSize;				    // 애니 사이즈 만큼 (초)
+		TextureDesc.MipLevels          = 1;                             
+		TextureDesc.ArraySize          = 1;                             
+		TextureDesc.Format             = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		TextureDesc.SampleDesc.Count   = 1;  
+		TextureDesc.SampleDesc.Quality = 0;
+		TextureDesc.Usage              = D3D11_USAGE_DYNAMIC;
+		TextureDesc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
+		TextureDesc.CPUAccessFlags     = D3D11_CPU_ACCESS_WRITE;
+		TextureDesc.MiscFlags		   = 0;
 
-		cCoreStorage::GetInstance()->md3dDevice->CreateTexture2D(&desc, NULL, &mSkinTex.mTexture);
+		HR(cCoreStorage::GetInstance()->md3dDevice->CreateTexture2D(&TextureDesc, 0, &mSkinTex.mTexture));
 	}
 
 	// 텍스처 계산
@@ -3139,14 +3162,20 @@ private:
 		ResizeCalValue();
 
 		// 스킨 데이터만들기
-		for (int i = 0; i < _AniSize; ++i)
-			mSkinTree.MakeSkin(i, mSkinMtx, mLAP);
+		MakeSkinMtx(_AniSize);
 
 		// 스킨 데이터 순서에 맞게 재배치
 		RelocSkinData();
 
 		// 텍스처 쓰기
 		WriteTex(_AniSize);
+	}
+
+	// 스킨 데이터 만들기
+	void MakeSkinMtx(int _AniSize)
+	{
+		for (int i = 0; i < _AniSize; ++i)
+			mSkinTree.MakeSkin(i, mSkinMtx, mLAP);
 	}
 
 	// 스킨 데이터 순서에 맞게 재배치
@@ -3183,33 +3212,41 @@ private:
 		if (hr == S_OK)
 		{
 			// 데이터 맵핑 레퍼런스 얻기
-			FLOAT* pTexels = (FLOAT*)MappedResource.pData;
-
+			float* pTexels = (float*)MappedResource.pData;
+			
 			// 열 반복 (애니 키)
 			for (int y = 0; y < _AniSize; ++y) 
 			{
-				// 행, 열 계산
-				UINT rowStart = y * (MappedResource.RowPitch / 4);  //열 / 4(데이터 접근 단위 FLOAT)
-
 				// 행 쓰기 ( 4칸씩 )
 				for (UINT x = 0; x < mSaveBoneData.size(); ++x)
 				{
-					UINT colStart = x * (16 / 4) * 4; // (float 4개 * 1개가 4바이트 == 16 / 4(데이터 접근 단위 FLOAT)) * (4픽셀 씩)
 					for (int i = 0; i < 4; ++i)
 					{
 						// 픽셀 선택
-						int _sTex1 = rowStart + colStart + (i * 4) + 0;
-						int _sTex2 = rowStart + colStart + (i * 4) + 1;
-						int _sTex3 = rowStart + colStart + (i * 4) + 2;
-						int _sTex4 = rowStart + colStart + (i * 4) + 3;
-
+						int _sTex1 = (y * MappedResource.RowPitch / sizeof(float)) + (x * sizeof(float) * 4) + (i * sizeof(float)) + 0;	
+						int _sTex2 = (y * MappedResource.RowPitch / sizeof(float)) + (x * sizeof(float) * 4) + (i * sizeof(float)) + 1;	
+						int _sTex3 = (y * MappedResource.RowPitch / sizeof(float)) + (x * sizeof(float) * 4) + (i * sizeof(float)) + 2;	
+						int _sTex4 = (y * MappedResource.RowPitch / sizeof(float)) + (x * sizeof(float) * 4) + (i * sizeof(float)) + 3;	
+						 
 						switch (i)
 						{
 						case 0:
-							pTexels[_sTex1] = mRelocSkinMtx[y][x]._11;     //R (float 1)
-							pTexels[_sTex2] = mRelocSkinMtx[y][x]._12;     //G (float 2)
-							pTexels[_sTex3] = mRelocSkinMtx[y][x]._13;     //B (float 3)
-							pTexels[_sTex4] = mRelocSkinMtx[y][x]._14;     //A (float 4)
+						{
+								  auto i1 = GetSkinStorage(y)[x]._11;
+								  auto i2 = pTexels[_sTex1];
+								  auto i3 = mRelocSkinMtx[y][x]._11;
+
+								  pTexels[_sTex1] = mRelocSkinMtx[y][x]._11;     //R (float 1)
+								  pTexels[_sTex2] = mRelocSkinMtx[y][x]._12;     //G (float 2)
+								  pTexels[_sTex3] = mRelocSkinMtx[y][x]._13;     //B (float 3)
+								  pTexels[_sTex4] = mRelocSkinMtx[y][x]._14;     //A (float 4)
+
+								  auto i4 = GetSkinStorage(y)[x]._11;
+								  auto i5 = pTexels[_sTex1];
+								  auto i6 = mRelocSkinMtx[y][x]._11;
+
+								  int ia = 0;
+						}
 							break;
 						case 1:
 							pTexels[_sTex1] = mRelocSkinMtx[y][x]._21;     //R (float 1)
@@ -3250,7 +3287,7 @@ private:
 	{
 		D3DX11SaveTextureToFile(cCoreStorage::GetInstance()->md3dImmediateContext,
 			mSkinTex.mTexture,      //저장할 텍스처
-			D3DX11_IFF_PNG,         //png로 저장
+			D3DX11_IFF_DDS,         //dds로 저장
 			_TexName.c_str());      //이름
 
 		// 텍스처를 만들었으니, 기존 데이터는 삭제

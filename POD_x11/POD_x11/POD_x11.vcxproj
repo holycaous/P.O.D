@@ -192,7 +192,9 @@
     <FxCompile Include="PL.fx">
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RelativeDir)%(Filename).fxo</ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="PNT_ANI.fx" />
+    <FxCompile Include="PNT_ANI.fx">
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

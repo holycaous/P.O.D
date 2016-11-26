@@ -47,17 +47,17 @@ public:
 
 		// 모델 추가
 		CreateModel("Model1", "Export/FinAman_boyLoc.pod"     , e_ShaderPongTexAni);
-		CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTex);
-		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTex);
+		CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTexAni);
+		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTexAni);
 		//CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTexAni);
-		CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTex);
+		CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTexAni);
 
 		// 애니 추가
 		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdle.pod"      , e_Idle);
-		//CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"          , e_Idle);
-		//CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"   , e_Idle);
+		CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"          , e_Idle);
+		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"   , e_Idle);
 		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"       , e_Idle);
-		//CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod"      , e_Idle);
+		CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod"      , e_Idle);
 																      
 		// 만들어진 모델 등록
 		ModelRegistration();

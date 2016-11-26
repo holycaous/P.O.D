@@ -183,16 +183,16 @@ Texture2D gSpecularTex;
 Texture2D gNormalTex;
 
 // 스킨 텍스처
-Texture2D gIdleTex;
-Texture2D gDamageTex;
-Texture2D gRunTex;
-Texture2D gWalkTex;
-Texture2D gDeathTex;
-Texture2D gDeathWaitTex;
-Texture2D gAttack1Tex;
-Texture2D gAttack2Tex;
-Texture2D gAttack3Tex;
-Texture2D gStunTex;
+Texture2D<float4> gIdleTex;
+Texture2D<float4> gDamageTex;
+Texture2D<float4> gRunTex;
+Texture2D<float4> gWalkTex;
+Texture2D<float4> gDeathTex;
+Texture2D<float4> gDeathWaitTex;
+Texture2D<float4> gAttack1Tex;
+Texture2D<float4> gAttack2Tex;
+Texture2D<float4> gAttack3Tex;
+Texture2D<float4> gStunTex;
 
 // G버퍼 텍스처
 Texture2D gGDepthTex;
@@ -226,6 +226,11 @@ float4x4 gLocTMMtx;
 float4x4 gWdTMMtx;
 
 
+//------------------------------------------------------------------------------------//
+// Mip Filter 는 '밉맵8을 처리할 때의 필터링 옵션' 이고,
+// Min Filter 는 '오브젝트가 화면에서 멀어져서, 작아보이게 되었을 때 텍스쳐의 처리방법' 이며
+// Mag Filter 는 '오브젝트가 화면에서 가까워져서, 커보이게 되었을 때 텍스쳐의 처리방법' 입니다.
+//------------------------------------------------------------------------------------//
 // 텍스처 샘플링
 SamplerState samAnisotropic
 {
@@ -256,12 +261,16 @@ SamplerState samPoint
 {
 	Filter = MIN_MAG_MIP_POINT;
 
-	AddressU = CLAMP;
-	AddressV = CLAMP;
+	AddressU = Wrap;
+	AddressV = Wrap;
+	AddressW = Wrap;
+	MaxLOD   = 0;
+	MinLOD   = 0;
 };
 
-// 테스트 전용
-cbuffer cbSkinned
-{
-	float4x4 gBoneTransforms[96];
-};
+
+//// 테스트 전용
+//cbuffer cbSkinned
+//{
+//	float4x4 gBoneTransforms[140];
+//};

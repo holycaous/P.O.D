@@ -57,8 +57,8 @@ public:
 
 		// 테스트용
 		//mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 300.0f, e_Idle);
-		mModelManager->AddModel(0, "Model2", 100.0f, 100.0f, 200.0f);
-		mModelManager->AddModel(1, "Model3", 100.0f, 100.0f, 400.0f);
+		mModelManager->AddModel(0, "Model2", 100.0f, 100.0f, 200.0f, e_Idle);
+		mModelManager->AddModel(1, "Model3", 100.0f, 100.0f, 400.0f, e_Idle);
 		//mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
 		
 		//// 본 그려보기 추가
@@ -72,12 +72,14 @@ public:
 		//--------------------------------------------------------------------------------------------------------------------//
 		// 본 테스트
 		//--------------------------------------------------------------------------------------------------------------------//
-		mModelManager->AddModel(0, "Model1"     , 100.0f, 100.0f, 500.0f, e_Idle);
-		mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f, 70);
+		mModelManager->AddModel(0, "Model1", 100.0f, 100.0f, 500.0f, e_Idle);
+		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f, 0);  // 애니키 번호
 
+		//mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 500.0f, e_Idle);
+		//mModelManager->DrawBone("Model4", "Idle", 100.0f, 100.0f, 500.0f, 0);  // 애니키 번호
 
-		//mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f);
-		//mModelManager->DrawBone("Model5", "Idle", 100.0f, 100.0f, 700.0f, 18);
+		mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
+		//mModelManager->DrawBone("Model5", "Idle", 100.0f, 100.0f, 700.0f, 0);  // 애니키 번호
 		
 		//--------------------------------------------------------------------------------------------------------------------//
 
@@ -86,11 +88,14 @@ public:
 		mModelManager->MakeInsbuf();
 
 		// 플레이어 및 카메라 세팅
-		mModelManager->IniPlayer(0, "Model3", 200.0f, 100.0f, 600.0f);
+		mModelManager->IniPlayer(0, "Model3", 200.0f, 100.0f, 600.0f, e_Idle);
 		mModelManager->SetScale (0, "Model3", 0.001f, 0.001f, 0.001f);
 
 		// FSM 상태바꾸기
 		//mModelManager->SetFSM(0, "Model3", e_Idle);
+
+		// 체력 제어
+		//mModelManager->SetHP(0, "Mode1", 100.0f);
 	}	
 
 	// 제거
