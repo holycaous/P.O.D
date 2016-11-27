@@ -462,15 +462,9 @@ public:
 		// 시간 흘르기
 		//mFrame += (dt * mAniSpeed);
 
-		// 테스트용
-		if (mFrameCouunt < 8.0f)
-			++mFrameCouunt;
-		else
-		{
-			mFrameCouunt = 0.0f;
+	
 			mFrame += mAniSpeed;
-		}
-
+		
 		// 마지막보다 크다면, 초기화
 		if (mEdPoint < mFrame)
 			mFrame = mStPoint;
@@ -1170,7 +1164,7 @@ public:
 	// 쉐이더 모드
 	SHADER_TYPE mShaderMode;
 
-	// 해당 버퍼에 들어갈 모델 리스트 ( 계산용, 빌드 후 삭제하고 있음)
+	// 해당 버퍼에 들어갈 모델 리스트
 	map<string, InitMetaData*> mModelList;
 
 public:
@@ -1238,13 +1232,20 @@ public:
 	void ReMakeBuf(string& _name)
 	{
 		ClearInsBuf(_name);
-
-		MakeInsBuf(_name);
+		MakeInsBuf (_name);
 	}
 
 	// 모델 추가
 	void AddModel(string _ModelName, InitMetaData* _ModelData)
 	{
+		mModelList[_ModelName] = _ModelData;
+	}
+
+	// 모델 다시 추가
+	void ReAddModel(string _ModelName, InitMetaData* _ModelData)
+	{
+		// 삭제 후, 추가
+		mModelList.erase(_ModelName);
 		mModelList[_ModelName] = _ModelData;
 	}
 
@@ -1291,6 +1292,9 @@ public:
 			vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
 			vbd.MiscFlags           = 0;
 			vbd.StructureByteStride = 0;
+
+			if (_Screen->mObjData.size())
+				cout << "스크린 버퍼가 1개가 아닙니다!!" << endl;
 
 			// 공간할당
 			//mInstancedBuffer[itor->second->mCreateName] = NULL;
@@ -1340,7 +1344,7 @@ public:
 				D3D11_BUFFER_DESC vbd;
 
 				// 애니 모델 버퍼
-				if (mShaderMode == e_ShaderPongTexAni)
+				if (itor->second->mShaderMode == e_ShaderPongTexAni)
 				{
 					vbd.Usage               = D3D11_USAGE_DYNAMIC;
 					vbd.ByteWidth           = sizeof(InsAni) * itor->second->mObjData.size();
@@ -1370,7 +1374,7 @@ public:
 	void MakeInsBuf(string& _name)
 	{
 		// 모델 선택
-		auto _selectModel = mModelList[_name];
+		InitMetaData* _selectModel = mModelList[_name];
 
 		// 월드 매트릭스가 있어야만 생성
 		if (_selectModel->mObjData.size())
@@ -1378,7 +1382,7 @@ public:
 			D3D11_BUFFER_DESC vbd;
 
 			// 애니 모델 버퍼
-			if (mShaderMode == e_ShaderPongTexAni)
+			if (_selectModel->mShaderMode == e_ShaderPongTexAni)
 			{
 				vbd.Usage               = D3D11_USAGE_DYNAMIC;
 				vbd.ByteWidth           = sizeof(InsAni) * _selectModel->mObjData.size();
@@ -1423,7 +1427,7 @@ public:
 				UINT i = -1;
 
 				// 애니 모델 쓰기
-				if (mShaderMode == e_ShaderPongTexAni)
+				if (itor->second->mShaderMode == e_ShaderPongTexAni)
 				{
 					// << 인스턴스 버퍼 >> 의 "인터페이스"를 얻어온다.
 					InsAni* dataView = reinterpret_cast<InsAni*>(mappedData.pData);

@@ -64,7 +64,7 @@ public:
 		//// 본 그려보기 추가
 		//for (int i = 0; i < 101; ++i)
 		//	mModelManager->DrawBone("Model1", "Idle", 200.0f, 100.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
-
+		//
 		//for (int i = 0; i < 21; ++i)
 		//	mModelManager->DrawBone("Model5", "Idle", 300.0f, 100.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
 
@@ -75,21 +75,19 @@ public:
 		mModelManager->AddModel(0, "Model1", 100.0f, 100.0f, 500.0f, e_Idle);
 		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f, 0);  // 애니키 번호
 
-		//mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 500.0f, e_Idle);
+		mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 500.0f, e_Idle);
 		//mModelManager->DrawBone("Model4", "Idle", 100.0f, 100.0f, 500.0f, 0);  // 애니키 번호
 
 		mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
 		//mModelManager->DrawBone("Model5", "Idle", 100.0f, 100.0f, 700.0f, 0);  // 애니키 번호
 		
 		//--------------------------------------------------------------------------------------------------------------------//
-
-
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
 
 		// 플레이어 및 카메라 세팅
 		mModelManager->IniPlayer(0, "Model3", 200.0f, 100.0f, 600.0f, e_Idle);
-		mModelManager->SetScale (0, "Model3", 0.001f, 0.001f, 0.001f);
+	
 
 		// FSM 상태바꾸기
 		//mModelManager->SetFSM(0, "Model3", e_Idle);
@@ -242,20 +240,35 @@ public:
 
 			// 그냥 모델 추가하기
 		case 'G':
-			mModelManager->AddUpdateModel("Model5", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f);
+			{
+				static int i = 2;
+				switch (1)
+				{
+				case 0:
+					mModelManager->AddUpdateModel(++i, "Model5", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f, e_Idle);
+					break;
+				default:
+				case 1:
+					mModelManager->AddUpdateModel(++i, "Model1", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f, e_Idle);
+					break;
+				}
+
+				cout << "생성: " << i << endl;
+			}
 			break;
 
 		// 지우기 테스트
 		case 'H':
 			{
-				static int i = 0;
-				mModelManager->EraseUpdateModel(++i, "Model5");
+				static int i = 2;
+				mModelManager->EraseUpdateModel(++i, "Model1");
+				cout << "삭제: " << i << endl;
 			}
 			break;
 
 			// 번호 선택, 추가하기
 		case 'O':
-			mModelManager->AddUpdateModel(1, "Model5", 100, 100, 500);
+			mModelManager->AddUpdateModel(500,"Model5", 100.0f, 100.0f, 500.0f, e_Idle);
 			break;
 		
 		// 기타 테스트

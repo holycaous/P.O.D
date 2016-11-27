@@ -444,6 +444,7 @@ private:
 						_CurrentModel->mIndexOffset,
 						_CurrentModel->mVertexOffset,
 						0);
+					
 				}
 			}
 		}

@@ -26,6 +26,8 @@ public:
 
 	// 플레이어
 	PlayerInfo mPlayer;
+
+	bool _modelUpdate = false;
 public:
 	void Init()
 	{
@@ -37,10 +39,10 @@ public:
 		
 		CreateBoxModel("BOX2", e_ShaderLight);
 		
-		CreateBoxModel("BOX3", e_ShaderPongTex);
-		AddTex	      ("BOX3", "Export/WoodCrate01_diff.dds", e_DiffuseMap);
-		AddTex		  ("BOX3", "Export/WoodCrate01_norm.dds", e_NomalMap);
-		AddTex	      ("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
+		//CreateBoxModel("BOX3", e_ShaderPongTex);
+		//AddTex	      ("BOX3", "Export/WoodCrate01_diff.dds", e_DiffuseMap);
+		//AddTex		  ("BOX3", "Export/WoodCrate01_norm.dds", e_NomalMap);
+		//AddTex	      ("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
 
 		// 맵 추가
 		CreateModel("Map1", "Export/FinTestMapLoc.pod", e_ShaderPongTex);
@@ -49,14 +51,14 @@ public:
 		CreateModel("Model1", "Export/FinAman_boyLoc.pod"     , e_ShaderPongTexAni);
 		CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTexAni);
 		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTexAni);
-		//CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTexAni);
+		CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTexAni);
 		CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTexAni);
 
 		// 애니 추가
 		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdle.pod"      , e_Idle);
 		CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"          , e_Idle);
 		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"   , e_Idle);
-		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"       , e_Idle);
+		CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"       , e_Idle);
 		CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod"      , e_Idle);
 																      
 		// 만들어진 모델 등록
@@ -413,26 +415,36 @@ public:
 	// 모델 월드 매트릭스 삭제
 	void ClearModel()
 	{
-		// 모델 데이터 삭제
-		for (map<string, InitMetaData*>::iterator itor = mAllModelData.begin(); itor != mAllModelData.end(); ++itor)
+		// 첫번째 스테이트에선 초기화 하지 않겠음
+		static bool tStartPass = true;
+
+		if (!tStartPass)
 		{
-			// 모델 내부 객체 삭제
-			itor->second->ClearWdMtx();
+			// 모델 데이터 삭제
+			for (map<string, InitMetaData*>::iterator itor = mAllModelData.begin(); itor != mAllModelData.end(); ++itor)
+			{
+				// 모델 내부 객체 삭제
+				itor->second->ClearWdMtx();
+			}
+
+			// 모델 인스턴스 버퍼 삭제
+			ClearModelAndBuf();
+
+			// 모델에 사용되었던 쉐이더 제거
+			mUseAllShader.clear();
+			mUseShader.clear();
+
+			// 모델 이름 제거
+			mUseModel.clear();
+
+			// 스크린 클리어
+			mScreen->ClearWdMtx();
+			mScreenBuffer->ClearInsBuf();
 		}
-
-		// 모델 인스턴스 버퍼 삭제
-		ClearModelAndBuf();
-
-		// 모델에 사용되었던 쉐이더 제거
-		mUseAllShader.clear();
-		mUseShader.clear();
-
-		// 모델 이름 제거
-		mUseModel.clear();
-
-		// 스크린 클리어
-		mScreen->ClearWdMtx();
-		mScreenBuffer->ClearInsBuf();
+		else
+		{
+			tStartPass = false;
+		}
 	}
 
 
@@ -706,11 +718,10 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _x, _y, _z, _moveAble);
+
+			// 다시 만들기
+			MakeModelInsBuf(mModelChain[_Name][i]);
 		}
-
-		// 다시 만들기
-		MakeModelInsBuf(_Name);
-
 		_Name.clear();
 	}	
 
@@ -722,11 +733,10 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _Mtx, _moveAble);
+
+			// 다시 만들기
+			MakeModelInsBuf(mModelChain[_Name][i]);
 		}
-
-		// 다시 만들기
-		MakeModelInsBuf(_Name);
-
 		_Name.clear();
 	}
 
@@ -738,11 +748,10 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _moveAble);
+
+			// 다시 만들기
+			MakeModelInsBuf(mModelChain[_Name][i]);
 		}
-
-		// 다시 만들기
-		MakeModelInsBuf(_Name);
-
 		_Name.clear();
 	}
 
@@ -754,10 +763,10 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _moveAble);
-		}
 
-		// 다시 만들기
-		MakeModelInsBuf(_Name);
+			// 다시 만들기
+			MakeModelInsBuf(mModelChain[_Name][i]);
+		}
 
 		_Name.clear();
 	}
@@ -770,11 +779,10 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _moveAble);
+
+			// 일반 모델 인스턴스 버퍼 생성
+			MakeModelInsBuf(mModelChain[_Name][i]);
 		}
-
-		// 다시 만들기
-		MakeModelInsBuf(_Name);
-
 		_Name.clear();
 	}
 
@@ -786,11 +794,10 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _moveAble);
+
+			// 다시 만들기
+			MakeModelInsBuf(mModelChain[_Name][i]);
 		}
-
-		// 다시 만들기
-		MakeModelInsBuf(_Name);
-
 		_Name.clear();
 	}
 
@@ -802,11 +809,10 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _frame, _moveAble);
+
+			// 다시 만들기
+			MakeModelInsBuf(mModelChain[_Name][i]);
 		}
-
-		// 다시 만들기
-		MakeModelInsBuf(_Name);
-
 		_Name.clear();
 	}
 
@@ -818,11 +824,10 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _frame, _moveAble);
+
+			// 다시 만들기
+			MakeModelInsBuf(mModelChain[_Name][i]);
 		}
-
-		// 다시 만들기
-		MakeModelInsBuf(_Name);
-
 		_Name.clear();
 	}
 
@@ -834,12 +839,11 @@ public:
 		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
 		{
 			// 서브 모델 삭제
-			EraseSubModel(_key, _Name);
+			EraseSubModel(_key, mModelChain[_Name][i]);
+
+			// 다시 만들기
+			MakeModelInsBuf(mModelChain[_Name][i]);
 		}
-
-		// 다시 만들기
-		MakeModelInsBuf(_Name);
-
 		_Name.clear();
 	}
 
@@ -852,7 +856,6 @@ public:
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _x, _y, _z, _moveAble);
 		}
-
 		_Name.clear();
 	}
 
@@ -865,7 +868,6 @@ public:
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _Mtx, _moveAble);
 		}
-
 		_Name.clear();
 	}
 
@@ -878,7 +880,6 @@ public:
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _moveAble);
 		}
-
 		_Name.clear();
 	}
 
@@ -891,7 +892,6 @@ public:
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _moveAble);
 		}
-
 		_Name.clear();
 	}
 
@@ -904,7 +904,6 @@ public:
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _moveAble);
 		}
-
 		_Name.clear();
 	}
 
@@ -917,7 +916,6 @@ public:
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _moveAble);
 		}
-
 		_Name.clear();
 	}
 
@@ -930,7 +928,6 @@ public:
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _frame, _moveAble);
 		}
-
 		_Name.clear();
 	}
 
@@ -943,7 +940,6 @@ public:
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _frame, _moveAble);
 		}
-
 		_Name.clear();
 	}
 
@@ -1047,7 +1043,10 @@ public:
 	// 인스턴스 버퍼 만들기
 	void MakeInsbuf()
 	{
-		// 데이터 옮기기
+		// 버퍼 모델 데이터, 인스턴스 버퍼 삭제
+		ClearModelAndBuf();
+
+		// 버퍼에도 데이터 복사
 		DataMove();
 
 		// 일반 모델 인스턴스 버퍼 생성
@@ -1345,7 +1344,9 @@ private:
 		{
 			// 쉐이더 모드가 같다면, 추가한다.
 			if (_ShaderMode == itor->second->mShaderMode)
+			{
 				mBufferType[_ShaderMode]->AddModel(itor->second->mCreateName, itor->second);
+			}
 		}
 	}
 
