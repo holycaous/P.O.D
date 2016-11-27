@@ -49,44 +49,28 @@ public:
 		//}
 		
 
-		// 단일 객체 테스트용
-		//mModelManager->AddModel("Model1", 100.0f, 100.0f, 200.0f );
-		//mModelManager->AddModel("Model2", 100.0f, 100.0f, 250.0f ); // <-- 모든 모델의 유니크코드는 0번부터 시작
-		//mModelManager->AddModel("Model3", 100.0f, 100.0f, 470.0f ); //     동일한 모델을 또 만들면 유니크 코드가 1씩 증가함 
-		//mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 470.0f, e_Idle);
-
-		// 테스트용
-		//mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 300.0f, e_Idle);
-		mModelManager->AddModel(0, "Model2", 100.0f, 100.0f, 200.0f, e_Idle);
-		mModelManager->AddModel(1, "Model3", 100.0f, 100.0f, 400.0f, e_Idle);
-		//mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
-		
-		//// 본 그려보기 추가
-		//for (int i = 0; i < 101; ++i)
-		//	mModelManager->DrawBone("Model1", "Idle", 200.0f, 100.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
-		//
-		//for (int i = 0; i < 21; ++i)
-		//	mModelManager->DrawBone("Model5", "Idle", 300.0f, 100.0f, 50 * i, i); // 마지막은 키 번호 (참고로 실행되기 위해선, 스킨 텍스처가 없어야 됨)
-
-
 		//--------------------------------------------------------------------------------------------------------------------//
 		// 본 테스트
 		//--------------------------------------------------------------------------------------------------------------------//
-		mModelManager->AddModel(0, "Model1", 100.0f, 100.0f, 500.0f, e_Idle);
-		//mModelManager->DrawBone("Model1", "Idle", 100.0f, 100.0f, 500.0f, 0);  // 애니키 번호
+		mModelManager->AddModel(1, "Model2"        , 100.0f, 100.0f, 600.0f, e_Run);
+		//mModelManager->DrawBone(   "Model2", "Run" , 100.0f, 100.0f, 600.0f, 10);  // 애니키 번호
 
-		mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 500.0f, e_Idle);
+		//mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 500.0f, e_Idle);
 		//mModelManager->DrawBone("Model4", "Idle", 100.0f, 100.0f, 500.0f, 0);  // 애니키 번호
 
-		mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
+		//mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
 		//mModelManager->DrawBone("Model5", "Idle", 100.0f, 100.0f, 700.0f, 0);  // 애니키 번호
 		
+		// 본 일렬로 세우기
+		//for (int i = 0; i < 17; ++i)
+		//	mModelManager->DrawBone("Model2", "Run", 50.0f, 100.0f, 100.0f * i, i);  // 애니키 번호
+
 		//--------------------------------------------------------------------------------------------------------------------//
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
 
 		// 플레이어 및 카메라 세팅
-		mModelManager->IniPlayer(0, "Model3", 200.0f, 100.0f, 600.0f, e_Idle);
+		mModelManager->IniPlayer(0, "Model2", 200.0f, 100.0f, 600.0f, e_Run);
 	
 
 		// FSM 상태바꾸기
@@ -241,15 +225,16 @@ public:
 			// 그냥 모델 추가하기
 		case 'G':
 			{
-				static int i = 2;
+				static int i = 1;
 				switch (1)
 				{
 				case 0:
-					mModelManager->AddUpdateModel(++i, "Model5", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f, e_Idle);
+					//mModelManager->AddUpdateModel(++i, "Model5", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f, e_Idle);
 					break;
 				default:
 				case 1:
-					mModelManager->AddUpdateModel(++i, "Model1", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f, e_Idle);
+					mModelManager->AddUpdateModel(++i, "Model2", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f, e_Run);
+					//mModelManager->SetFSM        (  i, "Model2", FSM_TYPE(rand() % 10));
 					break;
 				}
 
@@ -260,8 +245,8 @@ public:
 		// 지우기 테스트
 		case 'H':
 			{
-				static int i = 2;
-				mModelManager->EraseUpdateModel(++i, "Model1");
+				static int i = 1;
+				mModelManager->EraseUpdateModel(++i, "Model2");
 				cout << "삭제: " << i << endl;
 			}
 			break;

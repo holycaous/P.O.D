@@ -124,7 +124,7 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexAniOut pin)
 	//--------------------------------------------------------------//
 
 	// 현재 애니 상태에 DiffuseTex 색상혼합
-	curAniState(pin.AniData, DiffuseTex);
+	//curAniState(pin.AniData, DiffuseTex);
 
 	// 출력	
 	Out.Depth = Depth;
@@ -259,9 +259,9 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 	
 	// 계산할 공간
 	float3 _PosL      = { 0.0f, 0.0f, 0.0f };
-	float3 _NormalL   = { 0.0f, 0.0f, 0.0f };
-	float3 _TanL      = { 0.0f, 0.0f, 0.0f };
-	float3 _BiNormalL = { 0.0f, 0.0f, 0.0f };
+	//float3 _NormalL   = { 0.0f, 0.0f, 0.0f };
+	//float3 _TanL      = { 0.0f, 0.0f, 0.0f };
+	//float3 _BiNormalL = { 0.0f, 0.0f, 0.0f };
 
 
 	// 현재 프레임이 애니 키 
@@ -279,7 +279,7 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 
 	// 애니 키 선택
 	float2 _TexSelect;
-	_TexSelect.y = vin.AniData.y / (vin.AniData.w - 1.0f);  // 일단, 소수부 버리기 나중에 보간 해줘야함
+	_TexSelect.y = 10.0f / (vin.AniData.w - 1.0f);  // 일단, 소수부 버리기 나중에 보간 해줘야함
 
 	// 최대 4개 까지
 	for (int i = 0; i < 4; ++i)

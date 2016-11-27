@@ -462,11 +462,16 @@ public:
 		// 시간 흘르기
 		//mFrame += (dt * mAniSpeed);
 
-	
+		if (mFrameCouunt > 7)
+		{
 			mFrame += mAniSpeed;
-		
+			mFrameCouunt = 0;
+		}
+		else
+			++mFrameCouunt;
+
 		// 마지막보다 크다면, 초기화
-		if (mEdPoint < mFrame)
+		if (mEdPoint <= mFrame)
 			mFrame = mStPoint;
 	}
 	
@@ -2001,19 +2006,28 @@ private:
 				// 선택된 모델의 가중치 데이터
 				vector<WeightVtx>& _sModelWeight = itor->second->weightVtx;
 
+				//if (i > 1628)
+				//{
+				//	int t = 0;
+				//}
+
 				// 정점별 가중치 갯수
-				if (_sModelWeight.size() > i) // 혹시몰라 만들어둔 안전장치
+				//if (_sModelWeight.size() > i) // 혹시몰라 만들어둔 안전장치
 				{
-					for (unsigned int x = 0; x < 4; ++x)
+					for (int x = 0; x < 4; ++x)
 					{
 						// 가중치 3개랑, 본 인덱스 4개
 						switch (x)
 						{
 						case 0:
-							if (_sModelWeight[i].Bone.size() > x)
+							if (_sModelWeight[i].Bone.size() >(unsigned int)x)
 							{
 								vertices[k].Weights.x      = _sModelWeight[i].Bone[x].Weight;
-								vertices[k].BoneIndices[x] = _sModelWeight[i].Bone[x].ID;
+								vertices[k].BoneIndices[x] = (UINT)_sModelWeight[i].Bone[x].ID;
+
+								//float t1 = vertices[k].Weights.x;
+								//int   t2 = vertices[k].BoneIndices[x];
+								//int   t3 = 0;
 							}
 							else
 							{
@@ -2022,10 +2036,14 @@ private:
 							}
 							break;
 						case 1:
-							if (_sModelWeight[i].Bone.size() > x)
+							if (_sModelWeight[i].Bone.size() > (unsigned int)x)
 							{
 								vertices[k].Weights.y      = _sModelWeight[i].Bone[x].Weight;
-								vertices[k].BoneIndices[x] = _sModelWeight[i].Bone[x].ID;
+								vertices[k].BoneIndices[x] = (UINT)_sModelWeight[i].Bone[x].ID;
+
+								//float t1 = vertices[k].Weights.y;
+								//int   t2 = vertices[k].BoneIndices[x];
+								//int   t3 = 0;
 							}
 							else
 							{
@@ -2034,10 +2052,14 @@ private:
 							}
 							break;
 						case 2:
-							if (_sModelWeight[i].Bone.size() > x)
+							if (_sModelWeight[i].Bone.size() > (unsigned int)x)
 							{
 								vertices[k].Weights.z      = _sModelWeight[i].Bone[x].Weight;
-								vertices[k].BoneIndices[x] = _sModelWeight[i].Bone[x].ID;
+								vertices[k].BoneIndices[x] = (UINT)_sModelWeight[i].Bone[x].ID;
+
+								//float t1 = vertices[k].Weights.z;
+								//int   t2 = vertices[k].BoneIndices[x];
+								//int   t3 = 0;
 							}
 							else
 							{
@@ -2046,8 +2068,8 @@ private:
 							}
 							break;
 						case 3:
-							if (_sModelWeight[i].Bone.size() > x)
-								vertices[k].BoneIndices[x] = _sModelWeight[i].Bone[x].ID;
+							if (_sModelWeight[i].Bone.size() > (unsigned int)x)
+								vertices[k].BoneIndices[x] = (UINT)_sModelWeight[i].Bone[x].ID;
 							else
 								vertices[k].BoneIndices[x] = 0;
 							break;
@@ -3082,27 +3104,6 @@ private:
 				// 저장한다
 				XMStoreFloat4(&_QuaternionArray[x].Vtx, ResultRot);
 			}
-
-			//// 이동 누적 해제 계산
-			//vector<KeyVtx>& _PositionArray = mSaveBoneData[i].mAniData.Position;
-			//for (unsigned int x = _PositionArray.size() - 1; x > 0; --x)
-			//{
-			//	// 값을 꺼내온다
-			//	XMVECTOR beforePos  = XMLoadFloat3(&_PositionArray[x - 1].Vtx); // 직전
-			//	XMVECTOR CurrentPos = XMLoadFloat3(&_PositionArray[x].Vtx);     // 현재
-			//	XMVECTOR ResultPos;
-			//
-			//	// 이동을 누적 해제시킨다.
-			//	ResultPos = beforePos - CurrentPos;
-			//
-			//	// 저장한다
-			//	XMStoreFloat3(&_PositionArray[x].Vtx, ResultPos);
-			//}
-			//
-			//// 이거 문제있을수 있음 ( 강제 오프셋 초기화 )
-			//mSaveBoneData[i].mAniData.Position[0].Vtx.x = 0.0f;
-			//mSaveBoneData[i].mAniData.Position[0].Vtx.y = 0.0f;
-			//mSaveBoneData[i].mAniData.Position[0].Vtx.z = 0.0f;
 
 			// 역행렬 만들기 및 저장
 			XMMATRIX tWdMtx  = XMLoadFloat4x4(&mSaveBoneData[i].mTMWorldMtx);

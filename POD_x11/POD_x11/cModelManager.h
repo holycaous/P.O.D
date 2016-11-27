@@ -39,28 +39,68 @@ public:
 		
 		CreateBoxModel("BOX2", e_ShaderLight);
 		
-		//CreateBoxModel("BOX3", e_ShaderPongTex);
-		//AddTex	      ("BOX3", "Export/WoodCrate01_diff.dds", e_DiffuseMap);
-		//AddTex		  ("BOX3", "Export/WoodCrate01_norm.dds", e_NomalMap);
-		//AddTex	      ("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
+		CreateBoxModel("BOX3", e_ShaderPongTex);
+		AddTex("BOX3", "Export/WoodCrate01_diff.dds", e_DiffuseMap);
+		AddTex("BOX3", "Export/WoodCrate01_norm.dds", e_NomalMap);
+		AddTex("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
 
 		// 맵 추가
 		CreateModel("Map1", "Export/FinTestMapLoc.pod", e_ShaderPongTex);
 
 		// 모델 추가
-		CreateModel("Model1", "Export/FinAman_boyLoc.pod"     , e_ShaderPongTexAni);
-		CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTexAni);
-		CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTexAni);
-		CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTexAni);
-		CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTexAni);
+		//CreateModel("Model1", "Export/Finmob1Loc.pod"         , e_ShaderPongTexAni);
+		//CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTexAni);
+		//CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTexAni);
+		//CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTexAni);
+		//CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTexAni);
+		//
+		//// 애니 추가
+		//CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"          , e_Idle);
+		//CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"   , e_Idle);
+		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"       , e_Idle);
+		//CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod"      , e_Idle);
 
-		// 애니 추가
-		CreateBoneAni("Model1", "Export/FinAman_boyBoneIdle.pod"      , e_Idle);
-		CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"          , e_Idle);
-		CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"   , e_Idle);
-		CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"       , e_Idle);
-		CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod"      , e_Idle);
-																      
+		//-------------------------------------------------------------------------------//
+		// 모델 추가
+		//-------------------------------------------------------------------------------//
+		//CreateModel("Model1", "Export/Finmob1Loc.pod", e_ShaderPongTexAni);
+
+		////-------------------------------------------------------------------------------//
+		//// 애니 한세트 추가
+		////-------------------------------------------------------------------------------//
+		//CreateBoneAni("Model1", "Export/Finmob1BoneIdle.pod"       , e_Idle);
+		//CreateBoneAni("Model1", "Export/Finmob1BoneDamage.pod"     , e_Damage);
+		//CreateBoneAni("Model1", "Export/Finmob1BoneRun.pod"        , e_Run);
+		//CreateBoneAni("Model1", "Export/Finmob1BoneWalk.pod"       , e_Walk);
+		//CreateBoneAni("Model1", "Export/Finmob1BoneDeath.pod"	     , e_Death);
+		//CreateBoneAni("Model1", "Export/Finmob1BoneDeathWait.pod"  , e_DeathWait);
+		//CreateBoneAni("Model1", "Export/Finmob1BoneAttack1.pod"    , e_Attack1);
+		//CreateBoneAni("Model1", "Export/Finmob1BoneAttack2.pod"    , e_Attack2);
+		//CreateBoneAni("Model1", "Export/Finmob1BoneAttack3.pod"    , e_Attack3);
+		//CreateBoneAni("Model1", "Export/Finmob1BoneStun.pod"       , e_Stun);
+		//-------------------------------------------------------------------------------//
+
+		//-------------------------------------------------------------------------------//
+		// 모델 추가
+		//-------------------------------------------------------------------------------//
+		CreateModel("Model2", "Export/Finmob2Loc.pod", e_ShaderPongTexAni);
+
+		//-------------------------------------------------------------------------------//
+		// 애니 한세트 추가
+		//-------------------------------------------------------------------------------//
+		CreateBoneAni("Model2", "Export/Finmob2BoneIdle.pod"       , e_Idle);
+		CreateBoneAni("Model2", "Export/Finmob2BoneDamage.pod"     , e_Damage);
+		CreateBoneAni("Model2", "Export/Finmob2BoneRun.pod"        , e_Run);
+		CreateBoneAni("Model2", "Export/Finmob2BoneWalk.pod"       , e_Walk);
+		CreateBoneAni("Model2", "Export/Finmob2BoneDeath.pod"	   , e_Death);
+		CreateBoneAni("Model2", "Export/Finmob2BoneDeathWait.pod"  , e_DeathWait);
+		CreateBoneAni("Model2", "Export/Finmob2BoneAttack1.pod"    , e_Attack1);
+		CreateBoneAni("Model2", "Export/Finmob2BoneAttack2.pod"    , e_Attack2);
+		CreateBoneAni("Model2", "Export/Finmob2BoneAttack3.pod"    , e_Attack3);
+		CreateBoneAni("Model2", "Export/Finmob2BoneStun.pod"       , e_Stun);
+		//-------------------------------------------------------------------------------//
+
+
 		// 만들어진 모델 등록
 		ModelRegistration();
 	}
