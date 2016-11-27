@@ -1086,8 +1086,8 @@ public:
 		// 오브젝트가 있고, 애니메이션 모델이라면
 		if (_itor->mObjData.size() && _itor->mShaderMode == e_ShaderPongTexAni)
 		{
-			for (unsigned int i = 0; i < _itor->mObjData.size(); ++i)
-				_itor->mObjData[i].Update(_dt);
+			for (auto itor = _itor->mObjData.begin(); itor != _itor->mObjData.end(); ++itor)
+				itor->second.Update(_dt);
 		}
 	}
 
