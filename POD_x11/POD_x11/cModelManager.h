@@ -1043,9 +1043,6 @@ public:
 	// 인스턴스 버퍼 만들기
 	void MakeInsbuf()
 	{
-		// 버퍼 모델 데이터, 인스턴스 버퍼 삭제
-		ClearModelAndBuf();
-
 		// 버퍼에도 데이터 복사
 		DataMove();
 

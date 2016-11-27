@@ -1293,7 +1293,7 @@ public:
 			vbd.MiscFlags           = 0;
 			vbd.StructureByteStride = 0;
 
-			if (_Screen->mObjData.size())
+			if (_Screen->mObjData.size() != 1)
 				cout << "스크린 버퍼가 1개가 아닙니다!!" << endl;
 
 			// 공간할당
