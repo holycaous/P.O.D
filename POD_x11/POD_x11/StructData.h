@@ -386,7 +386,7 @@ public:
 		mStPoint = mEdPoint = mFrame = 0.0f;
 
 		// 애니메이션 기본 스피드
-		mAniSpeed = 1.0f;
+		mAniSpeed = 25.0f;
 
 		// 임시
 		mFrameCouunt = 0.0f;
@@ -460,15 +460,7 @@ public:
 	void Update(float& dt)
 	{
 		// 시간 흘르기
-		//mFrame += (dt * mAniSpeed);
-
-		if (mFrameCouunt > 7)
-		{
-			mFrame += mAniSpeed;
-			mFrameCouunt = 0;
-		}
-		else
-			++mFrameCouunt;
+		mFrame += (dt * mAniSpeed);
 
 		// 마지막보다 크다면, 초기화
 		if (mEdPoint <= mFrame)
@@ -2012,7 +2004,7 @@ private:
 				//}
 
 				// 정점별 가중치 갯수
-				//if (_sModelWeight.size() > i) // 혹시몰라 만들어둔 안전장치
+				if (_sModelWeight.size() > i) // 혹시몰라 만들어둔 안전장치
 				{
 					for (int x = 0; x < 4; ++x)
 					{
@@ -2022,7 +2014,7 @@ private:
 						case 0:
 							if (_sModelWeight[i].Bone.size() >(unsigned int)x)
 							{
-								vertices[k].Weights.x      = _sModelWeight[i].Bone[x].Weight;
+								vertices[k].Weights.x      =       _sModelWeight[i].Bone[x].Weight;
 								vertices[k].BoneIndices[x] = (UINT)_sModelWeight[i].Bone[x].ID;
 
 								//float t1 = vertices[k].Weights.x;
@@ -2032,13 +2024,13 @@ private:
 							else
 							{
 								vertices[k].Weights.x      = 0.0f;
-								vertices[k].BoneIndices[x] = 0;
+								vertices[k].BoneIndices[x] = (UINT)0;
 							}
 							break;
 						case 1:
 							if (_sModelWeight[i].Bone.size() > (unsigned int)x)
 							{
-								vertices[k].Weights.y      = _sModelWeight[i].Bone[x].Weight;
+								vertices[k].Weights.y      =       _sModelWeight[i].Bone[x].Weight;
 								vertices[k].BoneIndices[x] = (UINT)_sModelWeight[i].Bone[x].ID;
 
 								//float t1 = vertices[k].Weights.y;
@@ -2048,13 +2040,13 @@ private:
 							else
 							{
 								vertices[k].Weights.y      = 0.0f;
-								vertices[k].BoneIndices[x] = 0;
+								vertices[k].BoneIndices[x] = (UINT)0;
 							}
 							break;
 						case 2:
 							if (_sModelWeight[i].Bone.size() > (unsigned int)x)
 							{
-								vertices[k].Weights.z      = _sModelWeight[i].Bone[x].Weight;
+								vertices[k].Weights.z      =       _sModelWeight[i].Bone[x].Weight;
 								vertices[k].BoneIndices[x] = (UINT)_sModelWeight[i].Bone[x].ID;
 
 								//float t1 = vertices[k].Weights.z;
@@ -2071,7 +2063,7 @@ private:
 							if (_sModelWeight[i].Bone.size() > (unsigned int)x)
 								vertices[k].BoneIndices[x] = (UINT)_sModelWeight[i].Bone[x].ID;
 							else
-								vertices[k].BoneIndices[x] = 0;
+								vertices[k].BoneIndices[x] = (UINT)0;
 							break;
 						}
 					}
