@@ -52,7 +52,7 @@ public:
 		//--------------------------------------------------------------------------------------------------------------------//
 		// 본 테스트
 		//--------------------------------------------------------------------------------------------------------------------//
-		mModelManager->AddModel(1, "Model2"        , 100.0f, 100.0f, 600.0f, e_Run);
+		mModelManager->AddModel(1, "Model1", 100.0f, 100.0f, 600.0f, e_Run);
 		//mModelManager->DrawBone(   "Model2", "Run" , 100.0f, 100.0f, 600.0f, 10);  // 애니키 번호
 
 		//mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 500.0f, e_Idle);
@@ -226,15 +226,16 @@ public:
 		case 'G':
 			{
 				static int i = 1;
-				switch (1)
+				switch (rand() % 2)
 				{
 				case 0:
-					//mModelManager->AddUpdateModel(++i, "Model5", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f, e_Idle);
+					mModelManager->AddUpdateModel(++i, "Model1", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f, e_Idle);
+					mModelManager->SetFSM        (  i, "Model1", FSM_TYPE(rand() % 10));
 					break;
 				default:
 				case 1:
 					mModelManager->AddUpdateModel(++i, "Model2", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f, e_Run);
-					//mModelManager->SetFSM        (  i, "Model2", FSM_TYPE(rand() % 10));
+					mModelManager->SetFSM        (  i, "Model2", FSM_TYPE(rand() % 10));
 					break;
 				}
 

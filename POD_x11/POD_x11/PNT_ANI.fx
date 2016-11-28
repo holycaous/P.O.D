@@ -64,7 +64,7 @@ void curAniState(float2 AniData, inout float4 _DiffuseTex)
 }
 
 // G 버퍼 패킹
-PS_GBUFFER_OUT PackGBuffer(PNTVertexAniOut pin)
+PS_GBUFFER_OUT PackGBuffer(inout PNTVertexAniOut pin)
 {
 	PS_GBUFFER_OUT Out;
 
@@ -160,16 +160,16 @@ void GetTexMtx(Texture2D _selectTex, float2 _TexSelect, float _TexWidth, inout f
 	// 텍셀에 순차적으로 접근하는 방법: 1 / (텍스쳐 너비 - 1.0f) <-- [-1.0f는 300 텍스처는 0~299까지 이므로..]
 	// Tex 행 꺼내기 - tex2Dlod, Load
 
-	float4 tex_col1 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
+	_Mtx[0] = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
 	_TexSelect.x += (1.0f / (_TexWidth - 1.0f));
-	float4 tex_col2 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
+	_Mtx[1] = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
 	_TexSelect.x += (1.0f / (_TexWidth - 1.0f));
-	float4 tex_col3 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
+	_Mtx[2] = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
 	_TexSelect.x += (1.0f / (_TexWidth - 1.0f));
-	float4 tex_col4 = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
+	_Mtx[3] = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
 
 	//// Tex 행 꺼내기 - tex2Dlod, Load
 	//float4 tex_col1 = _selectTex.Load(uint3(_TexSelect.x , _TexSelect.y, 0));
@@ -183,12 +183,6 @@ void GetTexMtx(Texture2D _selectTex, float2 _TexSelect, float _TexWidth, inout f
 	////_TexSelect.x += 1.0f / (_TexWidth - 1.0f);
 	//float4 tex_col4 = _selectTex.Load(uint3(_TexSelect.x + 3, _TexSelect.y, 0));
 	
-	// 매트릭스 만들기
-	_Mtx._11 = tex_col1.x; 	 _Mtx._12 = tex_col1.y; 	_Mtx._13 = tex_col1.z;  	_Mtx._14 = tex_col1.w;
-	_Mtx._21 = tex_col2.x; 	 _Mtx._22 = tex_col2.y; 	_Mtx._23 = tex_col2.z;  	_Mtx._24 = tex_col2.w;
-	_Mtx._31 = tex_col3.x; 	 _Mtx._32 = tex_col3.y; 	_Mtx._33 = tex_col3.z;  	_Mtx._34 = tex_col3.w;
-	_Mtx._41 = tex_col4.x; 	 _Mtx._42 = tex_col4.y; 	_Mtx._43 = tex_col4.z;  	_Mtx._44 = tex_col4.w;
-
 }
 
 // 매트릭스 선택
@@ -252,16 +246,16 @@ void SelectMtx(float _Anikey, float2 _TexSelect, float _TexWidth, inout float4x4
 }
 
 // 스키닝 계산
-PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
+PNTVertexAniOut CalSkin(inout PNTVertexAniIn vin)
 {
 	// 출력할 버텍스 정보
 	PNTVertexAniOut vout;
 	
 	// 계산할 공간
 	float3 _PosL      = { 0.0f, 0.0f, 0.0f };
-	//float3 _NormalL   = { 0.0f, 0.0f, 0.0f };
-	//float3 _TanL      = { 0.0f, 0.0f, 0.0f };
-	//float3 _BiNormalL = { 0.0f, 0.0f, 0.0f };
+	float3 _NormalL   = { 0.0f, 0.0f, 0.0f };
+	float3 _TanL      = { 0.0f, 0.0f, 0.0f };
+	float3 _BiNormalL = { 0.0f, 0.0f, 0.0f };
 
 
 	// 현재 프레임이 애니 키 
@@ -303,10 +297,10 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 		//_PosL += _weight[i] * (Skined_pos.xyz / Skined_pos.w);
 
 		// 2.
-		_PosL      += _weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz;
-		//_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)_MadeMtx);
-		//_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)_MadeMtx);
-		//_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)_MadeMtx);
+		_PosL      += (_weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz);
+		_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)_MadeMtx);
+		_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)_MadeMtx);
+		_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)_MadeMtx);
 
 
 		// 테스트용 (버퍼 이용한거)
@@ -320,12 +314,12 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 	//--------------------------------------------------------------------------------//
 	// 최종적으로 여기다 스키닝 된 정점 정보를 덮어 써야함.
 
-	vout.PosW    = mul(float4(_PosL, 1.0f), vin.World).xyz;          // W
-	//vout.NormalW = mul(_NormalL, (float3x3)gWorldInvTranspose);    // W  // 역전치월드를 로컬에 곱해주면, 오로지 회전 부분만 로컬 노멀에 적용, (회전유지, 이동X, 스케일 1로 초기화)
+	vout.PosW    = mul(float4(_PosL, 1.0f), vin.World).xyz;        // W
+	vout.NormalW = mul(_NormalL, (float3x3)vin.World);			   // W 
 	
 	// 매트릭스 만들기 용도
-	//vout.WT = mul(_TanL     , (float3x3)vin.World);	               // W
-	//vout.WB = mul(_BiNormalL, (float3x3)vin.World);	               // W
+	vout.WT = mul(_TanL     , (float3x3)vin.World);	               // W
+	vout.WB = mul(_BiNormalL, (float3x3)vin.World);	               // W
 
 	// 동차절단공간으로 변환
 	vout.PosH = mul(float4(vout.PosW, 1.0f), gViewProj); // WVP
@@ -336,15 +330,8 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 	// 애니 데이터 정보
 	vout.AniData = vin.AniData.xy;
 
-	//--------------------------------------------------------------------------------//
-	// 디퍼드 렌더링이기때문에.. 딱히 저 위에 안해줘도..??
-	//--------------------------------------------------------------------------------//
-	vout.NormalW = mul(vin.NormalL, (float3x3)vin.World);
-
-	// 매트릭스 만들기 용도
-	vout.WT = mul(vin.Tangent , (float3x3)vin.World);
-	vout.WB = mul(vin.BiNormal, (float3x3)vin.World);
-
+	// 원래는 이렇게 하라고 되어있었지만...
+	//vout.NormalW = mul(_NormalL, (float3x3)gWorldInvTranspose);    // W  // 역전치월드를 로컬에 곱해주면, 오로지 회전 부분만 로컬 노멀에 적용, (회전유지, 이동X, 스케일 1로 초기화)
 	return vout;
 }
 
@@ -352,98 +339,7 @@ PNTVertexAniOut CalSkin(PNTVertexAniIn vin)
 // 버텍스
 PNTVertexAniOut VS(PNTVertexAniIn vin)
 {
-	// 출력할 버텍스 정보
-	PNTVertexAniOut vout;
-
-	// 계산할 공간
-	float3 _PosL = { 0.0f, 0.0f, 0.0f };
-		//float3 _NormalL   = { 0.0f, 0.0f, 0.0f };
-		//float3 _TanL      = { 0.0f, 0.0f, 0.0f };
-		//float3 _BiNormalL = { 0.0f, 0.0f, 0.0f };
-
-
-		// 현재 프레임이 애니 키 
-		float4x4 _MadeMtx = { 1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f };
-
-	// 가중치 계산
-	float _weight[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	_weight[0] = vin.Weights.x;
-	_weight[1] = vin.Weights.y;
-	_weight[2] = vin.Weights.z;
-	_weight[3] = 1.0f - _weight[0] - _weight[1] - _weight[2];
-
-	// 애니 키 선택
-	float2 _TexSelect;
-	_TexSelect.y = (float)((int)vin.AniData.y) / (vin.AniData.w - 1.0f);  // 일단, 소수부 버리기 나중에 보간 해줘야함
-
-	// 최대 4개 까지
-	for (int i = 0; i < 4; ++i)
-	{
-		//-------------------------------------------------------------------------------//
-		// 텍스처 추출
-		//-------------------------------------------------------------------------------//
-		// 본 선택							                             
-		// 행렬 픽셀이 4칸씩 뛰므로	( 텍셀 1개 == 한 행 이므로, 4개를 얻어야 함 ) 
-		_TexSelect.x = ((float)vin.BoneIndices[i] * 4.0f) / (vin.AniData.z - 1.0f);     // 그래서 uv처리할때 Tex U쪽에 * 4 이런거 해줘야할 듯 (4개씩 얻고..)
-
-		// 매트릭스 선택
-		SelectMtx(vin.AniData.x, _TexSelect, vin.AniData.z, _MadeMtx);
-
-		//-------------------------------------------------------------------------------//
-		// 스키닝 계산
-		//-------------------------------------------------------------------------------//
-
-		// 1.
-		//float4 Skined_pos = mul(float4(vin.PosL, 1.0f), _MadeMtx);
-		//_PosL += _weight[i] * (Skined_pos.xyz / Skined_pos.w);
-
-		// 2.
-		_PosL += _weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz;
-		//_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)_MadeMtx);
-		//_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)_MadeMtx);
-		//_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)_MadeMtx);
-
-
-		// 테스트용 (버퍼 이용한거)
-		//_PosL += _weight[i] * mul(float4(vin.PosL, 1.0f), gBoneTransforms[vin.BoneIndices[i]]).xyz;
-
-		//-------------------------------------------------------------------------------//
-	}
-
-	//--------------------------------------------------------------------------------//
-	// 원래 하던거
-	//--------------------------------------------------------------------------------//
-	// 최종적으로 여기다 스키닝 된 정점 정보를 덮어 써야함.
-
-	vout.PosW = mul(float4(_PosL, 1.0f), vin.World).xyz;          // W
-	//vout.NormalW = mul(_NormalL, (float3x3)gWorldInvTranspose);    // W  // 역전치월드를 로컬에 곱해주면, 오로지 회전 부분만 로컬 노멀에 적용, (회전유지, 이동X, 스케일 1로 초기화)
-
-	// 매트릭스 만들기 용도
-	//vout.WT = mul(_TanL     , (float3x3)vin.World);	               // W
-	//vout.WB = mul(_BiNormalL, (float3x3)vin.World);	               // W
-
-	// 동차절단공간으로 변환
-	vout.PosH = mul(float4(vout.PosW, 1.0f), gViewProj); // WVP
-
-	// 어차피 변환결과는 같음. ( 거의 로컬 TM 행렬임 )
-	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
-
-	// 애니 데이터 정보
-	vout.AniData = vin.AniData.xy;
-
-	//--------------------------------------------------------------------------------//
-	// 디퍼드 렌더링이기때문에.. 딱히 저 위에 안해줘도..??
-	//--------------------------------------------------------------------------------//
-	vout.NormalW = mul(vin.NormalL, (float3x3)vin.World);
-
-	// 매트릭스 만들기 용도
-	vout.WT = mul(vin.Tangent, (float3x3)vin.World);
-	vout.WB = mul(vin.BiNormal, (float3x3)vin.World);
-
-	return vout;
+	return CalSkin(vin);
 }
 
 // 두번째 매개변수를 통해, 텍스처 사용 유무를 가른다.

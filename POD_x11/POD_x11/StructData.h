@@ -117,8 +117,8 @@ struct VertexPNT
 	XMFLOAT3 Normal;
 	XMFLOAT2 Tex;
 	XMFLOAT3 Tangent;
-	XMFLOAT3 Pedding; // 패딩 값
 	XMFLOAT3 BiNormal;
+	XMFLOAT2 Pedding; // 패딩 값
 };
 
 struct VertexPNTAni
@@ -137,6 +137,7 @@ struct VertexG
 {
 	XMFLOAT3 Pos;
 	XMFLOAT2 Tex;
+	XMFLOAT3 Pedding;
 };
 
 // 인스턴스 정보
@@ -1489,8 +1490,9 @@ public:
 		// 이터레이터가 돌면서, 버텍스 크기만큼 더한다.
 		for (unsigned int i = 0; i < _Screen->Vertices.size(); ++i)
 		{
-			vertices[i].Pos = _Screen->Vertices[i].Position;
-			vertices[i].Tex = _Screen->Vertices[i].TexUV;
+			vertices[i].Pos     = _Screen->Vertices[i].Position;
+			vertices[i].Tex     = _Screen->Vertices[i].TexUV;
+			vertices[i].Pedding = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		}
 
 		// 버텍스 버퍼 만들기
@@ -1851,7 +1853,7 @@ private:
 				vertices[k].Normal   = itor->second->Vertices[i].Normal;
 				vertices[k].Tangent  = itor->second->Vertices[i].TangentU;
 				vertices[k].BiNormal = itor->second->Vertices[i].BiNormal;
-				vertices[k].Pedding  = XMFLOAT3(0.0f, 0.0f, 0.0f);			// 패딩 값
+				vertices[k].Pedding  = XMFLOAT2(0.0f, 0.0f);			// 패딩 값
 			}
 		}
 
@@ -2006,11 +2008,6 @@ private:
 				// 선택된 모델의 가중치 데이터
 				vector<WeightVtx>& _sModelWeight = itor->second->weightVtx;
 
-				//if (i > 1628)
-				//{
-				//	int t = 0;
-				//}
-
 				// 정점별 가중치 갯수
 				if (_sModelWeight.size() > i) // 혹시몰라 만들어둔 안전장치
 				{
@@ -2076,6 +2073,20 @@ private:
 						}
 					}
 				}
+
+
+				if (i > 576)
+				{
+					int t = 0;
+				}
+
+
+				auto t1 = vertices[k].Weights;
+				auto t2 = vertices[k].BoneIndices[1];
+				auto t3 = vertices[k].BoneIndices[2];
+				auto t4 = vertices[k].BoneIndices[3];
+
+				int ff = 0;
 			}
 		}
 
@@ -2842,6 +2853,8 @@ public:
 
 			XMStoreFloat4x4(&mParentData.mLAP, tResultMtx2);	// NULL
 			_LAP[_AniPoint][itor2->first] = mParentData.mLAP;
+
+			tResultMtx = XMMatrixMultiply(tResultMtx2, tResultMtx);
 
 			// SKIN 에 저장
 			XMFLOAT4X4 tSkinMtx;

@@ -63,21 +63,21 @@ public:
 		//-------------------------------------------------------------------------------//
 		// 모델 추가
 		//-------------------------------------------------------------------------------//
-		//CreateModel("Model1", "Export/Finmob1Loc.pod", e_ShaderPongTexAni);
+		CreateModel("Model1", "Export/Finmob1Loc.pod", e_ShaderPongTexAni);
 
-		////-------------------------------------------------------------------------------//
-		//// 애니 한세트 추가
-		////-------------------------------------------------------------------------------//
-		//CreateBoneAni("Model1", "Export/Finmob1BoneIdle.pod"       , e_Idle);
-		//CreateBoneAni("Model1", "Export/Finmob1BoneDamage.pod"     , e_Damage);
-		//CreateBoneAni("Model1", "Export/Finmob1BoneRun.pod"        , e_Run);
-		//CreateBoneAni("Model1", "Export/Finmob1BoneWalk.pod"       , e_Walk);
-		//CreateBoneAni("Model1", "Export/Finmob1BoneDeath.pod"	     , e_Death);
-		//CreateBoneAni("Model1", "Export/Finmob1BoneDeathWait.pod"  , e_DeathWait);
-		//CreateBoneAni("Model1", "Export/Finmob1BoneAttack1.pod"    , e_Attack1);
-		//CreateBoneAni("Model1", "Export/Finmob1BoneAttack2.pod"    , e_Attack2);
-		//CreateBoneAni("Model1", "Export/Finmob1BoneAttack3.pod"    , e_Attack3);
-		//CreateBoneAni("Model1", "Export/Finmob1BoneStun.pod"       , e_Stun);
+		//-------------------------------------------------------------------------------//
+		// 애니 한세트 추가
+		//-------------------------------------------------------------------------------//
+		CreateBoneAni("Model1", "Export/Finmob1BoneIdle.pod"       , e_Idle);
+		CreateBoneAni("Model1", "Export/Finmob1BoneDamage.pod"     , e_Damage);
+		CreateBoneAni("Model1", "Export/Finmob1BoneRun.pod"        , e_Run);
+		CreateBoneAni("Model1", "Export/Finmob1BoneWalk.pod"       , e_Walk);
+		CreateBoneAni("Model1", "Export/Finmob1BoneDeath.pod"	   , e_Death);
+		CreateBoneAni("Model1", "Export/Finmob1BoneDeathWait.pod"  , e_DeathWait);
+		CreateBoneAni("Model1", "Export/Finmob1BoneAttack1.pod"    , e_Attack1);
+		CreateBoneAni("Model1", "Export/Finmob1BoneAttack2.pod"    , e_Attack2);
+		CreateBoneAni("Model1", "Export/Finmob1BoneAttack3.pod"    , e_Attack3);
+		CreateBoneAni("Model1", "Export/Finmob1BoneStun.pod"       , e_Stun);
 		//-------------------------------------------------------------------------------//
 
 		//-------------------------------------------------------------------------------//

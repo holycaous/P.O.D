@@ -10,53 +10,56 @@ void main()
 	//-----------------------------------------------------------------------------------------------------------//
 	// 모델 추출  (파일명, 이름은 반드시 둘다 바꿔줘야함.)
 	//-----------------------------------------------------------------------------------------------------------//
-	//mXMLParser.Init("Import/mob3.xml", "ccc");
-	//mXMLParser.SetTexture("Ssalissali_diff.dds", 300.0f, "Ssalissali_norm.dds", "Ssalissali_spec.dds");
+	//mXMLParser.Init("Import/mob1.xml", "aaa");
+	//mXMLParser.SetTexture("Goral_diff.dds", 100.0f, "Goral_norm.dds", "Goral_spec.dds");
 	//mXMLParser.LoadXMLModel();
 
+	//mXMLParser.Init("Import/mob2.xml", "bbb");
+	//mXMLParser.SetTexture("Ssalissali_diff.dds", 100.0f, "Ssalissali_norm.dds", "Ssalissali_spec.dds");
+	//mXMLParser.LoadXMLModel();
 
 
 	//-----------------------------------------------------------------------------------------------------------//
 	// 본 전용 파싱 (파일명, 이름은 반드시 둘다 바꿔줘야함.)
 	//-----------------------------------------------------------------------------------------------------------//
 	// 1
-	//mXMLParser.Init("Import/mob3.xml", "ccc", "Idle");
+	//mXMLParser.Init("Import/mob1.xml", "aaa", "Idle");
 	//mXMLParser.LoadXMLBone();
 
 	//// 2
-	//mXMLParser.Init("Import/mob3.xml", "ccc", "Damage");
+	//mXMLParser.Init("Import/mob1.xml", "aaa", "Damage");
 	//mXMLParser.LoadXMLBone();
 
 	//// 3
-	//mXMLParser.Init("Import/mob3.xml", "ccc", "Run");
+	//mXMLParser.Init("Import/mob1.xml", "aaa", "Run");
 	//mXMLParser.LoadXMLBone();
 
 	//// 4
-	//mXMLParser.Init("Import/mob3.xml", "ccc", "Walk");
+	//mXMLParser.Init("Import/mob1.xml", "aaa", "Walk");
 	//mXMLParser.LoadXMLBone();
 
 	//// 5
-	//mXMLParser.Init("Import/mob3.xml", "ccc", "Death");
+	//mXMLParser.Init("Import/mob1.xml", "aaa", "Death");
 	//mXMLParser.LoadXMLBone();
 
 	//// 6
-	//mXMLParser.Init("Import/mob3.xml", "ccc", "DeathWait");
+	//mXMLParser.Init("Import/mob1.xml", "aaa", "DeathWait");
 	//mXMLParser.LoadXMLBone();
 
 	//// 7
-	//mXMLParser.Init("Import/mob3.xml", "ccc", "Attack1");
+	//mXMLParser.Init("Import/mob1.xml", "aaa", "Attack1");
 	//mXMLParser.LoadXMLBone();
 
 	//// 8
-	//mXMLParser.Init("Import/mob3.xml", "ccc", "Attack2");
+	//mXMLParser.Init("Import/mob1.xml", "aaa", "Attack2");
 	//mXMLParser.LoadXMLBone();
 
 	//// 9
-	//mXMLParser.Init("Import/mob3.xml", "ccc", "Attack3");
+	//mXMLParser.Init("Import/mob1.xml", "aaa", "Attack3");
 	//mXMLParser.LoadXMLBone();
 
 	//// 0
-	//mXMLParser.Init("Import/mob3.xml", "ccc", "Stun");
+	//mXMLParser.Init("Import/mob1.xml", "aaa", "Stun");
 	//mXMLParser.LoadXMLBone();
 	//-----------------------------------------------------------------------------------------------------------//
 

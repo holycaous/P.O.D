@@ -55,7 +55,7 @@ struct PNTVertexIn
 	float2 Tex				  : TEXCOORD;
 	float3 Tangent			  : TANGENT;
 	float3 BiNormal			  : BINORMAL;
-	float3 Pedding			  : PEDDING;        // 패딩 값
+	float2 Pedding			  : PEDDING;        // 패딩 값
 	row_major float4x4 World  : WORLD;
 	uint InstanceId		      : SV_InstanceID;
 };
@@ -129,8 +129,9 @@ struct PLVertexOut
 
 struct GVertexIn
 {
-	float3 PosL	: POSITION;
-	float2 Tex	: TEXCOORD;
+	float3 PosL	              : POSITION;
+	float2 Tex	              : TEXCOORD;
+	float3 Pedding		      : PEDDING;
 	row_major float4x4 World  : WORLD;
 	uint InstanceId		      : SV_InstanceID;
 };
@@ -187,16 +188,16 @@ Texture2D gSpecularTex;
 Texture2D gNormalTex;
 
 // 스킨 텍스처
-Texture2D<float4> gIdleTex;
-Texture2D<float4> gDamageTex;
-Texture2D<float4> gRunTex;
-Texture2D<float4> gWalkTex;
-Texture2D<float4> gDeathTex;
-Texture2D<float4> gDeathWaitTex;
-Texture2D<float4> gAttack1Tex;
-Texture2D<float4> gAttack2Tex;
-Texture2D<float4> gAttack3Tex;
-Texture2D<float4> gStunTex;
+Texture2D gIdleTex;
+Texture2D gDamageTex;
+Texture2D gRunTex;
+Texture2D gWalkTex;
+Texture2D gDeathTex;
+Texture2D gDeathWaitTex;
+Texture2D gAttack1Tex;
+Texture2D gAttack2Tex;
+Texture2D gAttack3Tex;
+Texture2D gStunTex;
 
 // G버퍼 텍스처
 Texture2D gGDepthTex;
