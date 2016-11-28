@@ -101,12 +101,14 @@ struct VertexPC
 {
 	XMFLOAT3 Pos;
 	XMFLOAT4 Color;
+	float   Pedding;			// 패딩 값
 };
 
 struct VertexPN
 {
 	XMFLOAT3 Pos;
 	XMFLOAT3 Normal;
+	XMFLOAT2 Pedding;			// 패딩 값
 };
 
 struct VertexPNT
@@ -115,6 +117,7 @@ struct VertexPNT
 	XMFLOAT3 Normal;
 	XMFLOAT2 Tex;
 	XMFLOAT3 Tangent;
+	XMFLOAT3 Pedding; // 패딩 값
 	XMFLOAT3 BiNormal;
 };
 
@@ -126,6 +129,7 @@ struct VertexPNTAni
 	XMFLOAT3 Tangent;
 	XMFLOAT3 BiNormal;
 	XMFLOAT3 Weights;
+	XMFLOAT3 Pedding; // 패딩 값
 	UINT     BoneIndices[4];
 };
 
@@ -1592,8 +1596,9 @@ private:
 			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다.
 			for (unsigned int i = 0; i < itor->second->Vertices.size(); ++i, ++k)
 			{
-				vertices[k].Pos = itor->second->Vertices[i].Position;
-				vertices[k].Color = itor->second->Vertices[i].Color;
+				vertices[k].Pos     = itor->second->Vertices[i].Position;
+				vertices[k].Color   = itor->second->Vertices[i].Color;
+				vertices[k].Pedding = 0.0f;			// 패딩 값
 			}
 		}
 
@@ -1703,8 +1708,9 @@ private:
 			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다.
 			for (unsigned int i = 0; i < itor->second->Vertices.size(); ++i, ++k)
 			{
-				vertices[k].Pos    = itor->second->Vertices[i].Position;
-				vertices[k].Normal = itor->second->Vertices[i].Normal;
+				vertices[k].Pos     = itor->second->Vertices[i].Position;
+				vertices[k].Normal  = itor->second->Vertices[i].Normal;
+				vertices[k].Pedding = XMFLOAT2(0.0f, 0.0f);			// 패딩 값
 			}
 		}
 
@@ -1840,11 +1846,12 @@ private:
 			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다.
 			for (unsigned int i = 0; i < itor->second->Vertices.size(); ++i, ++k)
 			{
-				vertices[k].Pos = itor->second->Vertices[i].Position;
-				vertices[k].Tex = itor->second->Vertices[i].TexUV;
-				vertices[k].Normal = itor->second->Vertices[i].Normal;
-				vertices[k].Tangent = itor->second->Vertices[i].TangentU;
+				vertices[k].Pos      = itor->second->Vertices[i].Position;
+				vertices[k].Tex      = itor->second->Vertices[i].TexUV;
+				vertices[k].Normal   = itor->second->Vertices[i].Normal;
+				vertices[k].Tangent  = itor->second->Vertices[i].TangentU;
 				vertices[k].BiNormal = itor->second->Vertices[i].BiNormal;
+				vertices[k].Pedding  = XMFLOAT3(0.0f, 0.0f, 0.0f);			// 패딩 값
 			}
 		}
 
@@ -1994,7 +2001,8 @@ private:
 				vertices[k].Normal   = itor->second->Vertices[i].Normal;
 				vertices[k].Tangent  = itor->second->Vertices[i].TangentU;
 				vertices[k].BiNormal = itor->second->Vertices[i].BiNormal;
-				
+				vertices[k].Pedding  = XMFLOAT3(0.0f, 0.0f, 0.0f); // 패딩값
+
 				// 선택된 모델의 가중치 데이터
 				vector<WeightVtx>& _sModelWeight = itor->second->weightVtx;
 

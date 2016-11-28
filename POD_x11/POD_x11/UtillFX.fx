@@ -55,6 +55,7 @@ struct PNTVertexIn
 	float2 Tex				  : TEXCOORD;
 	float3 Tangent			  : TANGENT;
 	float3 BiNormal			  : BINORMAL;
+	float3 Pedding			  : PEDDING;        // 패딩 값
 	row_major float4x4 World  : WORLD;
 	uint InstanceId		      : SV_InstanceID;
 };
@@ -67,6 +68,7 @@ struct PNTVertexAniIn
 	float3 Tangent			  : TANGENT;
 	float3 BiNormal			  : BINORMAL;
 	float3 Weights            : WEIGHTS;		 // 애니메이션 가중치
+	float3 Pedding            : PEDDING;		 // 패딩 값
 	uint4  BoneIndices        : BONEINDICES;	 // 애니메이션 영향 본 인덱스
 	row_major float4x4 World  : WORLD;
 	float4 AniData            : ANIDATA;		 // 애니 텍스처 번호, 현재 프레임, 텍스처 너비, 텍스처 높이
@@ -98,6 +100,7 @@ struct PCVertexIn
 {
 	float3 PosL			      : POSITION;
 	float4 Color		      : COLOR;
+	float1 Pedding		      : PEDDING;
 	row_major float4x4 World  : WORLD;
 	uint InstanceId		      : SV_InstanceID;
 };
@@ -112,6 +115,7 @@ struct PLVertexIn
 {
 	float3 PosL				  : POSITION;
 	float3 NormalL			  : NORMAL;
+	float2 Pedding		      : PEDDING;
 	row_major float4x4 World  : WORLD;
 	uint InstanceId		      : SV_InstanceID;
 };
