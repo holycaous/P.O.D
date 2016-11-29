@@ -87,7 +87,7 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	float4 litColor = sData.DiffuseTex;
 
 	// 각 Pos, LookDir 방향벡터
-	float3 toEye    = sData.PositionTex.xyz - gEyePosW;
+	float3 toEye = gEyePosW - sData.PositionTex.xyz;
 	float distToEye = length(toEye);
 	toEye /= distToEye;
 
@@ -114,7 +114,7 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	
 	// 테스트 1
 	// 포인트 라이트
-	float gPointLight_Length = length(sData.PositionTex.xyz - gPointLight.Position.xyz);
+	float gPointLight_Length = length(gPointLight.Position.xyz - sData.PositionTex.xyz);
 	
 	// 거리 확인
 	[flatten]

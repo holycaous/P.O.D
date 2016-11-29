@@ -6,63 +6,6 @@
 
 #include "LightHelper.fx"
 
-// 애니 상태에 따른 색상혼합
-void curAniState(float2 AniData, inout float4 _DiffuseTex)
-{
-	// 애니메이션 텍스처 선택 (매트릭스 만들기)
-	switch (AniData.x)
-	{
-		// e_Idle = 0, e_Run = 2, e_Walk = 3, e_Attack1 = 6, e_Attack2 = 7, e_Attack3 = 8
-		default:
-		case 0:
-		case 2:
-		case 3:
-		case 6:
-		case 7:
-		case 8:
-			break;
-
-		// e_Damage (red)
-		case 1:
-			// 지속 프레임
-			if (AniData.y < 0.2f)
-			{
-				_DiffuseTex.x  *= 2.0f;
-				_DiffuseTex.xy *= 1.2f;
-			}
-			break;
-
-		// e_Death (gray)
-		case 4:
-			{
-			    float3 _incDownColor = _DiffuseTex.xyz / AniData.y;
-			    float3 _stdDownColor = _DiffuseTex.xyz * 0.2f;
-
-				// 일정 색상까지만
-				if (_incDownColor.x > _stdDownColor.x)
-				    _DiffuseTex.xyz = _incDownColor;
-				else
-					_DiffuseTex.xyz = _stdDownColor;
-			}
-			break;
-
-		// e_DeathWait (gray)
-		case 5:
-			_DiffuseTex.xyz *= 0.2f;
-			break;
-
-		// e_Stun (yellow)
-		case 9:
-			// 지속 프레임
-			if (AniData.y < 0.2f) // 프레임
-			{
-				_DiffuseTex.xy *= 2.0f;
-				_DiffuseTex.z  *= 1.2f;
-			}
-			break;
-	}
-}
-
 // G 버퍼 패킹
 PS_GBUFFER_OUT PackGBuffer(inout PNTVertexAniOut pin)
 {
@@ -123,12 +66,18 @@ PS_GBUFFER_OUT PackGBuffer(inout PNTVertexAniOut pin)
 	//TangentNormal.z = TangetNormalZ;
 	//--------------------------------------------------------------//
 
+	// 림라이트
+	float  rimWidth      = 0.85f;
+	float3 vCameraDir    = normalize(gEyePosW - pin.PosW);
+	float  RimLightColor = smoothstep(1.0f - rimWidth, 1.2f, 1 - max(0, dot(TangentNormal, vCameraDir)));
+	float4 FinTex = {0.0f, 0.0f, 0.0f, 1.0f};
+
 	// 현재 애니 상태에 DiffuseTex 색상혼합
-	//curAniState(pin.AniData, DiffuseTex);
+	//curAniState(pin.AniData.x, pin.AniData.y, FinTex);
 
 	// 출력	
 	Out.Depth = Depth;
-	Out.Color = DiffuseTex;
+	Out.Color = DiffuseTex + float4(RimLightColor * 0.4f, RimLightColor * 0.35f, RimLightColor * 0.2f, 1.0f);
 
 	//--------------------------------------------------------------//
 	// 포지션 맵 저장
@@ -170,19 +119,6 @@ void GetTexMtx(Texture2D _selectTex, float2 _TexSelect, float _TexWidth, inout f
 
 	_TexSelect.x += (1.0f / (_TexWidth - 1.0f));
 	_Mtx[3] = _selectTex.SampleLevel(samPoint, _TexSelect, 0);
-
-	//// Tex 행 꺼내기 - tex2Dlod, Load
-	//float4 tex_col1 = _selectTex.Load(uint3(_TexSelect.x , _TexSelect.y, 0));
-	//
-	////_TexSelect.x += 1.0f / (_TexWidth - 1.0f);
-	//float4 tex_col2 = _selectTex.Load(uint3(_TexSelect.x + 1, _TexSelect.y, 0));
-	//
-	////_TexSelect.x += 1.0f / (_TexWidth - 1.0f);
-	//float4 tex_col3 = _selectTex.Load(uint3(_TexSelect.x + 2, _TexSelect.y, 0));
-	//
-	////_TexSelect.x += 1.0f / (_TexWidth - 1.0f);
-	//float4 tex_col4 = _selectTex.Load(uint3(_TexSelect.x + 3, _TexSelect.y, 0));
-	
 }
 
 // 매트릭스 선택
@@ -326,10 +262,7 @@ PNTVertexAniOut CalSkin(inout PNTVertexAniIn vin)
 
 	// 어차피 변환결과는 같음. ( 거의 로컬 TM 행렬임 )
 	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
-
-	// 애니 데이터 정보
-	vout.AniData = vin.AniData.xy;
-
+	
 	// 원래는 이렇게 하라고 되어있었지만...
 	//vout.NormalW = mul(_NormalL, (float3x3)gWorldInvTranspose);    // W  // 역전치월드를 로컬에 곱해주면, 오로지 회전 부분만 로컬 노멀에 적용, (회전유지, 이동X, 스케일 1로 초기화)
 	return vout;
