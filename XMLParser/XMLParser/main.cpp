@@ -14,6 +14,15 @@ void main()
 	//mXMLParser.SetTexture("Goral_diff.dds", 100.0f, "Goral_norm.dds", "Goral_spec.dds");
 	//mXMLParser.LoadXMLModel();
 
+	// ½ºÅ² ¸ðµ¨ ÆÄ½Ì
+	//mXMLParser.InitSkinModel("Import/mob1.xml", "aaa", "Idle");
+	//mXMLParser.LoadXMLSkinModel();
+
+
+
+
+
+
 	//mXMLParser.Init("Import/mob2.xml", "bbb");
 	//mXMLParser.SetTexture("Ssalissali_diff.dds", 100.0f, "Ssalissali_norm.dds", "Ssalissali_spec.dds");
 	//mXMLParser.LoadXMLModel();

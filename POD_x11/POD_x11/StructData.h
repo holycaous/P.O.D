@@ -622,6 +622,9 @@ public:
 	// 스킨 텍스처 (포인터)
 	map<int, SkinTexture*> mSkinTex;
 
+	// 스킨 모델 (스킨 텍스처와 한쌍이되는 모델 데이터)
+	map<int, SkinTexture*> mSkinModel;
+
 	// 가중치 데이터
 	vector<WeightVtx> weightVtx;
 
@@ -701,6 +704,12 @@ public:
 	{
 		printf("클리어 객체명: %17s ---> 생성명: %12s, 이름: %12s\n", mObjName, mCreateName.c_str(), mMainName);
 
+		// 스킨 모델 제거
+		for (auto itor = mSkinModel.begin(); itor != mSkinModel.end(); ++itor)
+			SafeDelete(itor->second);
+		mSkinModel.clear();
+
+		// 모델 텍스처 제거
 		ReleaseCOM(mDiffuseSRV);
 		ReleaseCOM(mSpecularSRV);
 		ReleaseCOM(mNomalSRV);
@@ -2015,10 +2024,6 @@ private:
 							{
 								vertices[k].Weights.x      =       _sModelWeight[i].Bone[x].Weight;
 								vertices[k].BoneIndices[x] = (UINT)_sModelWeight[i].Bone[x].ID;
-
-								//float t1 = vertices[k].Weights.x;
-								//int   t2 = vertices[k].BoneIndices[x];
-								//int   t3 = 0;
 							}
 							else
 							{
@@ -2031,10 +2036,6 @@ private:
 							{
 								vertices[k].Weights.y      =       _sModelWeight[i].Bone[x].Weight;
 								vertices[k].BoneIndices[x] = (UINT)_sModelWeight[i].Bone[x].ID;
-
-								//float t1 = vertices[k].Weights.y;
-								//int   t2 = vertices[k].BoneIndices[x];
-								//int   t3 = 0;
 							}
 							else
 							{
@@ -2047,10 +2048,6 @@ private:
 							{
 								vertices[k].Weights.z      =       _sModelWeight[i].Bone[x].Weight;
 								vertices[k].BoneIndices[x] = (UINT)_sModelWeight[i].Bone[x].ID;
-
-								//float t1 = vertices[k].Weights.z;
-								//int   t2 = vertices[k].BoneIndices[x];
-								//int   t3 = 0;
 							}
 							else
 							{
@@ -2999,7 +2996,7 @@ public:
 		mSkinTex.mStPoint = 0.0f;
 		mSkinTex.mEdPoint = (float)mSaveBoneData[0].mAniData.Position.size();
 
-		// 애니 해상도
+		// 텍스처 해상도
 		mSkinTex.mTexWidth  = (float)mSaveBoneData.size() * 4;
 		mSkinTex.mTexHeight = (float)mSaveBoneData[0].mAniData.Position.size();
 
@@ -3007,7 +3004,7 @@ public:
 		// 파일 경로 문자열
 		//--------------------------------------------------------------------------------------------------//
 		wstring _WsTexName;
-		StringToWchar_t(tTexName.c_str(), _WsTexName);
+		StringToWchar_t(tTexName, _WsTexName);
 
 		//--------------------------------------------------------------------------------------------------//
 		// 텍스처 연결
@@ -3043,7 +3040,7 @@ public:
 			MakeTree();
 
 			// 스킨 텍스처 만들기
-			MakSkinTex(_WsTexName);
+			MakeSkinTex(_WsTexName);
 
 			// 텍스처 스킨 다시 로딩
 			goto RetryLoadTex;
@@ -3128,7 +3125,7 @@ private:
 
 	
 	// 스킨 텍스처 만들기
-	void MakSkinTex(wstring& _TexName)
+	void MakeSkinTex(wstring& _TexName)
 	{
 		// 모든 키는 동일한 갯수를 가진다.
 		int tAniSize = mSaveBoneData[0].mAniData.Position.size();
@@ -3243,22 +3240,10 @@ private:
 						switch (i)
 						{
 						case 0:
-						{
-								  auto i1 = GetSkinStorage(y)[x]._11;
-								  auto i2 = pTexels[_sTex1];
-								  auto i3 = mRelocSkinMtx[y][x]._11;
-
-								  pTexels[_sTex1] = mRelocSkinMtx[y][x]._11;     //R (float 1)
-								  pTexels[_sTex2] = mRelocSkinMtx[y][x]._12;     //G (float 2)
-								  pTexels[_sTex3] = mRelocSkinMtx[y][x]._13;     //B (float 3)
-								  pTexels[_sTex4] = mRelocSkinMtx[y][x]._14;     //A (float 4)
-
-								  auto i4 = GetSkinStorage(y)[x]._11;
-								  auto i5 = pTexels[_sTex1];
-								  auto i6 = mRelocSkinMtx[y][x]._11;
-
-								  int ia = 0;
-						}
+							pTexels[_sTex1] = mRelocSkinMtx[y][x]._11;     //R (float 1)
+							pTexels[_sTex2] = mRelocSkinMtx[y][x]._12;     //G (float 2)
+							pTexels[_sTex3] = mRelocSkinMtx[y][x]._13;     //B (float 3)
+							pTexels[_sTex4] = mRelocSkinMtx[y][x]._14;     //A (float 4)
 							break;
 						case 1:
 							pTexels[_sTex1] = mRelocSkinMtx[y][x]._21;     //R (float 1)
@@ -3290,7 +3275,7 @@ private:
 			cCoreStorage::GetInstance()->md3dImmediateContext->Unmap(mSkinTex.mTexture, D3D11CalcSubresource(0, 0, 1));
 		}
 		else
-			cout << "텍스처 맵핑 실패" << endl;
+			cout << "스킨 텍스처 맵핑 실패" << endl;
 	}
 
 
@@ -3355,7 +3340,7 @@ private:
 	}
 
 	// 변환 함수
-	void StringToWchar_t(string _string, wstring& _wstring)
+	void StringToWchar_t(string& _string, wstring& _wstring)
 	{
 		// 변환
 		for (unsigned int i = 0; i < _string.length(); ++i)

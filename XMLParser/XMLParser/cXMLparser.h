@@ -135,6 +135,9 @@ private:
 	// 모델 대표 이름
 	char mName[BUF_SIZE];
 
+	// 애니이름 저장공간
+	char mAnyType[BUF_SIZE];
+
 	// 읽을 데이터가 할 행동
 	ReadingCurrentData mReadCurData = e_Read;
 
@@ -184,6 +187,50 @@ public:
 		strcpy(mFinExportBoneData, mExportFileLoc);
 		strcat(mFinExportBoneData, "Fin");
 		strcat(mFinExportBoneData, mFileName);
+		strcat(mFinExportBoneData, "Bone");
+		strcat(mFinExportBoneData, mExportFileFormat);
+
+		// 재질 카운트 초기화
+		mMtrlCount = -1;
+	}
+
+	// XML 초기화
+	void InitSkinModel(char* _ModelRoute, char* _Name, char* _AniType)
+	{
+		// 대표 이름 등록
+		strcpy(mName, _Name);
+
+		// Bone 대표 이름 등록
+		strcpy(mMyBoneData.mMainName, mName);
+
+		// 경로 저장
+		strcpy(mParsingFileRoute, _ModelRoute);
+
+		// 익스포트 파일 포맷 방식
+		strcpy(mExportFileFormat, ".pod");
+
+		// 익스포트 파일 저장 위치
+		strcpy(mExportFileLoc, "Export/");
+
+		// 파일 이름 얻기
+		GetFileName();
+
+		// 애니 이름 옮기기
+		strcpy(mAnyType, _AniType);
+
+		// 익스포트 파일 로케이션
+		strcpy(mFinExportModelLoc, mExportFileLoc);
+		strcat(mFinExportModelLoc, "Fin");
+		strcat(mFinExportModelLoc, mFileName);
+		strcat(mFinExportModelLoc, mAnyType);
+		strcat(mFinExportModelLoc, "Loc");
+		strcat(mFinExportModelLoc, mExportFileFormat);
+
+		// 익스포트 파일 본
+		strcpy(mFinExportBoneData, mExportFileLoc);
+		strcat(mFinExportBoneData, "Fin");
+		strcat(mFinExportBoneData, mFileName);
+		strcat(mFinExportBoneData, mAnyType);
 		strcat(mFinExportBoneData, "Bone");
 		strcat(mFinExportBoneData, mExportFileFormat);
 
@@ -274,11 +321,45 @@ public:
 		// 매쉬데이터 로컬 파일 읽기
 		//mNewModleLoc.clear();
 		//ReadLocMyFormat_Model(mFinExportModelLoc);
-
+		//
 		// 내 포맷으로 읽은걸 확인한다 (테스트) @@@@@@
 		//MyMeshData test;
 		//ReadDataMyFormat_Model(mNewModleLoc[0].Data, &test); // 0번 데이터 확인~
 
+		// 데이터 클리어
+		ClearClass();
+	}
+
+	// 파싱
+	void LoadXMLSkinModel()
+	{
+		// XML 데이터 읽고, 계산한다.
+		LoadXmlData();
+
+		// 데이터 가공 끝
+		FinalData();
+
+		//--------------------------------------------//
+		// 매쉬 데이터
+		//--------------------------------------------//
+
+		// << 로컬 >>
+		// 내 포맷으로 매쉬데이터 로컬을 작성한다.
+		WriteLocMyFormat_SkinModel();
+
+		// << 매쉬 데이터 >>
+		// 내 포맷으로 매쉬데이터를 작성한다.
+		for (unsigned int i = 0; i < mNewModleLoc.size(); ++i)
+			WriteDataMyFormat_SkinModel(i);
+
+		// 테스트코드 (테스트) 
+		// 매쉬데이터 로컬 파일 읽기
+		//mNewModleLoc.clear();
+		//ReadLocMyFormat_Model(mFinExportModelLoc);
+		//
+		// 내 포맷으로 읽은걸 확인한다 (테스트) @@@@@@
+		//MyMeshData test;
+		//ReadDataMyFormat_Model(mNewModleLoc[0].Data, &test); // 0번 데이터 확인~
 
 		// 데이터 클리어
 		ClearClass();
@@ -833,6 +914,45 @@ private:
 		printf("[Succes] 파일 종료.\n");
 	}
 
+	// 내 포맷으로 작성한다.(경로)
+	void WriteLocMyFormat_SkinModel()
+	{
+		// 새로 만들어진 모델의 로케이션
+		// 익스포트 파일 로케이션 저장
+		mNewModleLoc.resize(mMyMeshData.size());
+		for (unsigned int i = 0; i < mMyMeshData.size(); ++i)
+		{
+			char _ModelNumBuf[512];
+			itoa10(i, _ModelNumBuf);
+			strcpy(mNewModleLoc[i].Data, mExportFileLoc);
+			strcat(mNewModleLoc[i].Data, "Fin");
+			strcat(mNewModleLoc[i].Data, mFileName);
+			strcat(mNewModleLoc[i].Data, mAnyType);
+			strcat(mNewModleLoc[i].Data, "Data");
+			strcat(mNewModleLoc[i].Data, _ModelNumBuf);
+			strcat(mNewModleLoc[i].Data, mExportFileFormat);
+		}
+
+		// 이진 파일 열기
+		FileOpen(mFinExportModelLoc, "wb");
+
+		// 만들어진 모델 몇개인지
+		int _ModelNum = mNewModleLoc.size();
+		fwrite(&_ModelNum, sizeof(int), 1, mFilePointer);
+
+		// 위에서 계산한 매쉬 경로 데이터 복사하기
+		for (int i = 0; i < _ModelNum; ++i)
+		{
+			int len = strlen(mNewModleLoc[i].Data) + 1;
+			fwrite(&len, sizeof(int), 1, mFilePointer);
+			fwrite(&mNewModleLoc[i].Data, sizeof(char), len, mFilePointer);
+		}
+
+		// 파일 종료
+		FileClose();
+		printf("[Succes] 파일 종료.\n");
+	}
+
 	// 파일 읽기 테스트 (모델 데이터 경로 로드)
 	void ReadLocMyFormat_Model(char* _FinModelLoc)
 	{
@@ -869,6 +989,157 @@ private:
 		strcpy(mFinExportModelData, mExportFileLoc);
 		strcat(mFinExportModelData, "Fin");
 		strcat(mFinExportModelData, mFileName);
+		strcat(mFinExportModelData, "Data");
+		strcat(mFinExportModelData, _ModelNumBuf);
+		strcat(mFinExportModelData, mExportFileFormat);
+
+		// 이진 파일 열기
+		FileOpen(mFinExportModelData, "wb");
+
+		// 버텍스
+		int len = mMyMeshData[_ModelNum].vertices.size();
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+
+		for (int i = 0; i < len; ++i)
+			fwrite(&mMyMeshData[_ModelNum].vertices[i], sizeof(Vertex), 1, mFilePointer);
+		
+		// 인덱스 리스트
+		len = mMyMeshData[_ModelNum].indices.size();
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+
+		for (int i = 0; i < len; ++i)
+			fwrite(&mMyMeshData[_ModelNum].indices[i], sizeof(XMFLOAT3), 1, mFilePointer);
+
+		// 애니데이터
+	
+		// 위치
+		len = mMyMeshData[_ModelNum].aniData.Position.size();
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+
+		for (int i = 0; i < len; ++i)
+			fwrite(&mMyMeshData[_ModelNum].aniData.Position[i], sizeof(KeyVtx), 1, mFilePointer);
+
+		// 회전
+		len = mMyMeshData[_ModelNum].aniData.Quaternion.size();
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+
+		for (int i = 0; i < len; ++i)
+			fwrite(&mMyMeshData[_ModelNum].aniData.Quaternion[i], sizeof(RotKeyVtx), 1, mFilePointer);
+
+		// 스케일
+		len = mMyMeshData[_ModelNum].aniData.Scale.size();
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+
+		for (int i = 0; i < len; ++i)
+			fwrite(&mMyMeshData[_ModelNum].aniData.Scale[i], sizeof(KeyVtx), 1, mFilePointer);
+		
+		// 가중치 데이터
+
+		// 전체 사이즈
+		len = mMyMeshData[_ModelNum].weightVtx.size();
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+
+		for (int i = 0; i < len; ++i)
+		{
+			// 타겟 인덱스
+			fwrite(&mMyMeshData[_ModelNum].weightVtx[i].TagetIdx, sizeof(int), 1, mFilePointer);
+
+			// 본 데이터 총 크기
+			int Bonelen = mMyMeshData[_ModelNum].weightVtx[i].Bone.size();
+			fwrite(&Bonelen, sizeof(int), 1, mFilePointer);
+
+			// 본 데이터
+			for (int idx = 0; idx < Bonelen; ++idx)
+			{
+				// ID
+				fwrite(&mMyMeshData[_ModelNum].weightVtx[i].Bone[idx].ID, sizeof(int), 1, mFilePointer);
+
+				// 가중치
+				fwrite(&mMyMeshData[_ModelNum].weightVtx[i].Bone[idx].Weight, sizeof(float), 1, mFilePointer);
+
+				// 버퍼(이름)
+				int Bonebuflen = strlen(mMyMeshData[_ModelNum].weightVtx[i].Bone[idx].Name) + 1;
+				fwrite(&Bonebuflen, sizeof(int), 1, mFilePointer);
+				fwrite(&mMyMeshData[_ModelNum].weightVtx[i].Bone[idx].Name, sizeof(char), Bonebuflen, mFilePointer);
+			}
+		}
+
+		// 오프셋
+		fwrite(&mMyMeshData[_ModelNum].vertexOffset, sizeof(UINT), 1, mFilePointer);
+		fwrite(&mMyMeshData[_ModelNum].indexOffset, sizeof(UINT), 1, mFilePointer);
+
+		// 카운트
+		fwrite(&mMyMeshData[_ModelNum].indexCount, sizeof(UINT), 1, mFilePointer);
+
+		// 재질 정보
+
+		// 투명도
+		fwrite(&mMyMeshData[_ModelNum].mMyMat.mOpacity, sizeof(float), 1, mFilePointer);
+
+		// 디퓨즈
+		len = strlen(mMyMeshData[_ModelNum].mMyMat.mDiffuseMap) + 1;
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+		fwrite(&mMyMeshData[_ModelNum].mMyMat.mDiffuseMap, sizeof(char), len, mFilePointer);
+
+		// 노멀
+		len = strlen(mMyMeshData[_ModelNum].mMyMat.mNoamleMap) + 1;
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+		fwrite(&mMyMeshData[_ModelNum].mMyMat.mNoamleMap, sizeof(char), len, mFilePointer);
+
+		// 스팩
+		len = strlen(mMyMeshData[_ModelNum].mMyMat.mSpecularMap) + 1;
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+		fwrite(&mMyMeshData[_ModelNum].mMyMat.mSpecularMap, sizeof(char), len, mFilePointer);
+
+		// TM 행렬
+		fwrite(&mMyMeshData[_ModelNum].mTMLocalMtx, sizeof(XMFLOAT4X4), 1, mFilePointer);
+		fwrite(&mMyMeshData[_ModelNum].mTMWorldMtx, sizeof(XMFLOAT4X4), 1, mFilePointer);
+
+		// 바운딩 박스
+		fwrite(&mMyMeshData[_ModelNum].mBoundingBox, sizeof(BoundBox), 1, mFilePointer);
+
+		//--------------------------------------------------//
+		// 오브젝트 식별 정보
+		//--------------------------------------------------//
+
+		// 이름
+		len = strlen(mMyMeshData[_ModelNum].mMainName) + 1;
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+		fwrite(&mMyMeshData[_ModelNum].mMainName, sizeof(char), len, mFilePointer);
+
+		// 오브젝트이름
+		fwrite(&mMyMeshData[_ModelNum].mObjID, sizeof(int), 1, mFilePointer);
+		
+		len = strlen(mMyMeshData[_ModelNum].mObjName) + 1;
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+		fwrite(&mMyMeshData[_ModelNum].mObjName, sizeof(char), len, mFilePointer);
+
+		len = strlen(mMyMeshData[_ModelNum].mObjClass) + 1;
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+		fwrite(&mMyMeshData[_ModelNum].mObjClass, sizeof(char), len, mFilePointer);
+
+		// 상위 클래스 이름
+		fwrite(&mMyMeshData[_ModelNum].mParentID, sizeof(int), 1, mFilePointer);
+
+		len = strlen(mMyMeshData[_ModelNum].mParentName) + 1;
+		fwrite(&len, sizeof(int), 1, mFilePointer);
+		fwrite(&mMyMeshData[_ModelNum].mParentName, sizeof(char), len, mFilePointer);
+
+		// 파일 종료
+		FileClose();
+		printf("[Succes] 파일 종료.\n");
+	}
+
+	// 내 포맷으로 작성한다.(데이터)
+	void WriteDataMyFormat_SkinModel(int _ModelNum)
+	{
+		// 익스포트 파일 로케이션
+		char _ModelNumBuf[512];
+		itoa10(_ModelNum, _ModelNumBuf);
+		strcpy(mFinExportModelData, mExportFileLoc);
+		strcat(mFinExportModelData, "Fin");
+		strcat(mFinExportModelData, mFileName);
+		strcat(mFinExportModelData, mAnyType);
 		strcat(mFinExportModelData, "Data");
 		strcat(mFinExportModelData, _ModelNumBuf);
 		strcat(mFinExportModelData, mExportFileFormat);

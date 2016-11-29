@@ -63,7 +63,8 @@ public:
 		//-------------------------------------------------------------------------------//
 		// 모델 추가
 		//-------------------------------------------------------------------------------//
-		CreateModel("Model1", "Export/Finmob1Loc.pod", e_ShaderPongTexAni);
+		CreateModel  ("Model1", "Export/Finmob1Loc.pod"    , e_ShaderPongTexAni);
+		AddModelChain("Model1", "Export/Finmob1IdleLoc.pod", e_ShaderPongTexAni, e_Idle);     // 앞으로, 모델을 파싱할때는 아무런 애니메이션 데이터 없는 것을 기준으로 파싱하겠음
 
 		//-------------------------------------------------------------------------------//
 		// 애니 한세트 추가
@@ -603,6 +604,61 @@ public:
 			tSelectModelRoute.clear();
 			tNewName.clear();
 		}
+
+		// 파서 버퍼 초기화 ( 다음 모델을 받기 위해 ) 
+		mXMLParser.ClearClass();
+		_Name.clear();
+	}
+
+	// 모델 체인 연결하기 (여러 애니메이션 처리를 위해)
+	void AddModelChain(string _Name, string _ModelRoute, SHADER_TYPE _ShaderMode, FSM_TYPE _fsmType, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	{
+		string tSelectModelRoute, tNewName;
+		char _ModelNumBuf[128];
+		//----------------------------------------------------//
+		// 모델 경로 파싱
+		//----------------------------------------------------//
+		// 초기화
+		mXMLParser.LoadXMLRoute(_ModelRoute);
+
+		// 읽은 경로만큼 매시데이터가 존재한다는 것이므로,
+		// 이에 맞춰 파싱할 데이터를 넣을 공간을 확보해준다.
+		int _ReadLocNum = mXMLParser.mNewModleLoc.size();
+
+		// 읽은 경로내의 모델 갯수만큼 반복
+		for (int i = 0; i < _ReadLocNum; ++i)
+		{
+			mXMLParser.InitClass();
+			tSelectModelRoute = mXMLParser.mNewModleLoc[i].Data; // 선택된 모델의 루트
+
+			// 첫 모델이라면 자신의 이름으로 짓는다.
+			tNewName = _Name;
+
+			// 서브 모델이 있는 모델이라면 '_번호'로 추가해서 짓는다.
+			if (i > 0)
+			{
+				memset(&_ModelNumBuf, '\0', sizeof(_ModelNumBuf));
+				itoa10(i, _ModelNumBuf);
+				tNewName = tNewName + '_' + _ModelNumBuf + '\0';
+			}
+			
+			// 임시 데이터
+			cout << " >> 스킨 모델 파싱 시작 <<" << endl;
+			InitMetaData _ParsigModel(_ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
+
+			//----------------------------------------------------//
+			// 스킨 모델 데이터 파싱
+			//----------------------------------------------------//
+			mXMLParser.LoadXMLSkinModel(tSelectModelRoute, &_ParsigModel, mAllModelData[tNewName], _fsmType);
+
+			// 포인터 삭제
+			mXMLParser.ClearPointer();
+
+			// string 삭제
+			tSelectModelRoute.clear();
+			tNewName.clear();
+		}
+		cout << " >> 스킨 모델 파싱 종료 <<" << endl;
 
 		// 파서 버퍼 초기화 ( 다음 모델을 받기 위해 ) 
 		mXMLParser.ClearClass();

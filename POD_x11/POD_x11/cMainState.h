@@ -236,12 +236,12 @@ public:
 				switch (rand() % 2)
 				{
 				case 0:
-					mModelManager->AddUpdateModel(++i, "Model1", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f, e_Idle);
+					mModelManager->AddUpdateModel(++i, "Model1", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Idle);
 					mModelManager->SetFSM        (  i, "Model1", FSM_TYPE(rand() % 10));
 					break;
 				default:
 				case 1:
-					mModelManager->AddUpdateModel(++i, "Model2", float(rand() % 500) + 100.0f, 100.0f, float(rand() % 500) + 100.0f, e_Run);
+					mModelManager->AddUpdateModel(++i, "Model2", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Run);
 					mModelManager->SetFSM        (  i, "Model2", FSM_TYPE(rand() % 10));
 					break;
 				}
