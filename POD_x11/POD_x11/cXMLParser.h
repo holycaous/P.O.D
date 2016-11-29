@@ -69,7 +69,7 @@ public:
 	}
 
 	// 파싱
-	void LoadXMLModel(string& _ModelData, InitMetaData& _InitMetaData)
+	void LoadXMLModel(string& _ModelData, InitMetaData* _InitMetaData)
 	{
 		// XML 모델 데이터 읽기
 		ReadDataMyFormat_Model(_ModelData); 
@@ -488,18 +488,10 @@ public:
 	}
 
 	// 파일 저장하기
-	void SaveMyFormat(InitMetaData& _InitMetaData)
+	void SaveMyFormat(InitMetaData* _InitMetaData)
 	{
 		// 버텍스
-		_InitMetaData.Vertices = mMyMeshData.vertices;
-
-		// 테스트
-		//for (unsigned int i = 0; i < mMyMeshData.vertices.size(); ++i)
-		//{
-		//	_InitMetaData.Vertices[i].Position.x = mMyMeshData.vertices[i].Position.x;
-		//	_InitMetaData.Vertices[i].Position.y = mMyMeshData.vertices[i].Position.z;
-		//	_InitMetaData.Vertices[i].Position.z = mMyMeshData.vertices[i].Position.y;
-		//}
+		_InitMetaData->Vertices = mMyMeshData.vertices;
 
 		// 인덱스
 		for (unsigned int i = 0; i < mMyMeshData.indices.size(); ++i)
@@ -509,13 +501,13 @@ public:
 				switch (vIdx)
 				{
 				case 0:
-					_InitMetaData.Indices.push_back((UINT)mMyMeshData.indices[i].x);
+					_InitMetaData->Indices.push_back((UINT)mMyMeshData.indices[i].x);
 					break;
 				case 1:
-					_InitMetaData.Indices.push_back((UINT)mMyMeshData.indices[i].y);
+					_InitMetaData->Indices.push_back((UINT)mMyMeshData.indices[i].y);
 					break;
 				case 2:
-					_InitMetaData.Indices.push_back((UINT)mMyMeshData.indices[i].z);
+					_InitMetaData->Indices.push_back((UINT)mMyMeshData.indices[i].z);
 					break;
 				default:
 					break;
@@ -524,25 +516,25 @@ public:
 		}
 
 		// 애니 데이터
-		_InitMetaData.mAniData = mMyMeshData.mAniData;
+		_InitMetaData->mAniData = mMyMeshData.mAniData;
 
 		// 가중치 데이터
-		_InitMetaData.weightVtx = mMyMeshData.weightVtx;
+		_InitMetaData->weightVtx = mMyMeshData.weightVtx;
 
 		// TM 매트릭스
-		_InitMetaData.mLocTMMtx = mMyMeshData.mTMLocalMtx;
-		_InitMetaData.mWdTMMtx  = mMyMeshData.mTMWorldMtx;
+		_InitMetaData->mLocTMMtx = mMyMeshData.mTMLocalMtx;
+		_InitMetaData->mWdTMMtx  = mMyMeshData.mTMWorldMtx;
 
 		// 오프셋
-		_InitMetaData.mVertexOffset = mMyMeshData.vertexOffset;
-		_InitMetaData.mIndexOffset  = mMyMeshData.indexOffset;
+		_InitMetaData->mVertexOffset = mMyMeshData.vertexOffset;
+		_InitMetaData->mIndexOffset  = mMyMeshData.indexOffset;
 
 		// 카운트
-		_InitMetaData.mIndexCount = mMyMeshData.indexCount;
+		_InitMetaData->mIndexCount = mMyMeshData.indexCount;
 
 		// 리소스 얻기 (재질 정보)
 		// 테스트
-		//if (_InitMetaData.mCreateName == "Model4_1")
+		//if (_InitMetaData->mCreateName == "Model4_1")
 		//	int i = 0;
 
 		LoadTex(_InitMetaData, mMyMeshData.mMyMat.mDiffuseSRV , e_DiffuseMap);
@@ -551,26 +543,26 @@ public:
 
 
 		// 투명 (디퓨즈 맵)
-		_InitMetaData.mOpacity = mMyMeshData.mMyMat.mOpacity;
+		_InitMetaData->mOpacity = mMyMeshData.mMyMat.mOpacity;
 
 		// 바운딩 박스
-		_InitMetaData.mBoundingBox = mMyMeshData.mBoundingBox;
+		_InitMetaData->mBoundingBox = mMyMeshData.mBoundingBox;
 
 		//--------------------------------------------------//
 		// 오브젝트 식별 정보
 		//--------------------------------------------------//
 
 		// 이름
-		strcpy(_InitMetaData.mMainName, mMyMeshData.mMainName);
+		strcpy(_InitMetaData->mMainName, mMyMeshData.mMainName);
 
 		// 오브젝트이름
-		_InitMetaData.mObjID = mMyMeshData.mObjID;
-		strcpy(_InitMetaData.mObjName , mMyMeshData.mObjName);
-		strcpy(_InitMetaData.mObjClass, mMyMeshData.mObjClass);
+		_InitMetaData->mObjID = mMyMeshData.mObjID;
+		strcpy(_InitMetaData->mObjName , mMyMeshData.mObjName);
+		strcpy(_InitMetaData->mObjClass, mMyMeshData.mObjClass);
 
 		// 상위 클래스 이름
-		_InitMetaData.mParentID = mMyMeshData.mParentID;
-		strcpy(_InitMetaData.mParentName, mMyMeshData.mParentName);
+		_InitMetaData->mParentID = mMyMeshData.mParentID;
+		strcpy(_InitMetaData->mParentName, mMyMeshData.mParentName);
 
 	}
 private:
@@ -606,60 +598,29 @@ private:
 	}
 
 	// 텍스처 로드
-	//void LoadTex(const wchar_t* _TexName, TEXTURE_TYPE e_InitTex)
-	//{
-	//	// 텍스처 로딩
-	//	switch (e_InitTex)
-	//	{
-	//	case e_DiffuseMap:
-	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &_InitMetaData.mDiffuseSRV, 0));
-	//		break;
-	//	case e_SpecularMap:
-	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &_InitMetaData.mSpecularSRV, 0));
-	//		break;
-	//	case e_NomalMap:
-	//		HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _TexName, 0, 0, &_InitMetaData.mNomalSRV, 0));
-	//		break;
-	//	}
-	//}
-
-	// 텍스처 로드
-	void LoadTex(InitMetaData& _InitMetaData, string _TexName, TEXTURE_TYPE e_InitTex)
+	void LoadTex(InitMetaData* _InitMetaData, string _TexName, TEXTURE_TYPE e_InitTex)
 	{
 		// string --> wString으로 변환
 		wstring _WsTexName;
-		StringToWchar_t(_TexName.c_str(), _WsTexName);
+		StringToWchar_t(_TexName, _WsTexName);
 
 		// 텍스처 로딩
 		switch (e_InitTex)
 		{
 		case e_DiffuseMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &_InitMetaData.mDiffuseSRV, 0));
+			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &_InitMetaData->mDiffuseSRV, 0));
 			break;
 		case e_NomalMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &_InitMetaData.mNomalSRV, 0));
+			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &_InitMetaData->mNomalSRV, 0));
 			break;
 		case e_SpecularMap:
-			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &_InitMetaData.mSpecularSRV, 0));
+			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &_InitMetaData->mSpecularSRV, 0));
 			break;
 		}
-
-		//HRESULT WINAPI
-		//	D3DX11CreateShaderResourceViewFromFileW(
-		//	ID3D11Device*               pDevice,
-		//	LPCWSTR                     pSrcFile,
-		//	D3DX11_IMAGE_LOAD_INFO      *pLoadInfo,
-		//	ID3DX11ThreadPump*          pPump,
-		//	ID3D11ShaderResourceView**  ppShaderResourceView,
-		//	HRESULT*                    pHResult);
-
-		// 클리어
-		_WsTexName.clear();
-		_TexName.clear();
 	}
 
 	// 변환 함수
-	void StringToWchar_t(string _string, wstring& _wstring)
+	void StringToWchar_t(string& _string, wstring& _wstring)
 	{
 		// 변환
 		for (unsigned int i = 0; i < _string.length(); ++i)
@@ -667,8 +628,6 @@ private:
 
 		// 마무리
 		_wstring += wchar_t('\0');
-
-		_string.clear();
 	}
 };
 

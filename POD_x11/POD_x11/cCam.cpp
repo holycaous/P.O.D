@@ -150,6 +150,7 @@ void cCam::Walk(float d)
 	XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, l, p));
 }
 
+
 void cCam::Pitch(float angle)
 {
 	// Rotate up and look vector about the right vector.

@@ -15,7 +15,7 @@ SURFACE_DATA UnpackGBuffer(float4 PosL, float2 Tex)
 	// 각 텍스처 뽑기
 	Out.DepthTex     = gGDepthTex   .Sample(samLinear, Tex);
 	Out.DiffuseTex   = gGDiffuseTex .Sample(samLinear, Tex);
-	Out.PositionTex  = gGPositionTex.Sample(samLinear, Tex);
+	Out.PositionTex  = gGPositionTex.Sample(samPoint , Tex);
 	Out.SpecularTex  = gGSpecularTex.Sample(samLinear, Tex);
 	Out.TanNormalTex = gGNormalTex  .Sample(samLinear, Tex);
 
@@ -23,12 +23,22 @@ SURFACE_DATA UnpackGBuffer(float4 PosL, float2 Tex)
 	// 좌표 -1 ~ 1사이로 바꾸기 (혹은 복구)
 	Out.TanNormalTex = (Out.TanNormalTex * 2.0f) - 1.0f;
 	
-	//--------------------------------------------------------------//
-	// 좌표 Z얻기
-	//--------------------------------------------------------------//
-	// 1.
-	//// 좌표 = ( 파 - 니어 ) *  깊이버퍼 + 니어
-	float PositionTexZ = (gFar - gNear) * Out.DepthTex.x + gNear;
+	////--------------------------------------------------------------//
+	//// 좌표 Z얻기
+	////--------------------------------------------------------------//
+	//// 1.
+	////// 좌표 = ( 파 - 니어 ) *  깊이버퍼 + 니어
+	//float PositionTexZ = (gFar - gNear) * Out.DepthTex.x + gNear;
+	//
+	//float4 pos = float4(PosL.xy, Out.DepthTex.x, 1.0f);
+	//pos = mul(pos, gProjInvTranspose); // 뷰로 옴긴다                   // <-- 현재 역행렬들이 스크린을 대상으로한 역행렬이 아님. -_-;;
+	//pos.z = PositionTexZ;
+	//pos = mul(pos, gViewInvTranspose); // 월드로 옮긴다.
+	//pos.xyz /= pos.w;
+	//Out.PositionTex = pos;
+	////--------------------------------------------------------------//
+
+
 	//
 	//// 최종 위치 구하기
 	//float4 Position = float4(Out.PositionTex.xy, PositionTexZ, 1.0f);
@@ -39,11 +49,10 @@ SURFACE_DATA UnpackGBuffer(float4 PosL, float2 Tex)
 	//// 2
 	//Out.PositionTex = (Out.PositionTex  * 2.0f) - 1.0f;        // 복원
 	//
-	//float4 pos = float4(PosL.xy, Out.DepthTex.x, 1.0f);
-	//pos = mul(pos, gProjInvTranspose); // 뷰로 옴긴다
+	//
+	//- 이건 다른거---//
 	//pos = mul(pos, gViewInvTranspose); // 월드로 옮긴다.
-	//pos.xyz /= pos.w;
-	//Out.PositionTex = pos;
+
 	//--------------------------------------------------------------//
 	return Out;
 }
@@ -70,13 +79,15 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	SURFACE_DATA sData = UnpackGBuffer(pin.PosL, pin.Tex);
 
 	// 노말 맵 결과
-	float  DotNomalMap = 0.0f;
+	float  DotDirectLightNomalMap = 0.0f;
+	float  DotPointLightNomalMap  = 0.0f;
+	//float  DotNomalMap = 0.0f;
 
 	// 아무것도 처리안해도 디퓨즈
 	float4 litColor = sData.DiffuseTex;
 
 	// 각 Pos, LookDir 방향벡터
-	float3 toEye    = gEyePosW - sData.PositionTex.xyz;
+	float3 toEye    = sData.PositionTex.xyz - gEyePosW;
 	float distToEye = length(toEye);
 	toEye /= distToEye;
 
@@ -98,30 +109,30 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 
 	// 화면에 빛을 안비추는 방법..
 	// 디렉셔널 라이트
-	float3 gDirectionLight_Dir = -normalize(gDirLight.Direction);
-	DotNomalMap = saturate(dot(sData.TanNormalTex.xyz, gDirectionLight_Dir));
+	float3 gDirectionLight_Dir = normalize(-gDirLight.Direction);
+	DotDirectLightNomalMap     = saturate(dot(sData.TanNormalTex.xyz, gDirectionLight_Dir)) * 2.0f;
 	
 	// 테스트 1
 	// 포인트 라이트
-	float gPointLight_Length = length(gPointLight.Position.xyz - sData.PositionTex.xyz);
+	float gPointLight_Length = length(sData.PositionTex.xyz - gPointLight.Position.xyz);
 	
 	// 거리 확인
-	//[flatten]
-	//if (gPointLight_Length < gPointLight.Range)
-	//{
+	[flatten]
+	if (gPointLight_Length < gPointLight.Range)
+	{
 		// 라이트 영역내에 있다면,
-	float3 gPointLight_Dir = normalize(gPointLight.Position.xyz - sData.PositionTex.xyz);
-	   	   DotNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir));		 		 // +=
-	//}
-	
+		float3 gPointLight_Dir = normalize(gPointLight.Position.xyz - sData.PositionTex.xyz);
+	   		   DotPointLightNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir));		  // +=
+	}
+		
 	////// 스팟 라이트
 	//float gSpotLight_Length = length(sData.PositionTex.xyz - gSpotLight.Position.xyz);
 	//
 	//// 거리 확인
-	////if (gSpotLight_Length < gSpotLight.Range)
+	//if (gSpotLight_Length < gSpotLight.Range)
 	//{
 	//	float3 gSpotLight_Dir = normalize(gSpotLight.Position.xyz - sData.PositionTex.xyz);
-	//		DotNomalMap = saturate(dot(sData.TanNormalTex.xyz, gSpotLight_Dir));				 // +=
+	//		DotNomalMap = saturate(dot(sData.TanNormalTex.xyz, gSpotLight_Dir));				   // +=
 	//}
 
 	//
@@ -145,14 +156,14 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	//if (gPointLight_Length < gPointLight.Range)
 	//{
 		// 거리 마다 % 를 구한다.
-		gPointLight_Length = gPointLight.Range / gPointLight_Length;
-		if (gPointLight_Length > 5.2)
-			gPointLight_Length = 5.2;
+		float gFinPointLength = gPointLight.Range / gPointLight_Length;
+		//if (gPointLight_Length > 5.2)
+		//	gPointLight_Length = 5.2;
 
 		ComputePointLight(sData.DiffuseTex, gMaterial, gPointLight, sData.PositionTex.xyz, sData.TanNormalTex.xyz, toEye, A, D, S);
-		ambient += A * (gPointLight_Length - 0.2 < 0.0 ? 0.0 : gPointLight_Length - 0.2);
-		diffuse += D * (gPointLight_Length - 0.2 < 0.0 ? 0.0 : gPointLight_Length - 0.2);
-		spec    += S * (gPointLight_Length - 0.2 < 0.0 ? 0.0 : gPointLight_Length - 0.2);
+		ambient += A * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
+		diffuse += D * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
+		spec    += S * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
 	//}
 
 
@@ -198,8 +209,9 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	//---------------------------------------------------------//
 	// 완료 
 	// 법선 매핑 곱하기
-	litColor.xyz *= DotNomalMap;
-	return litColor;
+	litColor.xyz *= (DotDirectLightNomalMap + DotPointLightNomalMap);
+	//litColor.xyz *= (length(DotDirectLightNomalMap + DotPointLightNomalMap) < 1.5f ? DotDirectLightNomalMap + DotPointLightNomalMap : 1.5f );
+	return litColor; 
 	//---------------------------------------------------------//
 }
 

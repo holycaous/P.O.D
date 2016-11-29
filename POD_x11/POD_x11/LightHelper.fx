@@ -49,7 +49,7 @@ void ComputePointLight(float4 DiffuseTex, Material mat, PointLight L, float3 pos
 	spec    = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// The vector from the surface to the light.
-	float3 lightVec = L.Position - pos;
+	float3 lightVec = pos - L.Position;
 
 	// The distance from surface to light.
 	float d = length(lightVec);

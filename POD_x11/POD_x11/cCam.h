@@ -15,7 +15,6 @@ public:
 	void initDir();
 	XMVECTOR GetPositionXM()const;
 	XMFLOAT3 GetPosition()const;
-	XMFLOAT3 Get3PersonPosition();
 	void SetPosition(float x, float y, float z);
 	void SetPosition(const XMFLOAT3& v);
 	void SetPositionX(float x);

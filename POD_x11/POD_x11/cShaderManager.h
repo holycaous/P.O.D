@@ -166,7 +166,7 @@ public:
 	// 플레이어 손전등 업데이트
 	void SetPlyerSpotLight()
 	{
-		mLightManager->mPlayerSpotLight.Position  = gCam.GetPosition();
+		mLightManager->mPlayerSpotLight.Position  = gCam.GetThirdPosition();
 		mLightManager->mPlayerSpotLight.Direction = gCam.GetLook();
 		SetShaderValue(e_ShaderVal, "gSpotLight", mLightManager->mPlayerSpotLight);
 	}

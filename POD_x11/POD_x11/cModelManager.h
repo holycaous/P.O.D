@@ -587,7 +587,7 @@ public:
 			//----------------------------------------------------//
 			// 모델 데이터 파싱
 			//----------------------------------------------------//
-			mXMLParser.LoadXMLModel(tSelectModelRoute, *mAllModelData[tNewName]);
+			mXMLParser.LoadXMLModel(tSelectModelRoute, mAllModelData[tNewName]);
 
 			// 쉐이더&모델 초기화 전용
 			UseAllShaderModel(_ShaderMode);
@@ -1014,6 +1014,7 @@ public:
 	// 플레이어 전진, 후진
 	XMFLOAT3 PlayerWalk(float _speed)
 	{
+		XMFLOAT3 _PlayerLookDir = PlayerLookDir();
 		gCam.Walk(_speed);
 
 		mPlayer.mPos = gCam.GetThirdPosition();
@@ -1022,6 +1023,13 @@ public:
 
 		return mPlayer.mPos;
 	}
+
+	// 플레이어 방향벡터
+	XMFLOAT3 PlayerLookDir()
+	{
+		return getModelData(mPlayer.mkey, mPlayer.mModelName).getLookDir();
+	}
+	
 
 	// 플레이어 좌진, 우진
 	XMFLOAT3 PlayerStrafe(float _speed)
@@ -1034,6 +1042,8 @@ public:
 
 		return mPlayer.mPos;
 	}
+
+
 
 	// 플레이어 셋팅
 	void IniPlayer(int _key, string _model, float _x, float _y, float _z)

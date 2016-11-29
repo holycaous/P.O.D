@@ -190,9 +190,9 @@ class MyMat
 {
 public:
 	// 리소스 뷰 ( 위치 )
-	char mDiffuseSRV[BUF_SIZE];
+	char mDiffuseSRV [BUF_SIZE];
 	char mSpecularSRV[BUF_SIZE];
-	char mNomalSRV[BUF_SIZE];
+	char mNomalSRV   [BUF_SIZE];
 
 	// 투명 (디퓨즈 맵)
 	float mOpacity;
@@ -760,7 +760,7 @@ public:
 	{
 		// string --> wString으로 변환
 		wstring _WsTexName;
-		StringToWchar_t(_TexName.c_str(), _WsTexName);
+		StringToWchar_t(_TexName, _WsTexName);
 
 		// 텍스처 로딩
 		switch (e_InitTex)
@@ -775,22 +775,16 @@ public:
 			HR(D3DX11CreateShaderResourceViewFromFile(mCoreStorage->md3dDevice, _WsTexName.c_str(), 0, 0, &mSpecularSRV, 0));
 			break;
 		}
-
-		// 클리어
-		_WsTexName.clear();
-		_TexName.clear();
 	}
 
 	// 변환 함수
-	void StringToWchar_t(string _string, wstring& _wstring)
+	void StringToWchar_t(string& _string, wstring& _wstring)
 	{
 		// 변환
 		for (unsigned int i = 0; i < _string.length(); ++i)
 			_wstring += wchar_t(_string[i]);
 
 		_wstring += wchar_t('\0');
-
-		_string.clear();
 	}
 
 	// 모델 (월드 매트릭스) 추가하기
@@ -3369,7 +3363,5 @@ private:
 
 		// 마무리
 		_wstring += wchar_t('\0');
-
-		_string.clear();
 	}
 };

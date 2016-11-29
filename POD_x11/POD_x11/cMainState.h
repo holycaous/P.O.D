@@ -122,6 +122,13 @@ public:
 
 
 
+		////// 포인트 라이트
+		//XMFLOAT3 _PlayerPos     = gCam.GetThirdPosition();
+		//XMFLOAT3 _PlayerLookDir = mModelManager->PlayerLookDir();
+		//_PlayerPos.x = _PlayerPos.x + _PlayerLookDir.x * 15.0f;
+		//_PlayerPos.z = _PlayerPos.z + _PlayerLookDir.z * 15.0f;
+		//_PlayerPos.y = _PlayerPos.y + 20.0f;
+		//mShaderManager->GetLightManager()->mPointLight.Position = _PlayerPos;
 
 	}
 

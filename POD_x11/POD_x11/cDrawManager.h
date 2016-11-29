@@ -138,8 +138,8 @@ public:
 		//// 모델 매니저 업데이트
 		//mModelManager->Update(dt);
 
-		//// 포인트 라이트
-		mShaderManager->GetLightManager()->mPointLight.Position = gCam.GetPosition();
+		//// 포인트 라이트 (카메라에 붙어있는)
+		//mShaderManager->GetLightManager()->mPointLight.Position = gCam.GetPosition();
 
 		// 카메라 업데이트
 		UpdateCam(dt);
