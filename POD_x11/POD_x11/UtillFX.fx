@@ -83,6 +83,7 @@ struct PNTVertexAniOut
 	float2 Tex          : TEXCOORD0;   // 보정 용도
 	float3 WT           : POSITION1;   // 매트릭스 만들기 용도
 	float3 WB           : POSITION2;   // 매트릭스 만들기 용도
+	float2 AniData      : ANIDATA;
 };
 
 struct PNTVertexOut

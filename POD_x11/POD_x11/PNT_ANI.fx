@@ -65,19 +65,31 @@ PS_GBUFFER_OUT PackGBuffer(inout PNTVertexAniOut pin)
 	//float TangetNormalZ = sqrt(1 - (TangentNormal.x * TangentNormal.x) - (TangentNormal.y - TangentNormal.y));
 	//TangentNormal.z = TangetNormalZ;
 	//--------------------------------------------------------------//
+	
+	// 카메라 방향벡터
+	float3 vCameraDir = normalize(gEyePosW - pin.PosW);
 
 	// 림라이트
-	float  rimWidth      = 0.85f;
-	float3 vCameraDir    = normalize(gEyePosW - pin.PosW);
+	float  rimWidth      = 0.82f;
 	float  RimLightColor = smoothstep(1.0f - rimWidth, 1.2f, 1 - max(0, dot(TangentNormal, vCameraDir)));
-	float4 FinTex = {0.0f, 0.0f, 0.0f, 1.0f};
+	float4 FinRimLight = float4(RimLightColor * 0.6f, RimLightColor * 0.45f, RimLightColor * 0.42f, 1.0f);
 
-	// 현재 애니 상태에 DiffuseTex 색상혼합
-	//curAniState(pin.AniData.x, pin.AniData.y, FinTex);
+	// 데미지 받았을때만 별도 처리
+	if (pin.AniData.x == 1.0f)
+	{
+		// 지속시간 (프레임 보간하면 줄어들지도..??)
+		if (pin.AniData.y > 0.5f && pin.AniData.y < 2.5f)
+		{
+			DiffuseTex.r *= max(DiffuseTex.r * 2.0f, 1.4f);
+			DiffuseTex.g *= max(DiffuseTex.g * 1.2f, 1.2f);
+		}
+	}
+
+	Out.Color = DiffuseTex + FinRimLight;
 
 	// 출력	
 	Out.Depth = Depth;
-	Out.Color = DiffuseTex + float4(RimLightColor * 0.4f, RimLightColor * 0.35f, RimLightColor * 0.2f, 1.0f);
+	//Out.Color = DiffuseTex + FinRimLight + FinRimLight;
 
 	//--------------------------------------------------------------//
 	// 포지션 맵 저장
@@ -250,6 +262,16 @@ PNTVertexAniOut CalSkin(inout PNTVertexAniIn vin)
 	//--------------------------------------------------------------------------------//
 	// 최종적으로 여기다 스키닝 된 정점 정보를 덮어 써야함.
 
+	// 데미지를 받았을 때 진동 처리 <-- 개무거움
+	//if (vin.AniData.x == 1.0f)
+	//{
+	//	if (vin.AniData.y < 10.0f)
+	//	{
+	//		float _WaveX = sin(vin.AniData.y * 5.0f) * pow(0.5f, vin.AniData.y);
+	//		_PosL.z += _WaveX * 2.5f;
+	//	}
+	//}
+
 	vout.PosW    = mul(float4(_PosL, 1.0f), vin.World).xyz;        // W
 	vout.NormalW = mul(_NormalL, (float3x3)vin.World);			   // W 
 	
@@ -262,6 +284,9 @@ PNTVertexAniOut CalSkin(inout PNTVertexAniIn vin)
 
 	// 어차피 변환결과는 같음. ( 거의 로컬 TM 행렬임 )
 	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
+
+	// 애니 데이터
+	vout.AniData = vin.AniData.xy;
 	
 	// 원래는 이렇게 하라고 되어있었지만...
 	//vout.NormalW = mul(_NormalL, (float3x3)gWorldInvTranspose);    // W  // 역전치월드를 로컬에 곱해주면, 오로지 회전 부분만 로컬 노멀에 적용, (회전유지, 이동X, 스케일 1로 초기화)

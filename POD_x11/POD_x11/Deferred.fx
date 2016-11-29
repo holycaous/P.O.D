@@ -69,6 +69,8 @@ GVertexOut VS(GVertexIn vin)
 	// 어차피 변환결과는 같음.
 	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
 
+	
+
 	return vout;
 }
 
@@ -147,30 +149,29 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	float4 spec    = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// 디렉셔널 라이트 
-	ComputeDirectionalLight(sData.DiffuseTex, gMaterial, gDirLight, sData.TanNormalTex.xyz, toEye, A, D, S);
+	ComputeDirectionalLight(gMaterial, gDirLight, sData.TanNormalTex.xyz, toEye, A, D, S);
 	ambient += A;
 	diffuse += D;
 	spec    += S;
 	
 	// 포인트 라이트
-	//if (gPointLight_Length < gPointLight.Range)
-	//{
+	[flatten]
+	if (gPointLight_Length < gPointLight.Range)
+	{
 		// 거리 마다 % 를 구한다.
 		float gFinPointLength = gPointLight.Range / gPointLight_Length;
-		//if (gPointLight_Length > 5.2)
-		//	gPointLight_Length = 5.2;
 
-		ComputePointLight(sData.DiffuseTex, gMaterial, gPointLight, sData.PositionTex.xyz, sData.TanNormalTex.xyz, toEye, A, D, S);
+		ComputePointLight(gMaterial, gPointLight, sData.PositionTex.xyz, sData.TanNormalTex.xyz, toEye, A, D, S);
 		ambient += A * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
 		diffuse += D * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
 		spec    += S * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
-	//}
+	}
 
 
 	//// 스폿 라이트
 	//if (gSpotLight_Length < gSpotLight.Range)
 	//{
-	//	ComputeSpotLight(sData.DiffuseTex, gMaterial, gSpotLight, sData.PositionTex.xyz, sData.TanNormalTex.xyz, toEye, A, D, S);
+	//	ComputeSpotLight(gMaterial, gSpotLight, sData.PositionTex.xyz, sData.TanNormalTex.xyz, toEye, A, D, S);
 	//	ambient += A;
 	//	diffuse += D;
 	//	spec    += S;

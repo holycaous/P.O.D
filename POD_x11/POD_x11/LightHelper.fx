@@ -1,6 +1,6 @@
 #include "UtillFX.fx"
 
-void ComputeDirectionalLight(float4 DiffuseTex, Material mat, DirectionalLight L,
+void ComputeDirectionalLight(Material mat, DirectionalLight L,
 	float3 normal, float3 toEye,
 	out float4 ambient,
 	out float4 diffuse,
@@ -40,7 +40,7 @@ void ComputeDirectionalLight(float4 DiffuseTex, Material mat, DirectionalLight L
 // from a point light.  We need to output the terms separately because
 // later we will modify the individual terms.
 //---------------------------------------------------------------------------------------
-void ComputePointLight(float4 DiffuseTex, Material mat, PointLight L, float3 pos, float3 normal, float3 toEye,
+void ComputePointLight(Material mat, PointLight L, float3 pos, float3 normal, float3 toEye,
 	out float4 ambient, out float4 diffuse, out float4 spec)
 {
 	// Initialize outputs.
@@ -93,7 +93,7 @@ void ComputePointLight(float4 DiffuseTex, Material mat, PointLight L, float3 pos
 // from a spotlight.  We need to output the terms separately because
 // later we will modify the individual terms.
 //---------------------------------------------------------------------------------------
-void ComputeSpotLight(float4 DiffuseTex, Material mat, SpotLight L, float3 pos, float3 normal, float3 toEye,
+void ComputeSpotLight(Material mat, SpotLight L, float3 pos, float3 normal, float3 toEye,
 	out float4 ambient, out float4 diffuse, out float4 spec)
 {
 	// Initialize outputs.
@@ -143,5 +143,4 @@ void ComputeSpotLight(float4 DiffuseTex, Material mat, SpotLight L, float3 pos, 
 	diffuse *= att;
 	spec    *= att;
 }
-
 
