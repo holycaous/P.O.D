@@ -364,8 +364,10 @@ public:
 
 	float mAniSpeed; // 애니 스피드
 
-	// 임시 
-	float mFrameCouunt;
+private:
+	// 힘 (중력)
+	float mForce;
+	
 public:
 	ObjData()
 	{
@@ -385,12 +387,22 @@ public:
 		// 애니메이션 기본 스피드
 		mAniSpeed = 25.0f;
 
-		// 임시
-		mFrameCouunt = 0.0f;
+		// 중력
+		mForce = 0.0f;
+
 	}
 	~ObjData()
 	{
 
+	}
+
+	// 점프
+	void Jump()
+	{
+		if (mWdMtx._42 == GROUND)
+		{
+			mForce += 350.0f;
+		}
 	}
 
 	// 체력 설정
@@ -462,6 +474,18 @@ public:
 		// 마지막보다 크다면, 초기화
 		if (mEdPoint <= mFrame)
 			mFrame = mStPoint;
+
+		// 중력 적용
+		mForce     -= GRAVITY * dt;
+		mWdMtx._42 += mForce * dt;
+
+		// 땅바닥 충돌체크
+		mWdMtx._42 = max(GROUND, mWdMtx._42);
+
+		// 바닥에 닿으면 힘 제로 <-- 나중에 피킹으로 바꿔야함
+		if (mWdMtx._42 <= GROUND)
+			mForce = 0.0f;
+
 	}
 	
 	// 위치 반환
@@ -481,6 +505,13 @@ public:
 	{
 		mWdMtx._41 = _x;
 		mWdMtx._42 = _y;
+		mWdMtx._43 = _z;
+	}
+
+	// 위치 설정
+	void setPosXZ(float _x, float _z)
+	{
+		mWdMtx._41 = _x;
 		mWdMtx._43 = _z;
 	}
 
@@ -887,6 +918,13 @@ public:
 		mObjData[_uniqueCode].setPos(_x, _y, _z);
 	}
 
+	// 오브젝트 이동
+	void SetPosXZ(int _uniqueCode, float _x, float _z)
+	{
+		// 오브젝트 이동
+		mObjData[_uniqueCode].setPosXZ(_x, _z);
+	}
+
 	// 해당 위치로 가는 벡터를 얻는다
 	XMVECTOR GetPointDir(int _uniqueCode, float _x, float _y, float _z)
 	{
@@ -999,6 +1037,12 @@ public:
 	void SetMp(int _unicode, float _Mp)
 	{
 		mObjData[_unicode].SetMp(_Mp);
+	}
+
+	// 점프
+	void Jump(int _unicode)
+	{
+		mObjData[_unicode].Jump();
 	}
 
 	// 오브젝트 FSM 설정

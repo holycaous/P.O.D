@@ -42,7 +42,7 @@ public:
 
 		mPointLight.Position      = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		mPointLight.Att           = XMFLOAT3(0.7f, 0.7f, 0.7f);
-		mPointLight.Range         = 55.0f;
+		mPointLight.Range         = 120.0f;
 
 		// Spot light--position and direction changed every frame to animate in UpdateScene function.
 		mPlayerSpotLight.Ambient  = XMFLOAT4(0.50f, 0.55f, 0.50f, 1.0f);

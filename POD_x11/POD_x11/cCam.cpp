@@ -326,7 +326,6 @@ void cCam::SetPositionZ(float z)
 	mPosition.z = z;
 }
 
-
 XMVECTOR cCam::GetRightXM()const
 {
 	return XMLoadFloat3(&mRight);

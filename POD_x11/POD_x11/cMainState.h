@@ -13,7 +13,7 @@ public:
 		mModelManager->ClearModel();
 
 		// 스크린 추가 (풀 스크린쿼드)
-		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);
+		mModelManager->AddScreen(0.0f, 0.0f, 0.0f);
 
 		// 맵 테스트용
 		mModelManager->AddMap(0, "Map1", 200, 100, 200, 5.0f);
@@ -22,7 +22,7 @@ public:
 		//--------------------------------------------------------------------------------------------------------------------//
 		// 본 테스트
 		//--------------------------------------------------------------------------------------------------------------------//
-		mModelManager->AddModel(1, "Model1", 100.0f, 100.0f, 600.0f, e_Idle);
+		mModelManager->AddModel(1, "Model2", 100.0f, 100.0f, 600.0f, e_Idle);
 		//mModelManager->DrawBone(   "Model2", "Run" , 100.0f, 100.0f, 600.0f, 10);  // 애니키 번호
 		
 		// 본 일렬로 세우기
@@ -36,7 +36,7 @@ public:
 
 
 		// 플레이어 및 카메라 세팅
-		mModelManager->IniPlayer(0, "Model2", 200.0f, 100.0f, 600.0f, e_Run);
+		mModelManager->IniPlayer(0, "Model1", 200.0f, 100.0f, 600.0f, e_Run);
 	
 		// 체력 제어
 		//mModelManager->SetHP(0, "Mode1", 100.0f);
@@ -84,7 +84,7 @@ public:
 
 
 
-		////// 포인트 라이트
+		//// 포인트 라이트
 		//XMFLOAT3 _PlayerPos     = gCam.GetThirdPosition();
 		//XMFLOAT3 _PlayerLookDir = mModelManager->PlayerLookDir();
 		//_PlayerPos.x = _PlayerPos.x + _PlayerLookDir.x * 15.0f;
@@ -153,6 +153,12 @@ public:
 
 			//----------------------------------//
 			XMFLOAT3 mPos = mModelManager->PlayerStrafe(100.0f * dt);
+		}
+
+		// 점프
+		if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+		{
+			mModelManager->Jump(0, "Model1");
 		}
 
 		//-------------------------------------------------------------------//
@@ -240,40 +246,65 @@ public:
 			break;
 
 		case 'Q':
-			
+			{
+				static int i = 0;
+				if (i <= 0)
+					i = 5;
+				else
+					--i;
+				mModelManager->SetPlayerFSM(FSM_TYPE(i));			
+			}
 			break;
 
 		case 'E':
-
+			{
+				static int i = 0;
+				if (i >= 5)
+					i = 0;
+				else
+					++i;
+				mModelManager->SetPlayerFSM(FSM_TYPE(i));			
+			}
 			break;
 
 			// 그냥 모델 추가하기
 		case 'G':
 			{
-				static int i = 1;
+				static int i1 = 1;
+				static int i2 = 1;
 				switch (rand() % 2)
 				{
 				case 0:
-					mModelManager->AddUpdateModel(++i, "Model1", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Idle);
-					mModelManager->SetFSM        (  i, "Model1", FSM_TYPE(rand() % 6));
+					mModelManager->AddUpdateModel(++i1, "Model1", float(rand() % 1000) + 100.0f, 200.0f + float(rand() % 200), float(rand() % 1000) + 100.0f, e_Idle);
+					mModelManager->SetFSM        (  i1, "Model1", FSM_TYPE(rand() % 6));
 					break;
 				default:
 				case 1:
-					mModelManager->AddUpdateModel(++i, "Model2", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Idle);
-					mModelManager->SetFSM        (  i, "Model2", FSM_TYPE(rand() % 6));
+					mModelManager->AddUpdateModel(++i2, "Model2", float(rand() % 1000) + 100.0f, 200.0f + float(rand() % 200), float(rand() % 1000) + 100.0f, e_Idle);
+					mModelManager->SetFSM        (  i2, "Model2", FSM_TYPE(rand() % 6));
 					break;
 				}
 
-				cout << "생성: " << i << endl;
+				cout << "생성: " << i1 + i2 << endl;
 			}
 			break;
 
 		// 지우기 테스트
 		case 'H':
 			{
-				static int i = 1;
-				mModelManager->EraseUpdateModel(++i, "Model2");
-				cout << "삭제: " << i << endl;
+				static int i1 = 1;
+				static int i2 = 1;
+				switch (rand() % 2)
+				{
+				case 0:
+					mModelManager->EraseUpdateModel(++i1, "Model1");
+					break;
+				default:
+				case 1:
+					mModelManager->EraseUpdateModel(++i2, "Model2");
+					break;
+				}
+				cout << "삭제: " << i1 + i2 << endl;
 			}
 			break;
 

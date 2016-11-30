@@ -228,6 +228,40 @@ public:
 		}
 	}
 
+	// 모델 이동하기
+	void SetPosXZ(int _uniqueCode, string _Name, float _x, float _z)
+	{
+		string _SlectModel;
+
+		// 모델의 체인만큼 (서브 모델)
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델을 순차적으로 선택
+			_SlectModel = mModelChain[_Name][i];
+
+			// 체인에 있는 모델 모두 이동
+			mAllModelData[_SlectModel]->SetPosXZ(_uniqueCode, _x, _z);
+			_SlectModel.clear();
+		}
+	}
+
+	// 모델 이동하기
+	void SetPosXZ(int _uniqueCode, string _Name, XMFLOAT3 _pos)
+	{
+		string _SlectModel;
+
+		// 모델의 체인만큼 (서브 모델)
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델을 순차적으로 선택
+			_SlectModel = mModelChain[_Name][i];
+
+			// 체인에 있는 모델 모두 이동
+			mAllModelData[_SlectModel]->SetPosXZ(_uniqueCode, _pos.x, _pos.z);
+			_SlectModel.clear();
+		}
+	}
+
 	// 모델 회전하기
 	void SetRotate(int _uniqueCode, string _Name, float _x, float _y, float _z)
 	{
@@ -745,7 +779,7 @@ public:
 		mScreen->mModelType  = e_BasicModel;
 		mScreen->mCreateName = "GSreen";
 
-		// 파싱 시작
+		// 파싱 시작 (풀 스크린 쿼드 만들기)
 		mXMLParser.LoadScreen(*mScreen, 1.0f, 1.0f); // 풀 스크린쿼드
 
 		// 변수 계산
@@ -1058,6 +1092,17 @@ public:
 		}
 	}
 
+	// 점프
+	void Jump(int _key, string _Name)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			string _SlectModel = mModelChain[_Name][i];
+			mAllModelData[_SlectModel]->Jump(_key);
+		}
+	}
+
 	// 플레이어 전진, 후진
 	XMFLOAT3 PlayerWalk(float _speed)
 	{
@@ -1066,7 +1111,7 @@ public:
 
 		mPlayer.mPos = gCam.GetThirdPosition();
 		SetRotate(mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
-		SetPos   (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+		SetPosXZ (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
 
 		return mPlayer.mPos;
 	}
@@ -1085,7 +1130,7 @@ public:
 
 		mPlayer.mPos = gCam.GetThirdPosition();
 		SetRotate(mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
-		SetPos   (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+		SetPosXZ (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
 
 		return mPlayer.mPos;
 	}
@@ -1231,7 +1276,48 @@ public:
 		}
 	}
 
+	// FSM 변경
+	void SetPlayerFSM(FSM_TYPE _modelFsm)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[mPlayer.mModelName].size(); ++i)
+		{
+			// 체인에 있는 모델 모두 FSM 변화
+			string _SlectModel = mModelChain[mPlayer.mModelName][i];
+
+			// 애니가 있는 모델이라면,
+			if (mAllModelData[_SlectModel]->mShaderMode == e_ShaderPongTexAni)
+			{
+				mAllModelData[_SlectModel]->SetFSM(mPlayer.mkey, _modelFsm);
+			}
+		}
+	}
+
+	// FSM 변경
+	void SetPlayerFSM(FSM_TYPE _modelFsm, float _Frame)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[mPlayer.mModelName].size(); ++i)
+		{
+			// 체인에 있는 모델 모두 FSM 변화
+			string _SlectModel = mModelChain[mPlayer.mModelName][i];
+
+			// 애니가 있는 모델이라면,
+			if (mAllModelData[_SlectModel]->mShaderMode == e_ShaderPongTexAni)
+			{
+				mAllModelData[_SlectModel]->SetFSM(mPlayer.mkey, _modelFsm, _Frame);
+			}
+		}
+	}
+
+
 private:
+	// 플레이어 와이값 가져오기
+	float GetPlayerY()
+	{
+		return getModelData(mPlayer.mkey, mPlayer.mModelName).getPos().y;
+	}
+
 	// 서브 모델들 모두 추가
 	void addSubModel(string& _SlectModel, float& _x, float& _y, float& _z, OBJ_MOVEABLE& _moveAble)
 	{

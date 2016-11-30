@@ -37,8 +37,6 @@ SURFACE_DATA UnpackGBuffer(float4 PosL, float2 Tex)
 	//pos.xyz /= pos.w;
 	//Out.PositionTex = pos;
 	////--------------------------------------------------------------//
-
-
 	//
 	//// 최종 위치 구하기
 	//float4 Position = float4(Out.PositionTex.xy, PositionTexZ, 1.0f);
@@ -109,7 +107,7 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	// 포지션맵
 	//return sData.PositionTex;
 
-	// 화면에 빛을 안비추는 방법..
+
 	// 디렉셔널 라이트
 	float3 gDirectionLight_Dir = normalize(-gDirLight.Direction);
 	DotDirectLightNomalMap     = saturate(dot(sData.TanNormalTex.xyz, gDirectionLight_Dir)) * 2.0f;
@@ -122,9 +120,12 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	[flatten]
 	if (gPointLight_Length < gPointLight.Range)
 	{
+		// 거리 마다 % 를 구한다.
+		float gFinPointLength = gPointLight.Range / gPointLight_Length;
+
 		// 라이트 영역내에 있다면,
 		float3 gPointLight_Dir = normalize(gPointLight.Position.xyz - sData.PositionTex.xyz);
-	   		   DotPointLightNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir));		  // +=
+			DotPointLightNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir)) * pow(gFinPointLength, 2.f) * 0.01f;		  // +=
 	}
 		
 	////// 스팟 라이트

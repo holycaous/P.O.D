@@ -29,6 +29,17 @@ using namespace std;
 #define CAM_FAR 1500
 #define CAM_3PERSON_LENGTH 375
 
+#define GRAVITY 800
+#define GROUND  100
+
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
+
 // 거의 사용되지 않는 내용은 Windows 헤더에서 제외합니다.
 #define WIN32_LEAN_AND_MEAN           
 

@@ -162,6 +162,7 @@ DirectionalLight gDirLight;
 PointLight       gPointLight;
 SpotLight        gSpotLight;
 
+
 // 매태리얼
 Material gMaterial;
 

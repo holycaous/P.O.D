@@ -21,6 +21,7 @@ public:
 	void SetPositionY(float y);
 	void SetPositionZ(float z);
 
+
 	// Get camera basis vectors.
 	XMVECTOR GetRightXM()const;
 	XMFLOAT3 GetRight()const;
