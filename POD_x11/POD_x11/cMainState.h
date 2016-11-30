@@ -18,48 +18,12 @@ public:
 		// 맵 테스트용
 		mModelManager->AddMap(0, "Map1", 200, 100, 200, 5.0f);
 
-		//// 모델 추가
-		//int size = 1250;
-		//int Count = 2500;
-		//
-		//float Offset = 100.0f;
-		//for (int x = 0; x < Count; ++x)
-		//{
-		//	switch (rand() % 5)
-		//	{
-		//	case 0:
-		//		mModelManager->AddModel("BOX1", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	case 1:
-		//		mModelManager->AddModel("BOX2", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	case 2:
-		//		mModelManager->AddModel("BOX3", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	case 3:
-		//		mModelManager->AddModel("Model2", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	case 4:
-		//		mModelManager->AddModel("Model3", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	case 5:
-		//		//mModelManager->AddModel("Model5", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	}
-		//}
-		
 
 		//--------------------------------------------------------------------------------------------------------------------//
 		// 본 테스트
 		//--------------------------------------------------------------------------------------------------------------------//
-		mModelManager->AddModel(1, "Model1", 100.0f, 100.0f, 600.0f, e_Run);
+		mModelManager->AddModel(1, "Model1", 100.0f, 100.0f, 600.0f, e_Idle);
 		//mModelManager->DrawBone(   "Model2", "Run" , 100.0f, 100.0f, 600.0f, 10);  // 애니키 번호
-
-		//mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 500.0f, e_Idle);
-		//mModelManager->DrawBone("Model4", "Idle", 100.0f, 100.0f, 500.0f, 0);  // 애니키 번호
-
-		//mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
-		//mModelManager->DrawBone("Model5", "Idle", 100.0f, 100.0f, 700.0f, 0);  // 애니키 번호
 		
 		// 본 일렬로 세우기
 		//for (int i = 0; i < 17; ++i)
@@ -69,13 +33,11 @@ public:
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
 
+
+
 		// 플레이어 및 카메라 세팅
 		mModelManager->IniPlayer(0, "Model2", 200.0f, 100.0f, 600.0f, e_Run);
 	
-
-		// FSM 상태바꾸기
-		//mModelManager->SetFSM(0, "Model3", e_Idle);
-
 		// 체력 제어
 		//mModelManager->SetHP(0, "Mode1", 100.0f);
 	}	
@@ -292,13 +254,13 @@ public:
 				switch (rand() % 2)
 				{
 				case 0:
-					mModelManager->AddUpdateModel(++i, "Model1", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Run);
-					mModelManager->SetFSM        (  i, "Model1", FSM_TYPE(/*rand() % 10*/   e_Run));
+					mModelManager->AddUpdateModel(++i, "Model1", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Idle);
+					mModelManager->SetFSM        (  i, "Model1", FSM_TYPE(rand() % 6));
 					break;
 				default:
 				case 1:
-					mModelManager->AddUpdateModel(++i, "Model2", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Run);
-					mModelManager->SetFSM        (  i, "Model2", FSM_TYPE(/*rand() % 10*/   e_Run));
+					mModelManager->AddUpdateModel(++i, "Model2", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Idle);
+					mModelManager->SetFSM        (  i, "Model2", FSM_TYPE(rand() % 6));
 					break;
 				}
 

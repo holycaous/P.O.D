@@ -50,11 +50,7 @@ typedef enum
 	e_Run       = 2,
 	e_Walk      = 3,
 	e_Death     = 4,
-	e_DeathWait = 5,
-	e_Attack1   = 6,
-	e_Attack2   = 7,
-	e_Attack3   = 8,
-	e_Stun      = 9
+	e_Attack    = 5
 }FSM_TYPE;
 
 // 어떤 텍스처를 로드할 것인가
@@ -1008,42 +1004,6 @@ public:
 	// 오브젝트 FSM 설정
 	void SetFSM(int _unicode, FSM_TYPE _modelFsm)
 	{
-		//switch (_modelFsm)
-		//{
-		//default:
-		//case e_Idle:
-		//
-		//	break;
-		//case e_Damage:   
-		//
-		//	break;
-		//case e_Run:
-		//
-		//	break;
-		//case e_Walk:
-		//
-		//	break;
-		//case e_Death:
-		//
-		//	break;
-		//case e_DeathWait:
-		//
-		//	break;
-		//case e_Attack1:
-		//
-		//	break;
-		//case e_Attack2:
-		//
-		//	break;
-		//case e_Attack3:
-		//
-		//	break;
-		//case e_Stun:
-		//
-		//	break;
-		//}
-
-
 		float _newType   = mSkinTex[_modelFsm]->mAniType;
 		float _StPoint   = mSkinTex[_modelFsm]->mStPoint;
 		float _EdPoint   = mSkinTex[_modelFsm]->mEdPoint;
@@ -1057,42 +1017,6 @@ public:
 	// 오브젝트 FSM 설정
 	void SetFSM(int _unicode, FSM_TYPE _modelFsm, float _Frame)
 	{
-		//switch (_modelFsm)
-		//{
-		//default:
-		//case e_Idle:
-		//
-		//	break;
-		//case e_Damage:   
-		//
-		//	break;
-		//case e_Run:
-		//
-		//	break;
-		//case e_Walk:
-		//
-		//	break;
-		//case e_Death:
-		//
-		//	break;
-		//case e_DeathWait:
-		//
-		//	break;
-		//case e_Attack1:
-		//
-		//	break;
-		//case e_Attack2:
-		//
-		//	break;
-		//case e_Attack3:
-		//
-		//	break;
-		//case e_Stun:
-		//
-		//	break;
-		//}
-
-
 		float _newType   = mSkinTex[_modelFsm]->mAniType;
 		float _StPoint   = mSkinTex[_modelFsm]->mStPoint;
 		float _EdPoint   = mSkinTex[_modelFsm]->mEdPoint;

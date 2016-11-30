@@ -166,29 +166,9 @@ void SelectMtx(float _Anikey, float2 _TexSelect, float _TexWidth, inout float4x4
 			GetTexMtx(gDeathTex, _TexSelect, _TexWidth, _Mtx);
 			break;
 
-		// e_DeathWait = 5,
+		// e_Attack = 5,
 		case 5:
-			GetTexMtx(gDeathWaitTex, _TexSelect, _TexWidth, _Mtx);
-			break;
-
-		// e_Attack1 = 6,
-		case 6:
-			GetTexMtx(gAttack1Tex, _TexSelect, _TexWidth, _Mtx);
-			break;
-
-		// e_Attack2 = 7,
-		case 7:
-			GetTexMtx(gAttack2Tex, _TexSelect, _TexWidth, _Mtx);
-			break;
-
-		// e_Attack3 = 8,
-		case 8:
-			GetTexMtx(gAttack3Tex, _TexSelect, _TexWidth, _Mtx);
-			break;
-
-		// e_Stun = 9
-		case 9:
-			GetTexMtx(gStunTex, _TexSelect, _TexWidth, _Mtx);
+			GetTexMtx(gAttackTex, _TexSelect, _TexWidth, _Mtx);
 			break;
 	}
 }
@@ -226,29 +206,9 @@ void SelectSkinModel(float _Anikey, float2 _TexSelect, float _TexWidth, inout fl
 		GetTexMtx(gDeathModelTex, _TexSelect, _TexWidth, _Mtx);
 		break;
 
-	// e_DeathWait = 5,
+	// e_Attack = 5,
 	case 5:
-		GetTexMtx(gDeathWaitModelTex, _TexSelect, _TexWidth, _Mtx);
-		break;
-
-	// e_Attack1 = 6,
-	case 6:
-		GetTexMtx(gAttack1ModelTex, _TexSelect, _TexWidth, _Mtx);
-		break;
-
-	// e_Attack2 = 7,
-	case 7:
-		GetTexMtx(gAttack2ModelTex, _TexSelect, _TexWidth, _Mtx);
-		break;
-
-	// e_Attack3 = 8,
-	case 8:
-		GetTexMtx(gAttack3ModelTex, _TexSelect, _TexWidth, _Mtx);
-		break;
-
-	// e_Stun = 9
-	case 9:
-		GetTexMtx(gStunModelTex, _TexSelect, _TexWidth, _Mtx);
+		GetTexMtx(gAttackModelTex, _TexSelect, _TexWidth, _Mtx);
 		break;
 	}
 }

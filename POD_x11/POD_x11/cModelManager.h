@@ -47,61 +47,51 @@ public:
 		// 맵 추가
 		CreateModel("Map1", "Export/FinTestMapLoc.pod", e_ShaderPongTex);
 
-		// 모델 추가
-		//CreateModel("Model1", "Export/Finmob1Loc.pod"         , e_ShaderPongTexAni);
-		//CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTexAni);
-		//CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTexAni);
-		//CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTexAni);
-		//CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTexAni);
+		//-------------------------------------------------------------------------------//
 		//
-		//// 애니 추가
-		//CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"          , e_Idle);
-		//CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"   , e_Idle);
-		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"       , e_Idle);
-		//CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod"      , e_Idle);
-
+		//  ★★ 생성 모델명과 경로이름 반드시 바꿔줄것 ★★
+		//
 		//-------------------------------------------------------------------------------//
-		// 모델 추가
+		// 모델 한세트 추가
 		//-------------------------------------------------------------------------------//
-		CreateModel  ("Model1", "Export/Finmob1Loc.pod"    , e_ShaderPongTexAni);
-		AddModelChain("Model1", "Export/Finmob1RunLoc.pod" , e_ShaderPongTexAni, e_Run);     // 앞으로, 모델을 파싱할때는 아무런 애니메이션 데이터 없는 것을 기준으로 파싱하겠음
-
-		//-------------------------------------------------------------------------------//
-		// 애니 한세트 추가
-		//-------------------------------------------------------------------------------//
-		CreateBoneAni("Model1", "Export/Finmob1BoneIdle.pod"       , e_Idle);
-		CreateBoneAni("Model1", "Export/Finmob1BoneDamage.pod"     , e_Damage);
-		CreateBoneAni("Model1", "Export/Finmob1BoneRun.pod"        , e_Run);
-		CreateBoneAni("Model1", "Export/Finmob1BoneWalk.pod"       , e_Walk);
-		CreateBoneAni("Model1", "Export/Finmob1BoneDeath.pod"	   , e_Death);
-		CreateBoneAni("Model1", "Export/Finmob1BoneDeathWait.pod"  , e_DeathWait);
-		CreateBoneAni("Model1", "Export/Finmob1BoneAttack1.pod"    , e_Attack1);
-		CreateBoneAni("Model1", "Export/Finmob1BoneAttack2.pod"    , e_Attack2);
-		CreateBoneAni("Model1", "Export/Finmob1BoneAttack3.pod"    , e_Attack3);
-		CreateBoneAni("Model1", "Export/Finmob1BoneStun.pod"       , e_Stun);
-		//-------------------------------------------------------------------------------//
-
-		//-------------------------------------------------------------------------------//
-		// 모델 추가
-		//-------------------------------------------------------------------------------//
-		CreateModel  ("Model2", "Export/Finmob2Loc.pod"    , e_ShaderPongTexAni);
-		AddModelChain("Model2", "Export/Finmob2RunLoc.pod" , e_ShaderPongTexAni, e_Run);
-
+		CreateModel  ("Model1", "Export/mob1Loc.pod"		    , e_ShaderPongTexAni);
+		AddModelChain("Model1", "Export/mob1IdleLoc.pod"        , e_ShaderPongTexAni, e_Idle);    
+		AddModelChain("Model1", "Export/mob1DamageLoc.pod"      , e_ShaderPongTexAni, e_Damage);
+		AddModelChain("Model1", "Export/mob1RunLoc.pod"         , e_ShaderPongTexAni, e_Run);
+		AddModelChain("Model1", "Export/mob1WalkLoc.pod"        , e_ShaderPongTexAni, e_Walk);
+		AddModelChain("Model1", "Export/mob1DeathLoc.pod"       , e_ShaderPongTexAni, e_Death);
+		AddModelChain("Model1", "Export/mob1AttackLoc.pod"      , e_ShaderPongTexAni, e_Attack);
 		//-------------------------------------------------------------------------------//
 		// 애니 한세트 추가
 		//-------------------------------------------------------------------------------//
-		CreateBoneAni("Model2", "Export/Finmob2BoneIdle.pod"       , e_Idle);
-		CreateBoneAni("Model2", "Export/Finmob2BoneDamage.pod"     , e_Damage);
-		CreateBoneAni("Model2", "Export/Finmob2BoneRun.pod"        , e_Run);
-		CreateBoneAni("Model2", "Export/Finmob2BoneWalk.pod"       , e_Walk);
-		CreateBoneAni("Model2", "Export/Finmob2BoneDeath.pod"	   , e_Death);
-		CreateBoneAni("Model2", "Export/Finmob2BoneDeathWait.pod"  , e_DeathWait);
-		CreateBoneAni("Model2", "Export/Finmob2BoneAttack1.pod"    , e_Attack1);
-		CreateBoneAni("Model2", "Export/Finmob2BoneAttack2.pod"    , e_Attack2);
-		CreateBoneAni("Model2", "Export/Finmob2BoneAttack3.pod"    , e_Attack3);
-		CreateBoneAni("Model2", "Export/Finmob2BoneStun.pod"       , e_Stun);
+		CreateBoneAni("Model1", "Export/mob1BoneIdle.pod"       , e_Idle);
+		CreateBoneAni("Model1", "Export/mob1BoneDamage.pod"     , e_Damage);
+		CreateBoneAni("Model1", "Export/mob1BoneRun.pod"        , e_Run);
+		CreateBoneAni("Model1", "Export/mob1BoneWalk.pod"       , e_Walk);
+		CreateBoneAni("Model1", "Export/mob1BoneDeath.pod"	    , e_Death);
+		CreateBoneAni("Model1", "Export/mob1BoneAttack.pod"     , e_Attack);
 		//-------------------------------------------------------------------------------//
 
+			//-------------------------------------------------------------------------------//
+		// 모델 한세트 추가
+		//-------------------------------------------------------------------------------//
+		CreateModel  ("Model2", "Export/mob2Loc.pod"		    , e_ShaderPongTexAni);
+		AddModelChain("Model2", "Export/mob2IdleLoc.pod"        , e_ShaderPongTexAni, e_Idle);    
+		AddModelChain("Model2", "Export/mob2DamageLoc.pod"      , e_ShaderPongTexAni, e_Damage);
+		AddModelChain("Model2", "Export/mob2RunLoc.pod"         , e_ShaderPongTexAni, e_Run);
+		AddModelChain("Model2", "Export/mob2WalkLoc.pod"        , e_ShaderPongTexAni, e_Walk);
+		AddModelChain("Model2", "Export/mob2DeathLoc.pod"       , e_ShaderPongTexAni, e_Death);
+		AddModelChain("Model2", "Export/mob2AttackLoc.pod"      , e_ShaderPongTexAni, e_Attack);
+		//-------------------------------------------------------------------------------//
+		// 애니 한세트 추가
+		//-------------------------------------------------------------------------------//
+		CreateBoneAni("Model2", "Export/mob2BoneIdle.pod"       , e_Idle);
+		CreateBoneAni("Model2", "Export/mob2BoneDamage.pod"     , e_Damage);
+		CreateBoneAni("Model2", "Export/mob2BoneRun.pod"        , e_Run);
+		CreateBoneAni("Model2", "Export/mob2BoneWalk.pod"       , e_Walk);
+		CreateBoneAni("Model2", "Export/mob2BoneDeath.pod"	    , e_Death);
+		CreateBoneAni("Model2", "Export/mob2BoneAttack.pod"     , e_Attack);
+		//-------------------------------------------------------------------------------//
 
 		// 만들어진 모델 등록
 		ModelRegistration();

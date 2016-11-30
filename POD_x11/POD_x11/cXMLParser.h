@@ -293,20 +293,8 @@ public:
 		case e_Death:
 			_TexName = "Death";
 			break;
-		case e_DeathWait:
-			_TexName = "DeathWait";
-			break;
-		case e_Attack1:
-			_TexName = "Attack1";
-			break;
-		case e_Attack2:
-			_TexName = "Attack2";
-			break;
-		case e_Attack3:
-			_TexName = "Attack3";
-			break;
-		case e_Stun:
-			_TexName = "Stun";
+		case e_Attack:
+			_TexName = "Attack";
 			break;
 		}
 	}

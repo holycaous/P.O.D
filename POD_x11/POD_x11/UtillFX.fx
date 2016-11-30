@@ -189,11 +189,7 @@ Texture2D gDamageTex;
 Texture2D gRunTex;
 Texture2D gWalkTex;
 Texture2D gDeathTex;
-Texture2D gDeathWaitTex;
-Texture2D gAttack1Tex;
-Texture2D gAttack2Tex;
-Texture2D gAttack3Tex;
-Texture2D gStunTex;
+Texture2D gAttackTex;
 
 // 모델 스킨 텍스처
 Texture2D gIdleModelTex;
@@ -201,11 +197,7 @@ Texture2D gDamageModelTex;
 Texture2D gRunModelTex;
 Texture2D gWalkModelTex;
 Texture2D gDeathModelTex;
-Texture2D gDeathWaitModelTex;
-Texture2D gAttack1ModelTex;
-Texture2D gAttack2ModelTex;
-Texture2D gAttack3ModelTex;
-Texture2D gStunModelTex;
+Texture2D gAttackModelTex;
 
 // G버퍼 텍스처
 Texture2D gGDepthTex;
