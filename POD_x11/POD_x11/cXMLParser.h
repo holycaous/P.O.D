@@ -81,54 +81,27 @@ public:
 	// 파싱
 	void LoadXMLSkinModel(string& _ModelData, InitMetaData* _InitMetaData, InitMetaData* _UseMetaData, FSM_TYPE _fsmType)
 	{
-		// 임시공간
-		vector<Vertex> _compareVtxArr;
-
 		// 데이터 읽고, 저장하기 (버텍스)
 		LoadVtx(_ModelData, _InitMetaData);
-
-		// 버텍스 비교하기
-		CompareVtx(_compareVtxArr, _InitMetaData);
-
+		
 		// 스킨 모델 텍스처 만들고 옮기기
-		MakeSkinModelTex(_compareVtxArr, _UseMetaData, _fsmType);
-	
-		// 버텍스 초기화
-		_compareVtxArr.clear();
-	}
-
-	// 버텍스 비교해서 비교 결과 넘기기
-	void CompareVtx(vector<Vertex>& _compareVtxArr, InitMetaData* _InitMetaData)
-	{
-		// 버텍스 크기만큼
-		for (unsigned int i = 0; i < _InitMetaData->Vertices.size(); ++i)
-		{
-			Vertex tVtx;
-
-			tVtx.Position = _InitMetaData->Vertices[i].Position; 
-			tVtx.Normal   = _InitMetaData->Vertices[i].Normal; 
-			tVtx.TangentU = _InitMetaData->Vertices[i].TangentU; 
-			tVtx.BiNormal = _InitMetaData->Vertices[i].BiNormal;
-
-			// 저장
-			_compareVtxArr.push_back(tVtx);
-		}
+		MakeSkinModelTex(_InitMetaData->Vertices, _UseMetaData, _fsmType);
 	}
 
 	// 스킨 모델 텍스처 만들고 옮기기
 	void MakeSkinModelTex(vector<Vertex>& _compareVtxArr, InitMetaData* _UseMetaData, FSM_TYPE _fsmType)
 	{
 		// 저장할 원본 모델에, 데이터 넣을 공간 생성
-		_UseMetaData->mSkinModel[_fsmType] = new SkinTexture();
+		_UseMetaData->mSkinModelTex[(int)_fsmType] = new SkinTexture();
 
 		// 데이터 계산하고 쓰기 등등
 		CalData(_compareVtxArr, _UseMetaData, _fsmType, _compareVtxArr.size());
 	}
 
 	// 데이터 계산
-	void CalData(vector<Vertex>& _compareVtxArr, InitMetaData* _UseMetaData, FSM_TYPE _fsmType, int _VtxSize)
+	void CalData(vector<Vertex>& _compareVtxArr, InitMetaData* _UseMetaData, int _fsmType, int _VtxSize)
 	{
-		string _TexName; SelectName(_fsmType, _TexName);
+		string _TexName; SelectName((FSM_TYPE)_fsmType, _TexName);
 		string tTexName;
 		
 		tTexName += "Export/SkinModelTex/";
@@ -140,14 +113,14 @@ public:
 		// 애니 데이터 채우기
 		//--------------------------------------------------------------------------------------------------//
 		// 이름 저장
-		_UseMetaData->mSkinModel[_fsmType]->mName = _TexName;
+		_UseMetaData->mSkinModelTex[_fsmType]->mName = _TexName;
 
 		// 애니 타입 저장
-		_UseMetaData->mSkinModel[_fsmType]->mAniType = (float)_fsmType;
+		_UseMetaData->mSkinModelTex[_fsmType]->mAniType = (float)_fsmType;
 
 		// 텍스처 해상도
-		_UseMetaData->mSkinModel[_fsmType]->mTexWidth  = 4.0f;
-		_UseMetaData->mSkinModel[_fsmType]->mTexHeight = (float)_VtxSize;
+		_UseMetaData->mSkinModelTex[_fsmType]->mTexWidth  = 4.0f;
+		_UseMetaData->mSkinModelTex[_fsmType]->mTexHeight = (float)_VtxSize;
 
 		//--------------------------------------------------------------------------------------------------//
 		// 파일 경로 문자열
@@ -160,8 +133,8 @@ public:
 		//--------------------------------------------------------------------------------------------------//
 		RetryLoadSkinModelTex:
 		D3DX11_IMAGE_LOAD_INFO _info;
-		_info.Width          = (UINT)_UseMetaData->mSkinModel[_fsmType]->mTexWidth;
-		_info.Height         = (UINT)_UseMetaData->mSkinModel[_fsmType]->mTexHeight; 
+		_info.Width          = (UINT)_UseMetaData->mSkinModelTex[_fsmType]->mTexWidth;
+		_info.Height         = (UINT)_UseMetaData->mSkinModelTex[_fsmType]->mTexHeight; 
 		_info.Depth			 = 0;
 		_info.FirstMipLevel  = 0;
 		_info.MipLevels      = 1;
@@ -169,12 +142,12 @@ public:
 		_info.BindFlags      = D3D11_BIND_SHADER_RESOURCE;
 		_info.CpuAccessFlags = 0;
 		_info.MiscFlags      = 0;
-		_info.Format         = DXGI_FORMAT_R32G32B32_FLOAT;
+		_info.Format         = DXGI_FORMAT_R32G32B32A32_FLOAT;
 		_info.Filter         = D3DX11_FILTER_POINT;
 		_info.MipFilter      = D3DX11_FILTER_POINT;
 		_info.pSrcInfo       = NULL;
 
-		HRESULT hr = D3DX11CreateShaderResourceViewFromFile(cCoreStorage::GetInstance()->md3dDevice, _WsTexName.c_str(), &_info, 0, &_UseMetaData->mSkinModel[_fsmType]->mTexSRV, 0);
+		HRESULT hr = D3DX11CreateShaderResourceViewFromFile(cCoreStorage::GetInstance()->md3dDevice, _WsTexName.c_str(), &_info, 0, &_UseMetaData->mSkinModelTex[_fsmType]->mTexSRV, 0);
 
 		// 텍스처가 없다
 		if (hr == D3D11_ERROR_FILE_NOT_FOUND)
@@ -197,16 +170,16 @@ public:
 	}
 	
 	// 텍스처 쓰기
-	void WriteTex(vector<Vertex>& _compareVtxArr, InitMetaData* _UseMetaData, FSM_TYPE _fsmType)
+	void WriteTex(vector<Vertex>& _compareVtxArr, InitMetaData* _UseMetaData, int _fsmType)
 	{
 		D3D11_MAPPED_SUBRESOURCE MappedResource;
 
 		// 버퍼 열기
-		HRESULT hr = cCoreStorage::GetInstance()->md3dImmediateContext->Map(_UseMetaData->mSkinModel[_fsmType]->mTexture, //매핑할 텍스처
-			D3D11CalcSubresource(0, 0, 1),																				 //서브 리소스 번호
-			D3D11_MAP_WRITE_DISCARD,																					 //리소스에 쓴다
-			0,
-			&MappedResource);																							 //데이터를 쓸 포인터
+		HRESULT hr = cCoreStorage::GetInstance()->md3dImmediateContext->Map(_UseMetaData->mSkinModelTex[_fsmType]->mTexture, //매핑할 텍스처
+			D3D11CalcSubresource(0, 0, 1),																				     //서브 리소스 번호
+			D3D11_MAP_WRITE_DISCARD,																					     //리소스에 쓴다
+			0,																											    
+			&MappedResource);																							     //데이터를 쓸 포인터
 
 		// 열기 성공했을때만
 		if (hr == S_OK)
@@ -217,55 +190,56 @@ public:
 			// 열 반복 (버텍스 숫자)
 			for (unsigned int y = 0; y < _compareVtxArr.size(); ++y)
 			{
-				// 행 쓰기 --- 한 픽셀당 Position, Normal, TangentU, BiNormal
-				for (UINT x = 0; x < 4; ++x)
+				for (int i = 0; i < 4; ++i)
 				{
-					for (int i = 0; i < 4; ++i)
+					// 픽셀 선택
+					int _sTex1 = (y * MappedResource.RowPitch / sizeof(float)) + (i * sizeof(float)) + 0;
+					int _sTex2 = (y * MappedResource.RowPitch / sizeof(float)) + (i * sizeof(float)) + 1;
+					int _sTex3 = (y * MappedResource.RowPitch / sizeof(float)) + (i * sizeof(float)) + 2;
+					int _sTex4 = (y * MappedResource.RowPitch / sizeof(float)) + (i * sizeof(float)) + 3;
+
+					switch (i)
 					{
-						// 픽셀 선택
-						int _sTex1 = (y * MappedResource.RowPitch / sizeof(float)) + (x * sizeof(float) * 4) + (i * sizeof(float)) + 0;	
-						int _sTex2 = (y * MappedResource.RowPitch / sizeof(float)) + (x * sizeof(float) * 4) + (i * sizeof(float)) + 1;	
-						int _sTex3 = (y * MappedResource.RowPitch / sizeof(float)) + (x * sizeof(float) * 4) + (i * sizeof(float)) + 2;	
-						 
-						switch (i)
-						{
-						case 0:
-							pTexels[_sTex1] = _compareVtxArr[x].Position.x;     //R (float 1)
-							pTexels[_sTex2] = _compareVtxArr[x].Position.y;     //G (float 2)
-							pTexels[_sTex3] = _compareVtxArr[x].Position.z;     //B (float 3)
-							break;
-						case 1:
-							pTexels[_sTex1] = _compareVtxArr[x].Normal.x;       //R (float 1)
-							pTexels[_sTex2] = _compareVtxArr[x].Normal.y;       //G (float 2)
-							pTexels[_sTex3] = _compareVtxArr[x].Normal.z;       //B (float 3)
-							break;
-						case 2:
-							pTexels[_sTex1] = _compareVtxArr[x].TangentU.x;     //R (float 1)
-							pTexels[_sTex2] = _compareVtxArr[x].TangentU.y;     //G (float 2)
-							pTexels[_sTex3] = _compareVtxArr[x].TangentU.z;     //B (float 3)
-							break;
-						case 3:
-							pTexels[_sTex1] = _compareVtxArr[x].BiNormal.x;     //R (float 1)
-							pTexels[_sTex2] = _compareVtxArr[x].BiNormal.y;     //G (float 2)
-							pTexels[_sTex3] = _compareVtxArr[x].BiNormal.z;     //B (float 3)
-							break;
-						default:
-							cout << "행렬 범위 초과" << endl;
-							break;
-						}
+					case 0:
+						pTexels[_sTex1] = _compareVtxArr[y].Position.x;     //R (float 1)
+						pTexels[_sTex2] = _compareVtxArr[y].Position.y;     //G (float 2)
+						pTexels[_sTex3] = _compareVtxArr[y].Position.z;     //B (float 3)
+						pTexels[_sTex4] = 1.0f;							    //A (float 4)
+						break;
+					case 1:
+						pTexels[_sTex1] = _compareVtxArr[y].Normal.x;       //R (float 1)
+						pTexels[_sTex2] = _compareVtxArr[y].Normal.y;       //G (float 2)
+						pTexels[_sTex3] = _compareVtxArr[y].Normal.z;       //B (float 3)
+						pTexels[_sTex4] = 1.0f;							    //A (float 4)
+						break;
+					case 2:
+						pTexels[_sTex1] = _compareVtxArr[y].TangentU.x;     //R (float 1)
+						pTexels[_sTex2] = _compareVtxArr[y].TangentU.y;     //G (float 2)
+						pTexels[_sTex3] = _compareVtxArr[y].TangentU.z;     //B (float 3)
+						pTexels[_sTex4] = 1.0f;							    //A (float 4)
+						break;
+					case 3:
+						pTexels[_sTex1] = _compareVtxArr[y].BiNormal.x;     //R (float 1)
+						pTexels[_sTex2] = _compareVtxArr[y].BiNormal.y;     //G (float 2)
+						pTexels[_sTex3] = _compareVtxArr[y].BiNormal.z;     //B (float 3)
+						pTexels[_sTex4] = 1.0f;							    //A (float 4)
+						break;
+					default:
+						cout << "행렬 범위 초과" << endl;
+						break;
 					}
 				}
 			}
 
 			// 버퍼 닫기
-			cCoreStorage::GetInstance()->md3dImmediateContext->Unmap(_UseMetaData->mSkinModel[_fsmType]->mTexture, D3D11CalcSubresource(0, 0, 1));
+			cCoreStorage::GetInstance()->md3dImmediateContext->Unmap(_UseMetaData->mSkinModelTex[_fsmType]->mTexture, D3D11CalcSubresource(0, 0, 1));
 		}
 		else
 			cout << "스킨 모델 텍스처 맵핑 실패" << endl;
 	}
 
 	// 텍스처 생성
-	void CreateTex(InitMetaData* _UseMetaData, FSM_TYPE _fsmType, int _VtxSize)
+	void CreateTex(InitMetaData* _UseMetaData, int _fsmType, int _VtxSize)
 	{
 		D3D11_TEXTURE2D_DESC TextureDesc;
 		ZeroMemory(&TextureDesc, sizeof(TextureDesc));
@@ -274,7 +248,7 @@ public:
 		TextureDesc.Height             = _VtxSize;			          // 버텍스 사이즈 만큼 				
 		TextureDesc.MipLevels          = 1;                             						
 		TextureDesc.ArraySize          = 1;                             						
-		TextureDesc.Format             = DXGI_FORMAT_R32G32B32_FLOAT;
+		TextureDesc.Format             = DXGI_FORMAT_R32G32B32A32_FLOAT;
 		TextureDesc.SampleDesc.Count   = 1;  
 		TextureDesc.SampleDesc.Quality = 0;
 		TextureDesc.Usage              = D3D11_USAGE_DYNAMIC;
@@ -282,23 +256,23 @@ public:
 		TextureDesc.CPUAccessFlags     = D3D11_CPU_ACCESS_WRITE;
 		TextureDesc.MiscFlags		   = 0;
 
-		HR(cCoreStorage::GetInstance()->md3dDevice->CreateTexture2D(&TextureDesc, 0, &_UseMetaData->mSkinModel[_fsmType]->mTexture));
+		HR(cCoreStorage::GetInstance()->md3dDevice->CreateTexture2D(&TextureDesc, 0, &_UseMetaData->mSkinModelTex[_fsmType]->mTexture));
 	}
 
 	// 텍스처 저장
-	void SaveTex(wstring& _TexName, InitMetaData* _UseMetaData, FSM_TYPE _fsmType)
+	void SaveTex(wstring& _TexName, InitMetaData* _UseMetaData, int _fsmType)
 	{
 		D3DX11SaveTextureToFile(cCoreStorage::GetInstance()->md3dImmediateContext,
-			_UseMetaData->mSkinModel[_fsmType]->mTexture,      //저장할 텍스처
+			_UseMetaData->mSkinModelTex[_fsmType]->mTexture,      //저장할 텍스처
 			D3DX11_IFF_DDS,								      //dds로 저장
 			_TexName.c_str());							      //이름
 
 		// 텍스처를 만들었으니, 기존 데이터는 삭제
-		_UseMetaData->mSkinModel[_fsmType]->ClearTex();
+		_UseMetaData->mSkinModelTex[_fsmType]->ClearTex();
 	}
 
 	// 텍스처에 붙을 이름 선택하기
-	void SelectName(FSM_TYPE _fsmType, string& _TexName)
+	void SelectName(int _fsmType, string& _TexName)
 	{
 		// 이름 선택
 		switch (_fsmType)
@@ -338,7 +312,7 @@ public:
 	}
 
 	// 스킨 텍스처 만들기
-	void MakeSkinTex(vector<Vertex>& _compareVtxArr, wstring& _TexName, InitMetaData* _UseMetaData, FSM_TYPE _fsmType, int _VtxSize)
+	void MakeSkinTex(vector<Vertex>& _compareVtxArr, wstring& _TexName, InitMetaData* _UseMetaData, int _fsmType, int _VtxSize)
 	{
 		// 텍스처 생성
 		CreateTex(_UseMetaData, _fsmType, _VtxSize);

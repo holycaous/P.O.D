@@ -193,6 +193,66 @@ void SelectMtx(float _Anikey, float2 _TexSelect, float _TexWidth, inout float4x4
 	}
 }
 
+// 스킨 모델 선택
+void SelectSkinModel(float _Anikey, float2 _TexSelect, float _TexWidth, inout float4x4 _Mtx)
+{
+	// 애니메이션 텍스처 선택 (매트릭스 만들기)
+	switch (_Anikey)
+	{
+	// e_Idle = 0,
+	default:
+	case 0:
+		// Tex 행 꺼내기
+		GetTexMtx(gIdleModelTex, _TexSelect, _TexWidth, _Mtx);
+		break;
+
+	// e_Damage = 1,
+	case 1:
+		GetTexMtx(gDamageModelTex, _TexSelect, _TexWidth, _Mtx);
+		break;
+
+	// e_Run = 2,
+	case 2:
+		GetTexMtx(gRunModelTex, _TexSelect, _TexWidth, _Mtx);
+		break;
+
+	// e_Walk = 3,
+	case 3:
+		GetTexMtx(gWalkModelTex, _TexSelect, _TexWidth, _Mtx);
+		break;
+
+	// e_Death = 4,
+	case 4:
+		GetTexMtx(gDeathModelTex, _TexSelect, _TexWidth, _Mtx);
+		break;
+
+	// e_DeathWait = 5,
+	case 5:
+		GetTexMtx(gDeathWaitModelTex, _TexSelect, _TexWidth, _Mtx);
+		break;
+
+	// e_Attack1 = 6,
+	case 6:
+		GetTexMtx(gAttack1ModelTex, _TexSelect, _TexWidth, _Mtx);
+		break;
+
+	// e_Attack2 = 7,
+	case 7:
+		GetTexMtx(gAttack2ModelTex, _TexSelect, _TexWidth, _Mtx);
+		break;
+
+	// e_Attack3 = 8,
+	case 8:
+		GetTexMtx(gAttack3ModelTex, _TexSelect, _TexWidth, _Mtx);
+		break;
+
+	// e_Stun = 9
+	case 9:
+		GetTexMtx(gStunModelTex, _TexSelect, _TexWidth, _Mtx);
+		break;
+	}
+}
+
 // 스키닝 계산
 PNTVertexAniOut CalSkin(inout PNTVertexAniIn vin)
 {
@@ -212,26 +272,47 @@ PNTVertexAniOut CalSkin(inout PNTVertexAniIn vin)
 					      0.0f, 0.0f, 1.0f, 0.0f,
 						  0.0f, 0.0f, 0.0f, 1.0f };
 
+	// 현재 프레임이 스킨 모델 
+	float4x4 _MadeSkinMtx = { 1.0f, 0.0f, 0.0f, 0.0f, 
+		                      0.0f, 1.0f, 0.0f, 0.0f,
+					          0.0f, 0.0f, 1.0f, 0.0f,
+					 	      0.0f, 0.0f, 0.0f, 1.0f };
+
 	// 가중치 계산
 	float _weight[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	_weight[0] = vin.Weights.x;
-	_weight[1] = vin.Weights.y;
-	_weight[2] = vin.Weights.z;
-	_weight[3] = 1.0f - _weight[0] - _weight[1] - _weight[2];
+	      _weight[0] = vin.Weights.x;
+	      _weight[1] = vin.Weights.y;
+	      _weight[2] = vin.Weights.z;
+	      _weight[3] = 1.0f - _weight[0] - _weight[1] - _weight[2];
 
+
+	//-------------------------------------------------------------------------------//
+	// 스키닝 모델 데이터 추출
+	//-------------------------------------------------------------------------------//		
+	// 스키닝 모델 선택
+	float2 _TexModelSelect;
+	_TexModelSelect.x = 0.0f;
+	_TexModelSelect.y = vin.VtxInfo.x / (vin.VtxInfo.y - 1.0f);	// 버택스 번호, 버택스 갯수	
+
+	// 스킨 모델 선택
+	SelectSkinModel(vin.AniData.x, _TexModelSelect, 4.0f, _MadeSkinMtx);
+
+
+	//-------------------------------------------------------------------------------//
+	// 스키닝 애니 데이터 추출
+	//-------------------------------------------------------------------------------//								  					                      
 	// 애니 키 선택
 	float2 _TexSelect;
-	_TexSelect.y = (float)((int)vin.AniData.y) / (vin.AniData.w - 1.0f);  // 일단, 소수부 버리기 나중에 보간 해줘야함
+	_TexSelect.y = (float)((int)vin.AniData.y) / (vin.AniData.w - 1.0f);   // 일단, 소수부 버리기 나중에 보간 해줘야함
 
 	// 최대 4개 까지
 	for (int i = 0; i < 4; ++i)
 	{
 		//-------------------------------------------------------------------------------//
-		// 텍스처 추출
+		// 스키닝 텍스처 추출
 		//-------------------------------------------------------------------------------//
 		// 본 선택							                             
-													  					                // 행렬 픽셀이 4칸씩 뛰므로	( 텍셀 1개 == 한 행 이므로, 4개를 얻어야 함 ) 
-		_TexSelect.x = ((float)vin.BoneIndices[i] * 4.0f) / (vin.AniData.z - 1.0f);     // 그래서 uv처리할때 Tex U쪽에 * 4 이런거 해줘야할 듯 (4개씩 얻고..)
+		_TexSelect.x = ((float)vin.BoneIndices[i] * 4.0f) / (vin.AniData.z - 1.0f);        
 
 		// 매트릭스 선택
 		SelectMtx(vin.AniData.x, _TexSelect, vin.AniData.z, _MadeMtx);
@@ -245,10 +326,10 @@ PNTVertexAniOut CalSkin(inout PNTVertexAniIn vin)
 		//_PosL += _weight[i] * (Skined_pos.xyz / Skined_pos.w);
 
 		// 2.
-		_PosL      += (_weight[i] * mul(float4(vin.PosL, 1.0f), _MadeMtx).xyz);
-		_NormalL   += _weight[i] * mul(vin.NormalL , (float3x3)_MadeMtx);
-		_TanL      += _weight[i] * mul(vin.Tangent , (float3x3)_MadeMtx);
-		_BiNormalL += _weight[i] * mul(vin.BiNormal, (float3x3)_MadeMtx);
+		_PosL      += (_weight[i] * mul(float4(_MadeSkinMtx[0].xyz, 1.0f), _MadeMtx).xyz);
+		_NormalL   +=  _weight[i] * mul(_MadeSkinMtx[1].xyz, (float3x3)_MadeMtx);
+		_TanL      +=  _weight[i] * mul(_MadeSkinMtx[2].xyz, (float3x3)_MadeMtx);
+		_BiNormalL +=  _weight[i] * mul(_MadeSkinMtx[3].xyz, (float3x3)_MadeMtx);
 
 
 		// 테스트용 (버퍼 이용한거)

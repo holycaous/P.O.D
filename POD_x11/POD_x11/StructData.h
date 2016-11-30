@@ -123,13 +123,9 @@ struct VertexPNT
 
 struct VertexPNTAni
 {
-	XMFLOAT3 Pos;
-	XMFLOAT3 Normal;
 	XMFLOAT2 Tex;
-	XMFLOAT3 Tangent;
-	XMFLOAT3 BiNormal;
 	XMFLOAT3 Weights;
-	XMFLOAT3 Pedding; // 패딩 값
+	XMFLOAT3 VtxInfo; // 패딩 값
 	UINT     BoneIndices[4];
 };
 
@@ -623,7 +619,7 @@ public:
 	map<int, SkinTexture*> mSkinTex;
 
 	// 스킨 모델 (스킨 텍스처와 한쌍이되는 모델 데이터)
-	map<int, SkinTexture*> mSkinModel;
+	map<int, SkinTexture*> mSkinModelTex;
 
 	// 가중치 데이터
 	vector<WeightVtx> weightVtx;
@@ -705,9 +701,9 @@ public:
 		printf("클리어 객체명: %17s ---> 생성명: %12s, 이름: %12s\n", mObjName, mCreateName.c_str(), mMainName);
 
 		// 스킨 모델 제거
-		for (auto itor = mSkinModel.begin(); itor != mSkinModel.end(); ++itor)
+		for (auto itor = mSkinModelTex.begin(); itor != mSkinModelTex.end(); ++itor)
 			SafeDelete(itor->second);
-		mSkinModel.clear();
+		mSkinModelTex.clear();
 
 		// 모델 텍스처 제거
 		ReleaseCOM(mDiffuseSRV);
@@ -1996,17 +1992,15 @@ private:
 
 		// 가장 큰 버퍼로 복사
 		UINT k = 0;
+		int  count = 0;
+		int  vtxCount = 0;
 		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
 		{
 			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다. (버텍스 별로 계산 되는 중)
 			for (unsigned int i = 0; i < itor->second->Vertices.size(); ++i, ++k)
 			{
-				vertices[k].Pos      = itor->second->Vertices[i].Position;
-				vertices[k].Tex      = itor->second->Vertices[i].TexUV;
-				vertices[k].Normal   = itor->second->Vertices[i].Normal;
-				vertices[k].Tangent  = itor->second->Vertices[i].TangentU;
-				vertices[k].BiNormal = itor->second->Vertices[i].BiNormal;
-				vertices[k].Pedding  = XMFLOAT3(0.0f, 0.0f, 0.0f); // 패딩값
+				vertices[k].Tex     = itor->second->Vertices[i].TexUV;
+				vertices[k].VtxInfo = XMFLOAT3((float)i, (float)itor->second->Vertices.size(), 0.0f); // 패딩값
 
 				// 선택된 모델의 가중치 데이터
 				vector<WeightVtx>& _sModelWeight = itor->second->weightVtx;
@@ -2064,20 +2058,6 @@ private:
 						}
 					}
 				}
-
-
-				if (i > 576)
-				{
-					int t = 0;
-				}
-
-
-				auto t1 = vertices[k].Weights;
-				auto t2 = vertices[k].BoneIndices[1];
-				auto t3 = vertices[k].BoneIndices[2];
-				auto t4 = vertices[k].BoneIndices[3];
-
-				int ff = 0;
 			}
 		}
 

@@ -27,6 +27,9 @@ void main()
 	//mXMLParser.SetTexture("Ssalissali_diff.dds", 100.0f, "Ssalissali_norm.dds", "Ssalissali_spec.dds");
 	//mXMLParser.LoadXMLModel();
 
+	//mXMLParser.InitSkinModel("Import/mob2.xml", "bbb", "Idle");
+	//mXMLParser.LoadXMLSkinModel();
+
 
 	//-----------------------------------------------------------------------------------------------------------//
 	// 본 전용 파싱 (파일명, 이름은 반드시 둘다 바꿔줘야함.)

@@ -62,13 +62,9 @@ struct PNTVertexIn
 
 struct PNTVertexAniIn
 {
-	float3 PosL				  : POSITION;
-	float3 NormalL			  : NORMAL;
 	float2 Tex				  : TEXCOORD;
-	float3 Tangent			  : TANGENT;
-	float3 BiNormal			  : BINORMAL;
 	float3 Weights            : WEIGHTS;		 // 애니메이션 가중치
-	float3 Pedding            : PEDDING;		 // 패딩 값
+	float3 VtxInfo            : VTXINFO;		 // 버택스 번호, 버택스 갯수, 패딩 값
 	uint4  BoneIndices        : BONEINDICES;	 // 애니메이션 영향 본 인덱스
 	row_major float4x4 World  : WORLD;
 	float4 AniData            : ANIDATA;		 // 애니 텍스처 번호, 현재 프레임, 텍스처 너비, 텍스처 높이
@@ -198,6 +194,18 @@ Texture2D gAttack1Tex;
 Texture2D gAttack2Tex;
 Texture2D gAttack3Tex;
 Texture2D gStunTex;
+
+// 모델 스킨 텍스처
+Texture2D gIdleModelTex;
+Texture2D gDamageModelTex;
+Texture2D gRunModelTex;
+Texture2D gWalkModelTex;
+Texture2D gDeathModelTex;
+Texture2D gDeathWaitModelTex;
+Texture2D gAttack1ModelTex;
+Texture2D gAttack2ModelTex;
+Texture2D gAttack3ModelTex;
+Texture2D gStunModelTex;
 
 // G버퍼 텍스처
 Texture2D gGDepthTex;

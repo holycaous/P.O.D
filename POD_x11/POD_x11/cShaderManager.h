@@ -139,16 +139,28 @@ public:
 		if (mNowModel->mShaderMode == e_ShaderPongTexAni)
 		{
 			// 스킨 텍스처
-			SetShaderValue(e_ShaderValResource, "gIdleTex"		, mNowModel->mSkinTex[e_Idle     ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gDamageTex"	, mNowModel->mSkinTex[e_Damage   ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gRunTex"		, mNowModel->mSkinTex[e_Run      ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gWalkTex"		, mNowModel->mSkinTex[e_Walk     ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gDeathTex"		, mNowModel->mSkinTex[e_Death    ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gDeathWaitTex" , mNowModel->mSkinTex[e_DeathWait]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gAttack1Tex"	, mNowModel->mSkinTex[e_Attack1  ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gAttack2Tex"	, mNowModel->mSkinTex[e_Attack2  ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gAttack3Tex"	, mNowModel->mSkinTex[e_Attack3  ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gStunTex"	    , mNowModel->mSkinTex[e_Stun     ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gIdleTex"		        , mNowModel->mSkinTex[e_Idle     ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDamageTex"	        , mNowModel->mSkinTex[e_Damage   ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gRunTex"		        , mNowModel->mSkinTex[e_Run      ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gWalkTex"		        , mNowModel->mSkinTex[e_Walk     ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDeathTex"		        , mNowModel->mSkinTex[e_Death    ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDeathWaitTex"         , mNowModel->mSkinTex[e_DeathWait]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gAttack1Tex"	        , mNowModel->mSkinTex[e_Attack1  ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gAttack2Tex"	        , mNowModel->mSkinTex[e_Attack2  ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gAttack3Tex"	        , mNowModel->mSkinTex[e_Attack3  ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gStunTex"	            , mNowModel->mSkinTex[e_Stun     ]->mTexSRV);
+
+			// 모델 스킨 텍스처
+			SetShaderValue(e_ShaderValResource, "gIdleModelTex"		, mNowModel->mSkinModelTex[e_Idle     ]->mTexSRV);
+			//SetShaderValue(e_ShaderValResource, "gDamageModelTex"	    , mNowModel->mSkinModelTex[e_Damage   ]->mTexSRV);
+			//SetShaderValue(e_ShaderValResource, "gRunModelTex"		    , mNowModel->mSkinModelTex[e_Run      ]->mTexSRV);
+			//SetShaderValue(e_ShaderValResource, "gWalkModelTex"		, mNowModel->mSkinModelTex[e_Walk     ]->mTexSRV);
+			//SetShaderValue(e_ShaderValResource, "gDeathModelTex"		, mNowModel->mSkinModelTex[e_Death    ]->mTexSRV);
+			//SetShaderValue(e_ShaderValResource, "gDeathWaitModelTex"   , mNowModel->mSkinModelTex[e_DeathWait]->mTexSRV);
+			//SetShaderValue(e_ShaderValResource, "gAttack1ModelTex"	    , mNowModel->mSkinModelTex[e_Attack1  ]->mTexSRV);
+			//SetShaderValue(e_ShaderValResource, "gAttack2ModelTex"  	, mNowModel->mSkinModelTex[e_Attack2  ]->mTexSRV);
+			//SetShaderValue(e_ShaderValResource, "gAttack3ModelTex"  	, mNowModel->mSkinModelTex[e_Attack3  ]->mTexSRV);
+			//SetShaderValue(e_ShaderValResource, "gStunModelTex"	    , mNowModel->mSkinModelTex[e_Stun     ]->mTexSRV);
 
 
 			// 테스트 (스킨 잘 되나)
@@ -424,16 +436,28 @@ private:
 		//GetShaderValue(tEffectStorage, "gBoneTransforms"   , e_ShaderValMtxArray);
 		
 		// 애니 텍스처
-		GetShaderValue(tEffectStorage, "gIdleTex"		   , e_ShaderValResource);
-		GetShaderValue(tEffectStorage, "gDamageTex"		   , e_ShaderValResource);
-		GetShaderValue(tEffectStorage, "gRunTex"		   , e_ShaderValResource);
-		GetShaderValue(tEffectStorage, "gWalkTex"		   , e_ShaderValResource);
-		GetShaderValue(tEffectStorage, "gDeathTex"		   , e_ShaderValResource);
-		GetShaderValue(tEffectStorage, "gDeathWaitTex"	   , e_ShaderValResource);
-		GetShaderValue(tEffectStorage, "gAttack1Tex"	   , e_ShaderValResource);
-		GetShaderValue(tEffectStorage, "gAttack2Tex"	   , e_ShaderValResource);
-		GetShaderValue(tEffectStorage, "gAttack3Tex"	   , e_ShaderValResource);
-		GetShaderValue(tEffectStorage, "gStunTex"	       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gIdleTex"		       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gDamageTex"		       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gRunTex"		       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gWalkTex"		       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gDeathTex"		       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gDeathWaitTex"	       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gAttack1Tex"	       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gAttack2Tex"	       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gAttack3Tex"	       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gStunTex"	           , e_ShaderValResource);
+
+		// 애니 모델 텍스처
+		GetShaderValue(tEffectStorage, "gIdleModelTex"	       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gDamageModelTex"	   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gRunModelTex"		   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gWalkModelTex"	       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gDeathModelTex"	       , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gDeathWaitModelTex"    , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gAttack1ModelTex"	   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gAttack2ModelTex"      , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gAttack3ModelTex"      , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gStunModelTex"	       , e_ShaderValResource);
 
 		// IA 생성
 		CreateIA(tEffectStorage);
@@ -526,13 +550,9 @@ private:
 		{
 			D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
 			{
-				{ "POSITION"   , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-				{ "NORMAL"     , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
 				{ "TEXCOORD"   , 0, DXGI_FORMAT_R32G32_FLOAT      , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-				{ "TANGENT"    , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-				{ "BINORMAL"   , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
 				{ "WEIGHTS"    , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-				{ "PEDDING"    , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "VTXINFO"    , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
 				{ "BONEINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
 				{ "WORLD"      , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0                           , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 				{ "WORLD"      , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },

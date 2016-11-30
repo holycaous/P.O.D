@@ -84,7 +84,8 @@ public:
 		//-------------------------------------------------------------------------------//
 		// 모델 추가
 		//-------------------------------------------------------------------------------//
-		CreateModel("Model2", "Export/Finmob2Loc.pod", e_ShaderPongTexAni);
+		CreateModel  ("Model2", "Export/Finmob2Loc.pod"    , e_ShaderPongTexAni);
+		AddModelChain("Model2", "Export/Finmob2IdleLoc.pod", e_ShaderPongTexAni, e_Idle);
 
 		//-------------------------------------------------------------------------------//
 		// 애니 한세트 추가
