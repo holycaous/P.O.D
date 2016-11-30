@@ -151,9 +151,9 @@ public:
 			SetShaderValue(e_ShaderValResource, "gStunTex"	            , mNowModel->mSkinTex[e_Stun     ]->mTexSRV);
 
 			// 모델 스킨 텍스처
-			SetShaderValue(e_ShaderValResource, "gIdleModelTex"		, mNowModel->mSkinModelTex[e_Idle     ]->mTexSRV);
+			//SetShaderValue(e_ShaderValResource, "gIdleModelTex"		, mNowModel->mSkinModelTex[e_Idle     ]->mTexSRV);
 			//SetShaderValue(e_ShaderValResource, "gDamageModelTex"	    , mNowModel->mSkinModelTex[e_Damage   ]->mTexSRV);
-			//SetShaderValue(e_ShaderValResource, "gRunModelTex"		    , mNowModel->mSkinModelTex[e_Run      ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gRunModelTex"		    , mNowModel->mSkinModelTex[e_Run      ]->mTexSRV);
 			//SetShaderValue(e_ShaderValResource, "gWalkModelTex"		, mNowModel->mSkinModelTex[e_Walk     ]->mTexSRV);
 			//SetShaderValue(e_ShaderValResource, "gDeathModelTex"		, mNowModel->mSkinModelTex[e_Death    ]->mTexSRV);
 			//SetShaderValue(e_ShaderValResource, "gDeathWaitModelTex"   , mNowModel->mSkinModelTex[e_DeathWait]->mTexSRV);

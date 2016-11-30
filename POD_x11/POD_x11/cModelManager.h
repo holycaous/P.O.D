@@ -64,7 +64,7 @@ public:
 		// 모델 추가
 		//-------------------------------------------------------------------------------//
 		CreateModel  ("Model1", "Export/Finmob1Loc.pod"    , e_ShaderPongTexAni);
-		AddModelChain("Model1", "Export/Finmob1IdleLoc.pod", e_ShaderPongTexAni, e_Idle);     // 앞으로, 모델을 파싱할때는 아무런 애니메이션 데이터 없는 것을 기준으로 파싱하겠음
+		AddModelChain("Model1", "Export/Finmob1RunLoc.pod" , e_ShaderPongTexAni, e_Run);     // 앞으로, 모델을 파싱할때는 아무런 애니메이션 데이터 없는 것을 기준으로 파싱하겠음
 
 		//-------------------------------------------------------------------------------//
 		// 애니 한세트 추가
@@ -85,7 +85,7 @@ public:
 		// 모델 추가
 		//-------------------------------------------------------------------------------//
 		CreateModel  ("Model2", "Export/Finmob2Loc.pod"    , e_ShaderPongTexAni);
-		AddModelChain("Model2", "Export/Finmob2IdleLoc.pod", e_ShaderPongTexAni, e_Idle);
+		AddModelChain("Model2", "Export/Finmob2RunLoc.pod" , e_ShaderPongTexAni, e_Run);
 
 		//-------------------------------------------------------------------------------//
 		// 애니 한세트 추가

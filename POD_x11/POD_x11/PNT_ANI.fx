@@ -295,7 +295,7 @@ PNTVertexAniOut CalSkin(inout PNTVertexAniIn vin)
 	_TexModelSelect.y = vin.VtxInfo.x / (vin.VtxInfo.y - 1.0f);	// 버택스 번호, 버택스 갯수	
 
 	// 스킨 모델 선택
-	SelectSkinModel(vin.AniData.x, _TexModelSelect, 4.0f, _MadeSkinMtx);
+	SelectSkinModel(vin.AniData.x, _TexModelSelect, 4.001f, _MadeSkinMtx);
 
 
 	//-------------------------------------------------------------------------------//

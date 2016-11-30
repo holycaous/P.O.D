@@ -52,7 +52,7 @@ public:
 		//--------------------------------------------------------------------------------------------------------------------//
 		// 본 테스트
 		//--------------------------------------------------------------------------------------------------------------------//
-		mModelManager->AddModel(1, "Model1", 100.0f, 100.0f, 600.0f, e_Idle);
+		mModelManager->AddModel(1, "Model1", 100.0f, 100.0f, 600.0f, e_Run);
 		//mModelManager->DrawBone(   "Model2", "Run" , 100.0f, 100.0f, 600.0f, 10);  // 애니키 번호
 
 		//mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 500.0f, e_Idle);
@@ -70,7 +70,7 @@ public:
 		mModelManager->MakeInsbuf();
 
 		// 플레이어 및 카메라 세팅
-		mModelManager->IniPlayer(0, "Model2", 200.0f, 100.0f, 600.0f, e_Idle);
+		mModelManager->IniPlayer(0, "Model2", 200.0f, 100.0f, 600.0f, e_Run);
 	
 
 		// FSM 상태바꾸기
@@ -292,13 +292,13 @@ public:
 				switch (rand() % 2)
 				{
 				case 0:
-					mModelManager->AddUpdateModel(++i, "Model1", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Idle);
-					mModelManager->SetFSM        (  i, "Model1", FSM_TYPE(rand() % 10));
+					mModelManager->AddUpdateModel(++i, "Model1", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Run);
+					mModelManager->SetFSM        (  i, "Model1", FSM_TYPE(/*rand() % 10*/   e_Run));
 					break;
 				default:
 				case 1:
 					mModelManager->AddUpdateModel(++i, "Model2", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Run);
-					mModelManager->SetFSM        (  i, "Model2", FSM_TYPE(rand() % 10));
+					mModelManager->SetFSM        (  i, "Model2", FSM_TYPE(/*rand() % 10*/   e_Run));
 					break;
 				}
 
