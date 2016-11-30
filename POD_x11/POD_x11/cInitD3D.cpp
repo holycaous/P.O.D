@@ -499,13 +499,14 @@ LRESULT cInitD3D::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		// 마우스
 		//---------------------------------------------------------------------------------------
 		// 마우스 클릭
+	case WM_MOUSEWHEEL:
 	case WM_LBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_LBUTTONUP:
 	case WM_MBUTTONUP:
 	case WM_RBUTTONUP:
-		cGameStateManager::GetInstance()->MouseEvent(msg, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		cGameStateManager::GetInstance()->MouseEvent(msg, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), wParam);
 		return 0;
 
 		// 마우스 이동

@@ -140,7 +140,7 @@ public:
 	}
 
 	// 마우스 이벤트
-	void MouseEvent(UINT& msg, int& _Xpos, int& _Ypos)
+	void MouseEvent(UINT& msg, int& _Xpos, int& _Ypos, WPARAM& wParam)
 	{
 		switch (msg)
 		{

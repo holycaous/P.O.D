@@ -75,6 +75,8 @@ public:
 	void Change1PersonCam();
 	void Change3PersonCam();
 
+	void Setm3PersonLength(float _size);
+
 private:
 	// 카메라 모드 (1인칭, 3인칭)
 	CAM_MODE mCamMode = e_1Person;

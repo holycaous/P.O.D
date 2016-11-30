@@ -34,7 +34,7 @@ public:
 	virtual void Draw()		      = 0;
 	virtual void Update(float& dt) = 0;
 	virtual void KeyEvent(WPARAM& wParam) = 0;
-	virtual void MouseEvent(UINT& msg, int& _Xpos, int& _Ypos) = 0;
+	virtual void MouseEvent(UINT& msg, int& _Xpos, int& _Ypos, WPARAM& wParam) = 0;
 	virtual void MouseMoveEvent(int& _Xpos, int& _Ypos) = 0;
 };
 

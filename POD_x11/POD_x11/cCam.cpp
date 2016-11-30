@@ -422,3 +422,15 @@ XMMATRIX cCam::ViewProj()const
 {
 	return XMMatrixMultiply(View(), Proj());
 }
+
+void cCam::Setm3PersonLength(float _amount)
+{
+	XMVECTOR l = { 0.0f, 0.0f, 0.0f, 0.0f };
+	XMVECTOR s = XMVectorReplicate(_amount);
+	XMVECTOR p = XMLoadFloat3(&mPosition);
+
+	l = XMLoadFloat3(&mLook);
+
+	m3PersonLength -= _amount;
+	XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, l, p));
+}

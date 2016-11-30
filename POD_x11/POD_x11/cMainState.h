@@ -16,13 +16,13 @@ public:
 		mModelManager->AddScreen(0.0f, 0.0f, 0.0f);
 
 		// 맵 테스트용
-		mModelManager->AddMap(0, "Map1", 200, 100, 200, 5.0f);
+		mModelManager->AddMap(0, "Map1", 0.0f, 0.0f, 0.0f, 5.0f);
 
 
 		//--------------------------------------------------------------------------------------------------------------------//
 		// 본 테스트
 		//--------------------------------------------------------------------------------------------------------------------//
-		mModelManager->AddModel(1, "Model2", 100.0f, 100.0f, 600.0f, e_Idle);
+		mModelManager->AddModel(1, "Model2", 100.0f, 0.0f, 100.0f, e_Idle);
 		//mModelManager->DrawBone(   "Model2", "Run" , 100.0f, 100.0f, 600.0f, 10);  // 애니키 번호
 		
 		// 본 일렬로 세우기
@@ -36,7 +36,7 @@ public:
 
 
 		// 플레이어 및 카메라 세팅
-		mModelManager->IniPlayer(0, "Model1", 200.0f, 100.0f, 600.0f, e_Run);
+		mModelManager->IniPlayer(0, "Model1", 0.0f, 0.0f, 0.0f, e_Run);
 	
 		// 체력 제어
 		//mModelManager->SetHP(0, "Mode1", 100.0f);
@@ -84,13 +84,13 @@ public:
 
 
 
-		//// 포인트 라이트
-		//XMFLOAT3 _PlayerPos     = gCam.GetThirdPosition();
-		//XMFLOAT3 _PlayerLookDir = mModelManager->PlayerLookDir();
-		//_PlayerPos.x = _PlayerPos.x + _PlayerLookDir.x * 15.0f;
-		//_PlayerPos.z = _PlayerPos.z + _PlayerLookDir.z * 15.0f;
-		//_PlayerPos.y = _PlayerPos.y + 20.0f;
-		//mShaderManager->GetLightManager()->mPointLight.Position = _PlayerPos;
+		// 포인트 라이트
+		XMFLOAT3 _PlayerPos     = gCam.GetThirdPosition();
+		XMFLOAT3 _PlayerLookDir = mModelManager->PlayerLookDir();
+		_PlayerPos.x = _PlayerPos.x + _PlayerLookDir.x * 15.0f;
+		_PlayerPos.z = _PlayerPos.z + _PlayerLookDir.z * 15.0f;
+		_PlayerPos.y = _PlayerPos.y + 20.0f;
+		mShaderManager->GetLightManager()->mPointLight.Position = _PlayerPos;
 
 	}
 
@@ -275,12 +275,12 @@ public:
 				switch (rand() % 2)
 				{
 				case 0:
-					mModelManager->AddUpdateModel(++i1, "Model1", float(rand() % 1000) + 100.0f, 200.0f + float(rand() % 200), float(rand() % 1000) + 100.0f, e_Idle);
+					mModelManager->AddUpdateModel(++i1, "Model1", float(rand() % 1000) - 500.0f, 200.0f + float(rand() % 200), float(rand() % 1000) -500.0f, e_Idle);
 					mModelManager->SetFSM        (  i1, "Model1", FSM_TYPE(rand() % 6));
 					break;
 				default:
 				case 1:
-					mModelManager->AddUpdateModel(++i2, "Model2", float(rand() % 1000) + 100.0f, 200.0f + float(rand() % 200), float(rand() % 1000) + 100.0f, e_Idle);
+					mModelManager->AddUpdateModel(++i2, "Model2", float(rand() % 1000) - 500.0f, 200.0f + float(rand() % 200), float(rand() % 1000) -500.0f, e_Idle);
 					mModelManager->SetFSM        (  i2, "Model2", FSM_TYPE(rand() % 6));
 					break;
 				}
@@ -307,61 +307,11 @@ public:
 				cout << "삭제: " << i1 + i2 << endl;
 			}
 			break;
-
-			// 번호 선택, 추가하기
-		case 'O':
-			mModelManager->AddUpdateModel(500,"Model5", 100.0f, 100.0f, 500.0f, e_Idle);
-			break;
-		
-		// 기타 테스트
-		case 'I':
-			{
-				//--------------------------------------------------------//
-				// 테스트 1
-				//--------------------------------------------------------//
-			    // 해당 위치로 가는 방향벡터 얻기 (0번 모델3이 해당 위치로 가는 방향벡터 얻기)
-				XMFLOAT3 dir = mModelManager->GetPointDir(0, "Model3", 100.0f, 100.0f, 300.0f);
-
-
-				//--------------------------------------------------------//
-				// 테스트 2
-				//--------------------------------------------------------//
-				// 데이터를 임시로 저장할 공간
-				vector<ObjData> _testOut;
-
-				//--------------------------------------------------------//
-				// <1> 0번 모델3의 정보를 빼낸다.
-				//--------------------------------------------------------//
-				mModelManager->getModelData(0, "Model3", _testOut);
-
-				for (unsigned int i = 0; i < _testOut.size(); ++i)
-				{
-					// 원하는 정보를 뺴낸다.
-					_testOut[i].getLookDir(); // 룩 벡터
-					_testOut[i].getWdMtx();   // 요건 월드 매트릭스
-				}
-				_testOut.clear(); // 사용후에는 반드시 클리어
-
-				//--------------------------------------------------------//
-				// <2> Model3에 속한, 모든 정보를 빼낸다.
-				//--------------------------------------------------------//
-				mModelManager->getAllModelData("Model3", _testOut);
-
-				for (unsigned int i = 0; i < _testOut.size(); ++i)
-				{
-					// 원하는 정보를 뺴낸다.
-					_testOut[i].getLookDir(); // 룩 벡터
-					_testOut[i].getWdMtx();   // 요건 월드 매트릭스
-				}
-				_testOut.clear(); // 사용후에는 반드시 클리어
-				//--------------------------------------------------------//
-			}
-			break;
 		}
 	}
 
 	// 마우스 이벤트
-	void MouseEvent(UINT& msg, int& _Xpos, int& _Ypos)
+	void MouseEvent(UINT& msg, int& _Xpos, int& _Ypos, WPARAM& wParam)
 	{
 		switch (msg)
 		{
@@ -380,6 +330,18 @@ public:
 			ReleaseCapture();
 			break;
 
+		case WM_MOUSEWHEEL:
+		{
+			  if (((short)HIWORD(wParam)) > 0)
+			  {
+				  gCam.Setm3PersonLength(10.0f);
+			  }
+			  else
+			  {
+				  gCam.Setm3PersonLength(-10.0f);
+			  }
+			  break;
+		}
 		}
 	}
 

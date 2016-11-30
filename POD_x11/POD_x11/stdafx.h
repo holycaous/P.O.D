@@ -26,11 +26,11 @@ using namespace std;
 #define WIN_Y 600
 
 #define CAM_NEAR 1
-#define CAM_FAR 1500
+#define CAM_FAR 1750
 #define CAM_3PERSON_LENGTH 375
 
 #define GRAVITY 800
-#define GROUND  100
+#define GROUND  0
 
 #ifndef max
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
