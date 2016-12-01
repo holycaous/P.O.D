@@ -163,7 +163,8 @@ public:
 		else if (mNowModel->mShaderMode == e_ShaderPongTexMap)
 		{
 			// ±âº» ¸Ê
-			SetShaderValue(e_ShaderValResource, "gMapTex", mNowModel->mSkinModelTex[0]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gMapTex"      , mNowModel->mSkinModelTex[0]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gHeightMapTex", mNowModel->mSkinModelTex[1]->mTexSRV);
 		}
 
 		// ±íÀÌ ¹öÆÛ ·»´õ¸µ¿ë
@@ -457,6 +458,7 @@ private:
 
 		// ¸Ê ¸ðµ¨ ÅØ½ºÃ³
 		GetShaderValue(tEffectStorage, "gMapTex"		   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gHeightMapTex"     , e_ShaderValResource);
 
 		// IA »ý¼º
 		CreateIA(tEffectStorage);

@@ -221,6 +221,7 @@ Texture2D gAttackModelTex;
 
 // 맵 스킨 텍스처
 Texture2D gMapTex;
+Texture2D gHeightMapTex;
 
 // G버퍼 텍스처
 Texture2D gGDepthTex;

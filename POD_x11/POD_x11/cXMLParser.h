@@ -99,22 +99,23 @@ public:
 	}
 
 	// 스킨 맵 텍스처 만들고 옮기기
-	void MakeSkinMapTex(vector<Vertex>& _compareVtxArr, InitMetaData* _UseMetaData)
+	void MakeSkinMapTex(vector<Vertex>& _compareVtxArr, InitMetaData* _UseMetaData, int _mapType, string _AddName)
 	{
 		// 저장할 원본 모델에, 데이터 넣을 공간 생성 (일단 0으로, 별다른 상태값은 안주었음. 나중에 필요하면 확장할 예정)
-		_UseMetaData->mSkinModelTex[0] = new SkinTexture();
+		_UseMetaData->mSkinModelTex[_mapType] = new SkinTexture();
 
 		// 데이터 계산하고 쓰기 등등
-		CalMapData(_compareVtxArr, _UseMetaData, 0, _compareVtxArr.size());
+		CalMapData(_compareVtxArr, _UseMetaData, _mapType, _compareVtxArr.size(), _AddName);
 	}
 
 	// 맵 데이터 계산
-	void CalMapData(vector<Vertex>& _compareVtxArr, InitMetaData* _UseMetaData, int _fsmType, int _VtxSize)
+	void CalMapData(vector<Vertex>& _compareVtxArr, InitMetaData* _UseMetaData, int _fsmType, int _VtxSize, string _AddName)
 	{
 		string tTexName;
 		
 		tTexName += "Export/SkinMapTex/";
 		tTexName += _UseMetaData->mObjName;
+		tTexName += _AddName;
 		tTexName += ".dds";
 
 		//--------------------------------------------------------------------------------------------------//
@@ -582,9 +583,52 @@ public:
 			_InitMetaData->Vertices[i].Position.y = _InitMetaData->mHeightmap[i];
 
 		// 스킨 모델 텍스처 만들고 옮기기
-		MakeSkinMapTex(_InitMetaData->Vertices, _InitMetaData);
+		MakeSkinMapTex(_InitMetaData->Vertices, _InitMetaData, 0, "");
+
+		// 하이트맵 로딩
+		LoadHeightMap(_InitMetaData, _hightMapPss, _Xwidth, _Zdepth);
 	}
 
+	// 하이트맵 로딩
+	void LoadHeightMap(InitMetaData* _InitMetaData, string& _hightMapPss, float& _Xwidth, float& _Zdepth)
+	{
+		_InitMetaData->mSkinModelTex[1] = new SkinTexture();
+
+		D3D11_TEXTURE2D_DESC texDesc;
+		texDesc.Width              = (int)_Xwidth;
+		texDesc.Height             = (int)_Zdepth;
+		texDesc.MipLevels          = 1;
+		texDesc.ArraySize          = 1;
+		texDesc.Format             = DXGI_FORMAT_R16_FLOAT;
+		texDesc.SampleDesc.Count   = 1;
+		texDesc.SampleDesc.Quality = 0;
+		texDesc.Usage              = D3D11_USAGE_DEFAULT;
+		texDesc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
+		texDesc.CPUAccessFlags     = 0;
+		texDesc.MiscFlags          = 0;
+
+		// HALF is defined in xnamath.h, for storing 16-bit float.
+		std::vector<HALF> hmap((int)(_Xwidth * _Zdepth));
+		std::transform(_InitMetaData->mHeightmap.begin(), _InitMetaData->mHeightmap.end(), hmap.begin(), XMConvertFloatToHalf);
+
+		D3D11_SUBRESOURCE_DATA data;
+		data.pSysMem             = &hmap[0];
+		data.SysMemPitch         = (int)_Xwidth * sizeof(HALF);
+		data.SysMemSlicePitch    = 0;
+
+		ID3D11Texture2D* hmapTex = 0;
+		HR(cCoreStorage::GetInstance()->md3dDevice->CreateTexture2D(&texDesc, &data, &_InitMetaData->mSkinModelTex[1]->mTexture));
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		srvDesc.Format                    = texDesc.Format;
+		srvDesc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels       = -1;
+		HR(cCoreStorage::GetInstance()->md3dDevice->CreateShaderResourceView(_InitMetaData->mSkinModelTex[1]->mTexture, &srvDesc, &_InitMetaData->mSkinModelTex[1]->mTexSRV));
+
+		// SRV saves reference.
+		ReleaseCOM(_InitMetaData->mSkinModelTex[1]->mTexture);
+	}
 
 	// 정점 증가코드 2
 	void CalVtxINCAndSet(InitMetaData* _MetaData)

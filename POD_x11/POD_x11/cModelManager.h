@@ -26,7 +26,7 @@ public:
 
 	// 플레이어
 	PlayerInfo mPlayer;
-
+	
 	bool _modelUpdate = false;
 public:
 	void Init()
@@ -45,10 +45,10 @@ public:
 		AddTex        ("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
 
 		// 맵 추가
-		CreateMap     ("Map1", "Export/HeightMap.raw"  , 100.0f, 100.0f, 50.0f, 1000.0f, e_ShaderPongTexMap);
-		AddTex        ("Map1", "Export/ground_diff.dds", e_DiffuseMap);
-		AddTex        ("Map1", "Export/ground_norm.dds", e_NomalMap);
-		AddTex        ("Map1", "Export/ground_spec.dds", e_SpecularMap);
+		CreateMap     ("Map1", "Export/HeightMap/Map1.raw"  , 100.0f, 100.0f, 50.0f, 1000.0f, e_ShaderPongTexMap);
+		AddTex        ("Map1", "Export/ground_diff.dds"     , e_DiffuseMap);
+		AddTex        ("Map1", "Export/ground_norm.dds"     , e_NomalMap);
+		AddTex        ("Map1", "Export/ground_spec.dds"     , e_SpecularMap);
 		//CreateModel("Map1", "Export/TestMapLoc.pod", e_ShaderPongTex);
 
 		//-------------------------------------------------------------------------------//
