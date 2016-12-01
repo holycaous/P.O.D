@@ -344,7 +344,7 @@ private:
 				//mShaderManager->SetGbuffer();
 
 				// 모델 내부에 있는 매트릭스 만큼, 반복
-				auto tobjMtx = itor->second->mObjData;
+				map<int, ObjData>& tobjMtx = itor->second->mObjData;
 				UINT i = -1;
 				for (auto itor2 = tobjMtx.begin(); itor2 != tobjMtx.end(); ++itor2)
 				{
@@ -401,6 +401,13 @@ private:
 					{
 						stride[0] = mShaderManager->GetIAStride();
 						stride[1] = sizeof(InsAni);
+					}
+					// 맵 버퍼
+					else if (_ShaderMode == e_ShaderPongTexMap)
+					{
+						stride[0] = mShaderManager->GetIAStride();
+						stride[1] = sizeof(InsMap);
+
 					}
 					// 그 외 인스턴스 텍스처
 					else

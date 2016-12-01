@@ -82,6 +82,25 @@ struct PNTVertexAniOut
 	float2 AniData      : ANIDATA;
 };
 
+struct PNTVertexMapIn
+{
+	float2 Tex				  : TEXCOORD;
+	float2 VtxInfo            : VTXINFO;		 // 버택스 번호, 버택스 갯수
+	row_major float4x4 World  : WORLD;
+	float3 TexData            : TEXDATA;		 // 맵 텍스처 번호, 텍스처 너비, 텍스처 높이
+	uint InstanceId		      : SV_InstanceID;
+};
+
+struct PNTVertexMapOut
+{
+	float4 PosH         : SV_POSITION;
+	float3 PosW         : POSITION0;
+	float3 NormalW      : NORMAL;
+	float2 Tex          : TEXCOORD0;   // 보정 용도
+	float3 WT           : POSITION1;   // 매트릭스 만들기 용도
+	float3 WB           : POSITION2;   // 매트릭스 만들기 용도
+};
+
 struct PNTVertexOut
 {
 	float4 PosH    : SV_POSITION;
@@ -199,6 +218,9 @@ Texture2D gRunModelTex;
 Texture2D gWalkModelTex;
 Texture2D gDeathModelTex;
 Texture2D gAttackModelTex;
+
+// 맵 스킨 텍스처
+Texture2D gMapTex;
 
 // G버퍼 텍스처
 Texture2D gGDepthTex;

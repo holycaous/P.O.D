@@ -29,7 +29,8 @@ typedef enum
 	e_ShaderPongTex	   = 2,
 	e_ShaderCartoonTex = 3,
 	e_ShaderDeferred   = 4,
-	e_ShaderPongTexAni = 5
+	e_ShaderPongTexAni = 5,
+	e_ShaderPongTexMap = 6
 }SHADER_TYPE;
 
 // 쉐이더 변수 초기화
@@ -121,8 +122,14 @@ struct VertexPNTAni
 {
 	XMFLOAT2 Tex;
 	XMFLOAT3 Weights;
-	XMFLOAT3 VtxInfo; // 패딩 값
+	XMFLOAT3 VtxInfo; // 버텍스 정보 넣었음
 	UINT     BoneIndices[4];
+};
+
+struct VertexPNTMap
+{
+	XMFLOAT2 Tex;
+	XMFLOAT2 VtxInfo; // 버텍스 정보 넣었음
 };
 
 struct VertexG
@@ -136,7 +143,14 @@ struct VertexG
 struct InsAni
 {
 	XMFLOAT4X4 mMtx;
-	XMFLOAT4   mInsAni; // 실행될 애니의 텍스처번호, 프레임 정보
+	XMFLOAT4   mInsAni; // 실행될 애니의 텍스처번호, 프레임 정보, 테스처 너비, 높이
+};
+
+// 인스턴스 정보
+struct InsMap
+{
+	XMFLOAT4X4 mMtx;
+	XMFLOAT3   mInsTex; // 실행될 텍스처번호,  테스처 너비, 높이
 };
 
 // 구조체 정의
@@ -1018,6 +1032,14 @@ public:
 		mIndexCount   = Indices.size();
 	}
 
+	// 변수 계산하기
+	void CalValueMap()
+	{
+		mVertexOffset = Vertices.size();
+		mIndexOffset  = Indices.size() - 1;
+		mIndexCount   = Indices.size() - 1;
+	}
+
 	// 오브젝트 데이터 1개 가져요기
 	ObjData& getObj(int _uniqueCode)
 	{
@@ -1247,6 +1269,10 @@ public:
 			Build_PNT_Ani();
 			break;
 
+		case e_ShaderPongTexMap:
+			Build_PNT_Map();
+			break;
+
 		default:
 			break;
 		}
@@ -1330,6 +1356,16 @@ public:
 					vbd.MiscFlags           = 0;
 					vbd.StructureByteStride = 0;
 				}
+				// 맵 모델 버퍼
+				else if (itor->second->mShaderMode == e_ShaderPongTexMap)
+				{
+					vbd.Usage               = D3D11_USAGE_DYNAMIC;
+					vbd.ByteWidth           = sizeof(InsMap) * itor->second->mObjData.size();
+					vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+					vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+					vbd.MiscFlags           = 0;
+					vbd.StructureByteStride = 0;
+				}
 				// 일반 모델 버퍼
 				else
 				{
@@ -1368,6 +1404,16 @@ public:
 				vbd.MiscFlags           = 0;
 				vbd.StructureByteStride = 0;
 			}
+			// 맵 모델 버퍼
+			else if (_selectModel->mShaderMode == e_ShaderPongTexMap)
+			{
+				vbd.Usage               = D3D11_USAGE_DYNAMIC;
+				vbd.ByteWidth           = sizeof(InsMap) * _selectModel->mObjData.size();
+				vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+				vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+				vbd.MiscFlags           = 0;
+				vbd.StructureByteStride = 0;
+			}
 			// 일반 모델 버퍼
 			else
 			{
@@ -1400,7 +1446,7 @@ public:
 				mCoreStorage->md3dImmediateContext->Map(mInstancedBuffer[itor->second->mCreateName], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
 
 				// 모델 데이터 가져오기
-				auto tModelData = itor->second->mObjData;
+				map<int, ObjData>& tModelData = itor->second->mObjData;
 				UINT i = -1;
 
 				// 애니 모델 쓰기
@@ -1420,6 +1466,24 @@ public:
 						dataView[i].mInsAni.y = itor2->second.mFrame;      // 프레임 정보
 						dataView[i].mInsAni.z = itor2->second.mTexWidth;   // 텍스처 너비
 						dataView[i].mInsAni.w = itor2->second.mTexHeight;  // 텍스처 높이
+					}
+				}
+				// 맵 버퍼 쓰기
+				else if (itor->second->mShaderMode == e_ShaderPongTexMap)
+				{
+					// << 인스턴스 버퍼 >> 의 "인터페이스"를 얻어온다.
+					InsMap* dataView = reinterpret_cast<InsMap*>(mappedData.pData);
+
+					// 등록된 모델 수만큼 등록 (컬링 안함)
+					for (auto itor2 = tModelData.begin(); itor2 != tModelData.end(); ++itor2)
+					{
+						// 모델 매트릭스
+						dataView[++i].mMtx = itor2->second.mWdMtx;
+
+						// 모델 애니정보
+						dataView[i].mInsTex.x = 0;						   // 실행될 맵의 텍스처번호
+						dataView[i].mInsTex.y = itor2->second.mTexWidth;   // 프레임 너비
+						dataView[i].mInsTex.z = itor2->second.mTexHeight;  // 텍스처 높이
 					}
 				}
 				// 일반 모델 쓰기
@@ -2041,6 +2105,155 @@ private:
 		D3D11_BUFFER_DESC vbd;
 		vbd.Usage          = D3D11_USAGE_IMMUTABLE;
 		vbd.ByteWidth      = sizeof(VertexPNTAni)* totalVertexCount;
+		vbd.BindFlags      = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+		vbd.CPUAccessFlags = 0;
+		vbd.MiscFlags      = 0;
+
+		D3D11_SUBRESOURCE_DATA vinitData;
+		vinitData.pSysMem = &vertices[0];
+		HR(cCoreStorage::GetInstance()->md3dDevice->CreateBuffer(&vbd, &vinitData, &mVB));
+
+
+		// 총 인덱스 사이즈 계산
+		UINT totalIndexCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			totalIndexCount += itor->second->Indices.size();
+		}
+
+		// 인덱스 버퍼 만들기
+		std::vector<UINT> indices;
+
+		// 가장 큰 버퍼로 복사
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 이터레이터가 돌면서, 인덱스 크기만큼 더한다.
+			for (unsigned int i = 0; i < itor->second->Indices.size(); ++i)
+			{
+				indices.push_back(itor->second->Indices[i]);
+			}
+		}
+
+		// 인덱스 버퍼 만들기
+		D3D11_BUFFER_DESC ibd;
+		ibd.Usage          = D3D11_USAGE_IMMUTABLE;
+		ibd.ByteWidth      = sizeof(UINT) * totalIndexCount;
+		ibd.BindFlags      = D3D11_BIND_INDEX_BUFFER; // 인덱스
+		ibd.CPUAccessFlags = 0;
+		ibd.MiscFlags      = 0;
+
+		D3D11_SUBRESOURCE_DATA iinitData;
+		iinitData.pSysMem = &indices[0];
+		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
+	}
+	void Build_PNT_Map()
+	{
+		//-----------------------------------------------------------------------------------------------------------//
+		// 직전 버텍스 저장용
+
+		int AfterVtxOffset = 0;
+
+		// 개별 버텍스 오프셋 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 처음이라면
+			if (AfterVtxOffset == 0)
+			{
+				// 현재 버텍스 저장
+				AfterVtxOffset = itor->second->mVertexOffset;
+				itor->second->mVertexOffset = 0;
+			}
+			else
+			{
+				// 내것과, 내 직전 걸 더한다.
+				itor->second->mVertexOffset = AfterVtxOffset;
+				AfterVtxOffset = itor->second->mVertexOffset + itor->second->Vertices.size();
+			}
+		}
+		// 직전 인덱스 저장용
+		int AfterIdxOffset = 0;
+
+		// 개별 인덱스 오프셋 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 처음이라면
+			if (AfterIdxOffset == 0)
+			{
+				// 현재 인덱스 저장
+				AfterIdxOffset = itor->second->mIndexCount;
+				itor->second->mIndexOffset = 0;
+			}
+			else
+			{
+				// 내것과, 내 직전 걸 더한다.
+				itor->second->mIndexOffset = AfterIdxOffset;
+				AfterIdxOffset = itor->second->mIndexOffset + itor->second->mIndexCount;
+			}
+		}
+
+		// 법선벡터 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// itor이 파싱된 모델이라면 넘어간다.
+			if (itor->second->mModelType == e_ParsingModel)
+				continue;
+
+			// 법선벡터 계산
+			CalNormalVtx(itor->second);
+		}
+
+		// 정점 늘리기 & 버텍스 버퍼로 송신
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// itor이 파싱된 모델이라면 넘어간다.
+			if (itor->second->mModelType == e_ParsingModel)
+				continue;
+
+			// 정점 늘리기
+			CalVtxINCAndSet(itor->second);
+		}
+
+		// 탄젠트 공간 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// itor이 파싱된 모델이라면 넘어간다.
+			if (itor->second->mModelType == e_ParsingModel)
+				continue;
+
+			// 탄젠트 공간 계산
+			CalTangentSpace(itor->second);
+		}
+
+
+		// 총 버텍스 사이즈 계산
+		vector<VertexPNTMap> vertices; // 한곳으로 옮기는 작업 ( 가장 큰 버퍼 )
+		UINT totalVertexCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			totalVertexCount += itor->second->Vertices.size();
+		}
+
+		// 전체버퍼 사이즈 늘리기
+		vertices.resize(totalVertexCount);
+
+		// 가장 큰 버퍼로 복사
+		UINT k = 0;
+		int  count = 0;
+		int  vtxCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다. (버텍스 별로 계산 되는 중)
+			for (unsigned int i = 0; i < itor->second->Vertices.size(); ++i, ++k)
+			{
+				vertices[k].Tex     = itor->second->Vertices[i].TexUV;
+				vertices[k].VtxInfo = XMFLOAT2((float)i, (float)itor->second->Vertices.size()); // 버텍스 정보
+			}
+		}
+
+		// 버텍스 버퍼 만들기
+		D3D11_BUFFER_DESC vbd;
+		vbd.Usage          = D3D11_USAGE_IMMUTABLE;
+		vbd.ByteWidth      = sizeof(VertexPNTMap)* totalVertexCount;
 		vbd.BindFlags      = D3D11_BIND_VERTEX_BUFFER; // 버텍스
 		vbd.CPUAccessFlags = 0;
 		vbd.MiscFlags      = 0;

@@ -16,7 +16,7 @@ public:
 		mModelManager->AddScreen(0.0f, 0.0f, 0.0f);
 
 		// ¸Ê Å×½ºÆ®¿ë
-		mModelManager->AddMap(0, "Map1", 0.0f, 0.0f, 0.0f, 1.0f);
+		mModelManager->AddMap(0, "Map1", 0.0f, 0.0f, 0.0f);
 
 
 		//--------------------------------------------------------------------------------------------------------------------//
@@ -272,15 +272,15 @@ public:
 			{
 				static int i1 = 1;
 				static int i2 = 1;
-				switch (rand() % 2)
+				switch (/*rand() % 2*/1)
 				{
 				case 0:
-					mModelManager->AddUpdateModel(++i1, "Model1", float(rand() % 1000) - 500.0f, 200.0f + float(rand() % 200), float(rand() % 1000) -500.0f, e_Idle);
+					mModelManager->AddUpdateModel(++i1, "Model1", float(rand() % 4000) - 2000.0f, 200.0f + float(rand() % 500), float(rand() % 4000) - 2000.0f, e_Idle);
 					mModelManager->SetFSM        (  i1, "Model1", FSM_TYPE(rand() % 6));
 					break;
 				default:
 				case 1:
-					mModelManager->AddUpdateModel(++i2, "Model2", float(rand() % 1000) - 500.0f, 200.0f + float(rand() % 200), float(rand() % 1000) -500.0f, e_Idle);
+					mModelManager->AddUpdateModel(++i2, "Model2", float(rand() % 4000) - 2000.0f, 200.0f + float(rand() % 500), float(rand() % 4000) - 2000.0f, e_Idle);
 					mModelManager->SetFSM        (  i2, "Model2", FSM_TYPE(rand() % 6));
 					break;
 				}
@@ -294,7 +294,7 @@ public:
 			{
 				static int i1 = 1;
 				static int i2 = 1;
-				switch (rand() % 2)
+				switch (/*rand() % 2*/1)
 				{
 				case 0:
 					mModelManager->EraseUpdateModel(++i1, "Model1");

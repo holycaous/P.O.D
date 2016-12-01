@@ -45,10 +45,10 @@ public:
 		AddTex        ("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
 
 		// 맵 추가
-		CreateMap("Map1", "Export/HeightMap.raw"  , 100.0f, 100.0f, 50.0f, 1000.0f, e_ShaderPongTex);
-		AddTex   ("Map1", "Export/ground_diff.dds", e_DiffuseMap);
-		AddTex   ("Map1", "Export/ground_norm.dds", e_NomalMap);
-		AddTex   ("Map1", "Export/ground_spec.dds", e_SpecularMap);
+		CreateMap     ("Map1", "Export/HeightMap.raw"  , 100.0f, 100.0f, 50.0f, 1000.0f, e_ShaderPongTexMap);
+		AddTex        ("Map1", "Export/ground_diff.dds", e_DiffuseMap);
+		AddTex        ("Map1", "Export/ground_norm.dds", e_NomalMap);
+		AddTex        ("Map1", "Export/ground_spec.dds", e_SpecularMap);
 		//CreateModel("Map1", "Export/TestMapLoc.pod", e_ShaderPongTex);
 
 		//-------------------------------------------------------------------------------//
@@ -146,13 +146,16 @@ public:
 	}
 
 	// 맵 만들기
-	void AddMap(int _key, string _name, float _x, float _y, float _z, float _scale)
+	void AddMap(int _key, string _name, float _x, float _y, float _z)
 	{
 		AddModel(_key, _name, _x , _y, _z);
-		SetScale(_key, _name, _scale, 1.0f, _scale);
 
-		getModelData(_key, _name);
+		// 기본 맵
+		getModelData(_key, _name).mAniType = 0;
 
+		// 텍스처 크기 갱신
+		getModelData(_key, _name).mTexWidth  = mAllModelData[_name]->mSkinModelTex[0]->mTexWidth;
+		getModelData(_key, _name).mTexHeight = mAllModelData[_name]->mSkinModelTex[0]->mTexHeight;
 	}
 
 	// 스크린 삭제
@@ -744,9 +747,10 @@ public:
 		// 모델의 종류
 		_nowModel->mModelType  = e_BasicModel;
 		_nowModel->mCreateName = _Name;
+		strcpy(_nowModel->mObjName, _Name.c_str());
 
 		// 파싱 시작
-		mXMLParser.LoadBox(*_nowModel, 10.0f, 10.0f, 10.0f);
+		mXMLParser.LoadBox(_nowModel, 10.0f, 10.0f, 10.0f);
 
 		// 쉐이더, 모델 등록 (필터링 용)
 		UseAllShaderModel(_ShaderMode);
@@ -767,9 +771,10 @@ public:
 		// 모델의 종류
 		_nowModel->mModelType  = e_BasicModel;
 		_nowModel->mCreateName = _Name;
+		strcpy(_nowModel->mObjName, _Name.c_str());
 
 		// 파싱 시작
-		mXMLParser.LoadBox(*_nowModel, _Size, _Size, _Size);
+		mXMLParser.LoadBox(_nowModel, _Size, _Size, _Size);
 
 		// 쉐이더, 모델 등록 (필터링 용)
 		UseAllShaderModel(_ShaderMode);
@@ -789,11 +794,15 @@ public:
 		InitMetaData* _nowModel = mAllModelData[_Name];
 
 		// 모델의 종류
-		_nowModel->mModelType  = e_BasicModel;
+		_nowModel->mModelType  = e_ParsingModel;
 		_nowModel->mCreateName = _Name;
+		strcpy(_nowModel->mObjName, _Name.c_str());
 
 		// 파싱 시작 
-		mXMLParser.LoadMap(*_nowModel, _FileName, _Xwidth, _Zdepth, _CellSize, _HeightScale);
+		mXMLParser.LoadMap(_nowModel, _FileName, _Xwidth, _Zdepth, _CellSize, _HeightScale);
+
+		// 변수 계산
+		_nowModel->CalValueMap();
 
 		// 쉐이더, 모델 등록 (필터링 용)
 		UseAllShaderModel(_ShaderMode);
@@ -809,9 +818,10 @@ public:
 		// 모델의 종류
 		mScreen->mModelType  = e_BasicModel;
 		mScreen->mCreateName = "GSreen";
+		strcpy(mScreen->mObjName, mScreen->mCreateName.c_str());
 
 		// 파싱 시작 (풀 스크린 쿼드 만들기)
-		mXMLParser.LoadScreen(*mScreen, 1.0f, 1.0f); // 풀 스크린쿼드
+		mXMLParser.LoadScreen(mScreen, 1.0f, 1.0f); // 풀 스크린쿼드
 
 		// 변수 계산
 		mScreen->CalValue();

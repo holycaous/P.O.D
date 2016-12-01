@@ -195,6 +195,7 @@
     <FxCompile Include="PNT_ANI.fx">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="PNT_MAP.fx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

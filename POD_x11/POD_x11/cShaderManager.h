@@ -159,6 +159,12 @@ public:
 			//vector<XMFLOAT4X4>& _SkinMtx = cAniManager::GetInstance()->mData[mNowModel->mCreateName]["Run"]->GetSkinStorage(12); // 애니키 번호
 			//SetShaderMtxArray(e_ShaderValMtxArray, "gBoneTransforms", &_SkinMtx[0], _SkinMtx.size());
 		}
+		// 맵 업데이트
+		else if (mNowModel->mShaderMode == e_ShaderPongTexMap)
+		{
+			// 기본 맵
+			SetShaderValue(e_ShaderValResource, "gMapTex", mNowModel->mSkinModelTex[0]->mTexSRV);
+		}
 
 		// 깊이 버퍼 렌더링용
 		float CamNear = gCam.GetNearZ();
@@ -191,6 +197,9 @@ public:
 
 		case e_ShaderPongTexAni:
 			return sizeof(VertexPNTAni);
+
+		case e_ShaderPongTexMap:
+			return sizeof(VertexPNTMap);
 
 		default:
 		case e_ShaderPongTex:
@@ -383,6 +392,9 @@ private:
 		// 퐁쉐이더, 텍스처, 애니
 		BuildFX(e_ShaderPongTexAni, L"PNT_ANI.fx", "PongTexAni");
 
+		// 퐁쉐이더, 텍스처, 맵
+		BuildFX(e_ShaderPongTexMap, L"PNT_MAP.fx", "PongTexMap");
+
 		// 디퍼드 렌더링
 		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred");
 	}
@@ -442,6 +454,9 @@ private:
 		GetShaderValue(tEffectStorage, "gWalkModelTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gDeathModelTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gAttackModelTex"   , e_ShaderValResource);
+
+		// 맵 모델 텍스처
+		GetShaderValue(tEffectStorage, "gMapTex"		   , e_ShaderValResource);
 
 		// IA 생성
 		CreateIA(tEffectStorage);
@@ -543,6 +558,22 @@ private:
 				{ "WORLD"      , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 				{ "WORLD"      , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 				{ "ANIDATA"    , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 64                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 }	
+				// 인스턴스데이터에 애니 텍스처 번호, 프레임번호 넘겨야함
+			};
+			// Create the input layout
+			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
+		}
+		else if (mShaderMode == e_ShaderPongTexMap)
+		{
+			D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+			{
+				{ "TEXCOORD"   , 0, DXGI_FORMAT_R32G32_FLOAT      , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "VTXINFO"    , 0, DXGI_FORMAT_R32G32_FLOAT      , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "WORLD"      , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0                           , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "TEXDATA"    , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 1, 64                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 }	
 				// 인스턴스데이터에 애니 텍스처 번호, 프레임번호 넘겨야함
 			};
 			// Create the input layout
