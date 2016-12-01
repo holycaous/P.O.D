@@ -16,7 +16,7 @@ public:
 		mModelManager->AddScreen(0.0f, 0.0f, 0.0f);
 
 		// 맵 테스트용
-		mModelManager->AddMap(0, "Map1", 0.0f, 0.0f, 0.0f, 5.0f);
+		mModelManager->AddMap(0, "Map1", 0.0f, 0.0f, 0.0f, 1.0f);
 
 
 		//--------------------------------------------------------------------------------------------------------------------//
@@ -84,13 +84,13 @@ public:
 
 
 
-		// 포인트 라이트
-		XMFLOAT3 _PlayerPos     = gCam.GetThirdPosition();
-		XMFLOAT3 _PlayerLookDir = mModelManager->PlayerLookDir();
-		_PlayerPos.x = _PlayerPos.x + _PlayerLookDir.x * 15.0f;
-		_PlayerPos.z = _PlayerPos.z + _PlayerLookDir.z * 15.0f;
-		_PlayerPos.y = _PlayerPos.y + 20.0f;
-		mShaderManager->GetLightManager()->mPointLight.Position = _PlayerPos;
+		//// 포인트 라이트
+		//XMFLOAT3 _PlayerPos     = gCam.GetThirdPosition();
+		//XMFLOAT3 _PlayerLookDir = mModelManager->PlayerLookDir();
+		//_PlayerPos.x = _PlayerPos.x + _PlayerLookDir.x * 15.0f;
+		//_PlayerPos.z = _PlayerPos.z + _PlayerLookDir.z * 15.0f;
+		//_PlayerPos.y = _PlayerPos.y + 20.0f;
+		//mShaderManager->GetLightManager()->mPointLight.Position = _PlayerPos;
 
 	}
 

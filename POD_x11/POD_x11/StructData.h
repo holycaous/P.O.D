@@ -367,7 +367,7 @@ public:
 private:
 	// 힘 (중력)
 	float mForce;
-	
+
 public:
 	ObjData()
 	{
@@ -389,7 +389,6 @@ public:
 
 		// 중력
 		mForce = 0.0f;
-
 	}
 	~ObjData()
 	{
@@ -603,6 +602,14 @@ public:
 class InitMetaData
 {
 public:
+	//--------------------------------------------------//
+	// 맵 전용
+	//--------------------------------------------------//
+	vector<float> mHeightmap;
+
+	//--------------------------------------------------//
+	// 일반 오브젝트
+	//--------------------------------------------------//
 	// 버텍스, 인덱스
 	vector<Vertex>   Vertices;
 	vector<UINT>     Indices;
@@ -785,6 +792,7 @@ public:
 		mObjData   .clear();
 		mCreateName.clear();
 		mSkinTex   .clear();
+		mHeightmap .clear();
 	}
 
 	// 텍스처 로드
@@ -1793,7 +1801,7 @@ private:
 			if (itor->second->mModelType == e_ParsingModel)
 				continue;
 
-			// 탄젠트 공간 계싼
+			// 탄젠트 공간 계산
 			CalTangentSpace(itor->second);
 		}
 
@@ -2296,7 +2304,7 @@ private:
 		{
 			// 현재 인덱스 번호를 검색한다.
 			UINT _ModelIdx = _MetaData->Indices[i];    //  모델의 현재 인덱스
-			UINT _TexIdx = _MetaData->TexIndices[i]; // 텍스처의 현재 인덱스
+			UINT _TexIdx   = _MetaData->TexIndices[i]; // 텍스처의 현재 인덱스
 
 			// 각각의 인덱스 번호에 해당하는 uv값을 꺼낸다.
 			XMFLOAT2& ModelTexUV = _MetaData->Vertices[_ModelIdx].TexUV; //   모델 인덱스의 UV 값

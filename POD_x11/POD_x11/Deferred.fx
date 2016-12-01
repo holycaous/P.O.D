@@ -114,19 +114,19 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	
 	// 테스트 1
 	// 포인트 라이트
-	float gPointLight_Length = length(gPointLight.Position.xyz - sData.PositionTex.xyz);
-	
-	// 거리 확인
-	[flatten]
-	if (gPointLight_Length < gPointLight.Range)
-	{
-		// 거리 마다 % 를 구한다.
-		float gFinPointLength = gPointLight.Range / gPointLight_Length;
-
-		// 라이트 영역내에 있다면,
-		float3 gPointLight_Dir = normalize(gPointLight.Position.xyz - sData.PositionTex.xyz);
-			DotPointLightNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir)) * pow(gFinPointLength, 2.f) * 0.01f;		  // +=
-	}
+	//float gPointLight_Length = length(gPointLight.Position.xyz - sData.PositionTex.xyz);
+	//
+	//// 거리 확인
+	//[flatten]
+	//if (gPointLight_Length < gPointLight.Range)
+	//{
+	//	// 거리 마다 % 를 구한다.
+	//	float gFinPointLength = gPointLight.Range / gPointLight_Length;
+	//
+	//	// 라이트 영역내에 있다면,
+	//	float3 gPointLight_Dir = normalize(gPointLight.Position.xyz - sData.PositionTex.xyz);
+	//		DotPointLightNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir)) * pow(gFinPointLength, 2.f) * 0.01f;		  // +=
+	//}
 		
 	////// 스팟 라이트
 	//float gSpotLight_Length = length(sData.PositionTex.xyz - gSpotLight.Position.xyz);
@@ -155,18 +155,18 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	diffuse += D;
 	spec    += S;
 	
-	// 포인트 라이트
-	[flatten]
-	if (gPointLight_Length < gPointLight.Range)
-	{
-		// 거리 마다 % 를 구한다.
-		float gFinPointLength = gPointLight.Range / gPointLight_Length;
-
-		ComputePointLight(gMaterial, gPointLight, sData.PositionTex.xyz, sData.TanNormalTex.xyz, toEye, A, D, S);
-		ambient += A * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
-		diffuse += D * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
-		spec    += S * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
-	}
+	//// 포인트 라이트
+	//[flatten]
+	//if (gPointLight_Length < gPointLight.Range)
+	//{
+	//	// 거리 마다 % 를 구한다.
+	//	float gFinPointLength = gPointLight.Range / gPointLight_Length;
+	//
+	//	ComputePointLight(gMaterial, gPointLight, sData.PositionTex.xyz, sData.TanNormalTex.xyz, toEye, A, D, S);
+	//	ambient += A * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
+	//	diffuse += D * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
+	//	spec    += S * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
+	//}
 
 
 	//// 스폿 라이트

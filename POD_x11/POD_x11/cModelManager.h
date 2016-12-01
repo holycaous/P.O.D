@@ -40,12 +40,16 @@ public:
 		CreateBoxModel("BOX2", e_ShaderLight);
 		
 		CreateBoxModel("BOX3", e_ShaderPongTex);
-		AddTex("BOX3", "Export/WoodCrate01_diff.dds", e_DiffuseMap);
-		AddTex("BOX3", "Export/WoodCrate01_norm.dds", e_NomalMap);
-		AddTex("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
+		AddTex        ("BOX3", "Export/WoodCrate01_diff.dds", e_DiffuseMap);
+		AddTex        ("BOX3", "Export/WoodCrate01_norm.dds", e_NomalMap);
+		AddTex        ("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
 
 		// 맵 추가
-		CreateModel("Map1", "Export/FinTestMapLoc.pod", e_ShaderPongTex);
+		CreateMap("Map1", "Export/HeightMap.raw"  , 100.0f, 100.0f, 50.0f, 1000.0f, e_ShaderPongTex);
+		AddTex   ("Map1", "Export/ground_diff.dds", e_DiffuseMap);
+		AddTex   ("Map1", "Export/ground_norm.dds", e_NomalMap);
+		AddTex   ("Map1", "Export/ground_spec.dds", e_SpecularMap);
+		//CreateModel("Map1", "Export/TestMapLoc.pod", e_ShaderPongTex);
 
 		//-------------------------------------------------------------------------------//
 		//
@@ -72,7 +76,7 @@ public:
 		CreateBoneAni("Model1", "Export/mob1BoneAttack.pod"     , e_Attack);
 		//-------------------------------------------------------------------------------//
 
-			//-------------------------------------------------------------------------------//
+		//-------------------------------------------------------------------------------//
 		// 모델 한세트 추가
 		//-------------------------------------------------------------------------------//
 		CreateModel  ("Model2", "Export/mob2Loc.pod"		    , e_ShaderPongTexAni);
@@ -146,6 +150,9 @@ public:
 	{
 		AddModel(_key, _name, _x , _y, _z);
 		SetScale(_key, _name, _scale, 1.0f, _scale);
+
+		getModelData(_key, _name);
+
 	}
 
 	// 스크린 삭제
@@ -763,6 +770,30 @@ public:
 
 		// 파싱 시작
 		mXMLParser.LoadBox(*_nowModel, _Size, _Size, _Size);
+
+		// 쉐이더, 모델 등록 (필터링 용)
+		UseAllShaderModel(_ShaderMode);
+		UsingModel(_Name);
+	}
+
+	// 맵 생성
+	void CreateMap(string _Name, string _FileName, float _Xwidth, float _Zdepth, float _CellSize, float _HeightScale, SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	{
+		// 모델 체인에 이름 등록
+		mModelChain[_Name].push_back(_Name);
+
+		// 모델 생성
+		mAllModelData[_Name] = new InitMetaData(_Name.c_str(), _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
+
+		// 현재 모델 정보 얻기
+		InitMetaData* _nowModel = mAllModelData[_Name];
+
+		// 모델의 종류
+		_nowModel->mModelType  = e_BasicModel;
+		_nowModel->mCreateName = _Name;
+
+		// 파싱 시작 
+		mXMLParser.LoadMap(*_nowModel, _FileName, _Xwidth, _Zdepth, _CellSize, _HeightScale);
 
 		// 쉐이더, 모델 등록 (필터링 용)
 		UseAllShaderModel(_ShaderMode);

@@ -475,7 +475,203 @@ public:
 		ti[3] = 1; ti[4] = 3; ti[5] = 2;
 
 		_InitMetaData.TexIndices.assign(&ti[0], &ti[6]);
+	}
 
+	// 맵 만들기
+	void LoadMap(InitMetaData& _InitMetaData, string& _hightMapPss, float& _Xwidth, float& _Zdepth, float& _CellSize, float& _HeightScale)
+	{
+		_InitMetaData.mHeightmap.resize ((int)(_Xwidth * _Zdepth), 0);
+		_InitMetaData.Vertices.resize   ((int)(_Xwidth * _Zdepth));
+		_InitMetaData.TexVertices.resize((int)(_Xwidth * _Zdepth));
+		_InitMetaData.Indices   .resize((int)(((_Xwidth - 1) * (_Zdepth - 1)) * 6)); 
+		_InitMetaData.TexIndices.resize((int)(((_Xwidth - 1) * (_Zdepth - 1)) * 6));
+
+
+		LoadHeightmap(_InitMetaData, _hightMapPss, _Xwidth, _Zdepth, _HeightScale);
+		Smooth       (_InitMetaData, _Xwidth, _Zdepth);
+		CalMap       (_InitMetaData, _Xwidth, _Zdepth, _CellSize);
+
+		// 하이트맵 전송
+		for (int i = 0; i < (int)(_Xwidth * _Zdepth); ++i)
+			_InitMetaData.Vertices[i].Position.y = _InitMetaData.mHeightmap[i];
+	}
+
+	// 맵 계산
+	void CalMap(InitMetaData& _InitMetaData, float& _Xwidth, float& _Zdepth, float& _CellSize)
+	{
+		CalVtx(_InitMetaData, _Xwidth, _Zdepth, _CellSize);
+		CalIB (_InitMetaData, _Xwidth, _Zdepth);
+	}
+
+	// 버텍스 계산
+	void CalVtx(InitMetaData& _InitMetaData, float& _Xwidth, float& _Zdepth, float& _CellSize)
+	{
+		// 중간좌표 저장
+		float halfWidth = 0.5f * (_Xwidth * _CellSize);
+		float halfDepth = 0.5f * (_Zdepth * _CellSize);
+
+		// 정규화된 텍스처 좌표계로 넘긴다.
+		float du = 1.0f / (_Xwidth / _CellSize - 1);
+		float dv = 1.0f / (_Zdepth / _CellSize - 1);
+
+		// 맵 중앙에 원점을 두고 맵 생성 
+		for (UINT y = 0; y < (UINT)_Zdepth; ++y)
+		{
+			float zPos = halfDepth - (y * _CellSize);
+			for (UINT x = 0; x < (UINT)_Xwidth; ++x)
+			{
+				float xPos = -halfWidth + (x * _CellSize);
+
+				// 버텍스 넣기
+				_InitMetaData.Vertices[y * (UINT)_Xwidth + x].Position = XMFLOAT3(xPos, 0.0f, zPos);
+
+				// 텍스처 버텍스 계산
+				_InitMetaData.TexVertices[y * (UINT)_Xwidth + x] = XMFLOAT3(x * du, y * dv, 0.0f);
+
+				// 텍스처 uv 맞추기
+				_InitMetaData.Vertices[y * (UINT)_Xwidth + x].TexUV.x = x * du;
+				_InitMetaData.Vertices[y * (UINT)_Xwidth + x].TexUV.y = y * dv;
+			}
+		}
+	}
+
+	// 인덱스 계산
+	void CalIB(InitMetaData& _InitMetaData, float& _Xwidth, float& _Zdepth)
+	{
+		// 인덱스 계산
+		int baseIdx = 0;
+		for (UINT y = 0; y < _Zdepth - 1; ++y)
+		{
+			for (UINT x = 0; x < _Xwidth - 1; ++x)
+			{
+				//----------------------------------------------------------------//
+				// 인덱스
+				//----------------------------------------------------------------//
+				// 상단 인덱스
+				_InitMetaData.Indices[baseIdx + 0] = (UINT)(y * _Xwidth + x);
+				_InitMetaData.Indices[baseIdx + 1] = (UINT)(y * _Xwidth + x + 1);
+				_InitMetaData.Indices[baseIdx + 2] = (UINT)((y + 1) * _Xwidth + x);
+
+				// 아래 인덱스
+				_InitMetaData.Indices[baseIdx + 3] = (UINT)((y + 1) * _Xwidth + x);
+				_InitMetaData.Indices[baseIdx + 4] = (UINT)(y * _Xwidth + x + 1);
+				_InitMetaData.Indices[baseIdx + 5] = (UINT)((y + 1) * _Xwidth + x + 1);
+
+
+				//----------------------------------------------------------------//
+				// 텍스처 인덱스
+				//----------------------------------------------------------------//
+				// 상단 인덱스
+				_InitMetaData.TexIndices[baseIdx + 0] = (UINT)(y * _Xwidth + x);
+				_InitMetaData.TexIndices[baseIdx + 1] = (UINT)(y * _Xwidth + x + 1);
+				_InitMetaData.TexIndices[baseIdx + 2] = (UINT)((y + 1) * _Xwidth + x);
+
+				// 아래 인덱스
+				_InitMetaData.TexIndices[baseIdx + 3] = (UINT)((y + 1) * _Xwidth + x);
+				_InitMetaData.TexIndices[baseIdx + 4] = (UINT)(y * _Xwidth + x + 1);
+				_InitMetaData.TexIndices[baseIdx + 5] = (UINT)((y + 1) * _Xwidth + x + 1);
+
+				// 다음 사각형
+				baseIdx += 6;
+			}
+		}
+	}
+
+
+	// 하이트맵 로딩
+	void LoadHeightmap(InitMetaData& _InitMetaData, string& _hightMapPss, float& _Xwidth, float& _Zdepth, float& _HeightScale)
+	{
+		// 전체 크기
+		int tMapSize = (int)(_Xwidth * _Zdepth);
+
+		// 하이트맵 읽어드릴 버퍼
+		vector<unsigned char> in(tMapSize);
+
+		// 변환
+		wstring _WsTexName;
+		StringToWchar_t(_hightMapPss, _WsTexName);
+
+		// 하이트맵 바이너리로 읽기
+		std::ifstream inFile;
+		inFile.open(_WsTexName.c_str(), std::ios_base::binary);
+
+		// 하이트맵 읽기
+		if (inFile)
+		{
+			// Read the RAW bytes.
+			inFile.read((char*)&in[0], (std::streamsize)in.size());
+
+			// Done with file.
+			inFile.close();
+		}
+		
+		// 데이터 가공 및 복사
+		for (int i = 0; i < tMapSize; ++i)
+			_InitMetaData.mHeightmap[i] = (in[i] / 255.0f) * _HeightScale;
+	}
+	
+	// 부드럽게하기 <-- 0~255의 정수값을 실수값으로 가공하는 과정
+	void Smooth(InitMetaData& _InitMetaData, float& _Xwidth, float& _Zdepth)
+	{
+		// 임시버퍼
+		std::vector<float> dest(_InitMetaData.mHeightmap.size());
+
+		for (UINT y = 0; y < (UINT)_Zdepth; ++y)
+		{
+			for (UINT x = 0; x < (UINT)_Xwidth; ++x)
+			{
+				dest[y * (UINT)_Xwidth + x] = Average(_InitMetaData, _Xwidth, _Zdepth, y, x);
+			}
+		}
+		
+		// 복사해서 넣기
+		_InitMetaData.mHeightmap = dest;
+	}
+
+	// 평균 높이 계산
+	float Average(InitMetaData& _InitMetaData, float& _Xwidth, float& _Zdepth, int y, int x)
+	{
+		// 함수는 ij 요소의 평균 높이를 계산합니다.
+		// 그것은 8 개의 이웃 한 픽셀들로 그것 자체를 평균화한다.
+		// 픽셀에 이웃이 없다면 포함시키지 말라.
+		// 즉, 가장자리 픽셀에는 인접 픽셀이 없습니다.
+		//
+		// ----------
+		// | 1| 2| 3|
+		// ----------
+		// |4 |ij| 6|
+		// ----------
+		// | 7| 8| 9|
+		// ----------
+
+		float avg = 0.0f;
+		float num = 0.0f;
+
+		// 음수를 허용하려면 int를 사용하십시오. 우리가 UINT를 사용한다면, @ i = 0, m = i-1 = UINT_MAX
+		// 외부 for 루프의 반복은 발생하지 않습니다.
+		for (int m = y - 1; m <= y + 1; ++m)
+		{
+			for (int n = x - 1; n <= x + 1; ++n)
+			{
+				// 실제 유효한 값인지 확인
+				if (InBounds(_Xwidth, _Zdepth, m, n))
+				{
+					avg += _InitMetaData.mHeightmap[m * (int)_Xwidth + n];
+					num += 1.0f;
+				}
+			}
+		}
+
+		return avg / num;
+	}
+
+	// 실제 유효한 값인지 확인
+	bool InBounds(float& _Xwidth, float& _Zdepth, int y, int x)
+	{
+		// ij가 유효한 인덱스 인 경우 참; 그렇지 않은 경우는 false
+		return
+			y >= 0 && y < (int)_Zdepth &&
+			x >= 0 && x < (int)_Xwidth;
 	}
 
 	// 파일 읽기 테스트 (모델 데이터 경로 로드)
