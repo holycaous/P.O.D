@@ -30,7 +30,6 @@ using namespace std;
 #define CAM_3PERSON_LENGTH 375
 
 #define GRAVITY 800
-#define GROUND  0
 
 #ifndef max
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
@@ -61,6 +60,7 @@ using namespace std;
 #include "cCam.h"
 #include "cLightManager.h"
 #include "cAniManager.h"
+#include "cMapManager.h"
 #include "cModelManager.h"
 #include "cShaderManager.h"
 #include "cMaterialManager.h"

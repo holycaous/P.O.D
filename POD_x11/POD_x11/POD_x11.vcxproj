@@ -124,6 +124,7 @@
     <ClInclude Include="cGameStateSave.h" />
     <ClInclude Include="cLightManager.h" />
     <ClInclude Include="cMainState.h" />
+    <ClInclude Include="cMapManager.h" />
     <ClInclude Include="cMapTool.h" />
     <ClInclude Include="cMaterialManager.h" />
     <ClInclude Include="cMathHelper.h" />
@@ -155,6 +156,7 @@
     <ClCompile Include="cInitD3D.cpp" />
     <ClCompile Include="cLightManager.cpp" />
     <ClCompile Include="cMainState.cpp" />
+    <ClCompile Include="cMapManager.cpp" />
     <ClCompile Include="cMapTool.cpp" />
     <ClCompile Include="cMaterialManager.cpp" />
     <ClCompile Include="cMathHelper.cpp" />

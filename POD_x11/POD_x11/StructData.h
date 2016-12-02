@@ -382,6 +382,7 @@ private:
 	// 힘 (중력)
 	float mForce;
 
+	float mGround;
 public:
 	ObjData()
 	{
@@ -403,6 +404,7 @@ public:
 
 		// 중력
 		mForce = 0.0f;
+		mGround = 0.0f;
 	}
 	~ObjData()
 	{
@@ -412,7 +414,7 @@ public:
 	// 점프
 	void Jump()
 	{
-		if (mWdMtx._42 == GROUND)
+		if (mWdMtx._42 == mGround)
 		{
 			mForce += 350.0f;
 		}
@@ -479,7 +481,7 @@ public:
 	}
 
 	// 애니 시간 업데이트
-	void Update(float& dt)
+	void Update(float& dt, float _y)
 	{
 		// 시간 흘르기
 		mFrame += (dt * mAniSpeed);
@@ -488,17 +490,19 @@ public:
 		if (mEdPoint <= mFrame)
 			mFrame = mStPoint;
 
+		// 바닥 위치 설정
+		mGround = _y;
+
 		// 중력 적용
-		mForce     -= GRAVITY * dt;
+		mForce -= GRAVITY * dt;
 		mWdMtx._42 += mForce * dt;
 
 		// 땅바닥 충돌체크
-		mWdMtx._42 = max(GROUND, mWdMtx._42);
+		mWdMtx._42 = max(mGround, mWdMtx._42);
 
 		// 바닥에 닿으면 힘 제로 <-- 나중에 피킹으로 바꿔야함
-		if (mWdMtx._42 <= GROUND)
+		if (mWdMtx._42 <= mGround)
 			mForce = 0.0f;
-
 	}
 	
 	// 위치 반환
@@ -526,6 +530,12 @@ public:
 	{
 		mWdMtx._41 = _x;
 		mWdMtx._43 = _z;
+	}
+
+	// 위치 설정
+	void setPosY(float _y)
+	{
+		mWdMtx._42 = _y;
 	}
 
 	// 스케일 설정
@@ -1099,6 +1109,78 @@ public:
 
 		// 새로운 모델로 세팅
 		mObjData[_unicode].SetFSM(_newType, _StPoint, _EdPoint, _TexWidth, _TexHeight, _Frame);
+	}
+};
+
+// 맵 정보
+class MapINFO
+{
+public:
+	InitMetaData* mModel;
+	float mXwidth;
+	float mZdepth;
+	float mCellSize;
+	float mHeightScale;
+
+	MapINFO()
+	{
+		mModel = nullptr;
+		mXwidth = mZdepth = mCellSize = mHeightScale = 0.0f;
+	}
+
+	float GetWidth()
+	{
+		// Total terrain width.
+		return (100.0f - 1) * 50.0f;
+	}
+	float GetDepth()
+	{
+		// Total terrain depth.
+		return (100.0f - 1) * 50.0f;
+	}
+
+	// 높이 얻기 (임시로 처리)
+	float GetHeight(float& x, float& z)
+	{
+		//100.0f, 100.0f, 50.0f, 1000.0f, e_ShaderPongTexMap);
+
+		// Transform from terrain local space to "cell" space.
+		float c = (x + 0.5f * GetWidth()) /  50;
+		float d = (z - 0.5f * GetDepth()) / -50;
+
+		// Get the row and column we are in.
+		int row = (int)floorf(d);
+		int col = (int)floorf(c);
+
+		// Grab the heights of the cell we are in.
+		// A*--*B
+		//  | /|
+		//  |/ |
+		// C*--*D
+		vector<float>& _heightMap = mModel->mHeightmap;
+
+		float A = _heightMap[row * 100 + col];
+		float B = _heightMap[row * 100 + col + 1];
+		float C = _heightMap[(row + 1) * 100 + col];
+		float D = _heightMap[(row + 1) * 100 + col + 1];
+
+		// Where we are relative to the cell.
+		float s = c - (float)col;
+		float t = d - (float)row;
+
+		// If upper triangle ABC.
+		if (s + t <= 1.0f)
+		{
+			float uy = B - A;
+			float vy = C - A;
+			return A + s*uy + t*vy;
+		}
+		else // lower triangle DCB.
+		{
+			float uy = C - D;
+			float vy = B - D;
+			return D + (1.0f - s)*uy + (1.0f - t)*vy;
+		}
 	}
 };
 

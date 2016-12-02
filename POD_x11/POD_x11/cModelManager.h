@@ -24,6 +24,9 @@ public:
 	// 애니 매니저
 	cAniManager* mAniManager = cAniManager::GetInstance();
 
+	// 맵 매니저
+	cMapManager* mMapManager = cMapManager::GetInstance();
+
 	// 플레이어
 	PlayerInfo mPlayer;
 	
@@ -421,7 +424,6 @@ public:
 		return mAllModelData[mModelChain[_Name][0]]->getPos(_uniqueCode);
 	}
 
-
 	// 모델 크기 키우기
 	void SetScale(int _uniqueCode, string _Name, float _x, float _y, float _z)
 	{
@@ -807,6 +809,13 @@ public:
 		// 쉐이더, 모델 등록 (필터링 용)
 		UseAllShaderModel(_ShaderMode);
 		UsingModel(_Name);
+
+		// 맵 매니저 초기화
+		cMapManager::GetInstance()->mData[_Name].mModel       = mAllModelData[_Name];
+		cMapManager::GetInstance()->mData[_Name].mCellSize    = _CellSize;
+		cMapManager::GetInstance()->mData[_Name].mHeightScale = _HeightScale;
+		cMapManager::GetInstance()->mData[_Name].mXwidth      = _Xwidth;
+		cMapManager::GetInstance()->mData[_Name].mZdepth      = _Zdepth;
 	}
 
 	// 스크린 모델 생성하기
@@ -1267,7 +1276,14 @@ public:
 		if (_itor->mObjData.size() && _itor->mShaderMode == e_ShaderPongTexAni)
 		{
 			for (auto itor = _itor->mObjData.begin(); itor != _itor->mObjData.end(); ++itor)
-				itor->second.Update(_dt);
+			{
+				// y좌표 업데이트
+				XMFLOAT3 mPos = itor->second.getPos();
+				float tYpos = mMapManager->mData["Map1"].GetHeight(mPos.x, mPos.z);
+
+				// 애니 업데이트
+				itor->second.Update(_dt, tYpos);
+			}
 		}
 	}
 

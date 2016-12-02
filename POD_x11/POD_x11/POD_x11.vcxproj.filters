@@ -171,6 +171,9 @@
     <ClInclude Include="cShaderManager.h">
       <Filter>헤더 파일\Manager\Etc</Filter>
     </ClInclude>
+    <ClInclude Include="cMapManager.h">
+      <Filter>헤더 파일\Manager\Etc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -241,6 +244,9 @@
     </ClCompile>
     <ClCompile Include="cAniManager.cpp">
       <Filter>소스 파일\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="cMapManager.cpp">
+      <Filter>소스 파일\Manager\Storage</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
