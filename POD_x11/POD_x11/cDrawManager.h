@@ -444,14 +444,26 @@ private:
 					// 쉐이더 패스 적용
 					mShaderManager->GetPassByIndex(p);
 
-					// 모델 그리기
-					mCoreStorage->md3dImmediateContext->DrawIndexedInstanced
-						(_CurrentModel->mIndexCount,
-						_CurrentModel->mObjData.size(),
-						_CurrentModel->mIndexOffset,
-						_CurrentModel->mVertexOffset,
-						0);
-					
+					if (_ShaderMode == e_ShaderPongTexMap)
+					{
+						// 모델 그리기
+						mCoreStorage->md3dImmediateContext->DrawIndexedInstanced
+							(_CurrentModel->mIndexCount - 1,
+							_CurrentModel->mObjData.size(),
+							_CurrentModel->mIndexOffset,
+							_CurrentModel->mVertexOffset,
+							0);
+					}
+					else
+					{
+						// 모델 그리기
+						mCoreStorage->md3dImmediateContext->DrawIndexedInstanced
+							(_CurrentModel->mIndexCount,
+							_CurrentModel->mObjData.size(),
+							_CurrentModel->mIndexOffset,
+							_CurrentModel->mVertexOffset,
+							0);
+					}					
 				}
 			}
 		}

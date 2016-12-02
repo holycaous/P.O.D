@@ -699,7 +699,7 @@ public:
 	}
 
 	// 맵 만들기
-	void LoadMap(InitMetaData* _InitMetaData, string& _hightMapPss, float& _Xwidth, float& _Zdepth, float& _CellSize, float& _HeightScale)
+	void LoadMap(InitMetaData* _InitMetaData, string& _hightMapPss, float& _Xwidth, float& _Zdepth, float& _CellSize, float& _HeightScale, float& _uvDevide)
 	{
 		_InitMetaData->mHeightmap.resize ((int)(_Xwidth * _Zdepth), 0);
 		_InitMetaData->Vertices.resize   ((int)(_Xwidth * _Zdepth));
@@ -710,7 +710,7 @@ public:
 
 		LoadHeightmap(_InitMetaData, _hightMapPss, _Xwidth, _Zdepth, _HeightScale);
 		Smooth       (_InitMetaData, _Xwidth, _Zdepth);
-		CalMap       (_InitMetaData, _Xwidth, _Zdepth, _CellSize);
+		CalMap       (_InitMetaData, _Xwidth, _Zdepth, _CellSize, _uvDevide);
 
 		// 하이트맵 전송
 		for (int i = 0; i < (int)(_Xwidth * _Zdepth); ++i)
@@ -1016,22 +1016,22 @@ public:
 	}
 
 	// 맵 계산
-	void CalMap(InitMetaData* _InitMetaData, float& _Xwidth, float& _Zdepth, float& _CellSize)
+	void CalMap(InitMetaData* _InitMetaData, float& _Xwidth, float& _Zdepth, float& _CellSize, float& _uvDevide)
 	{
-		CalVtx(_InitMetaData, _Xwidth, _Zdepth, _CellSize);
+		CalVtx(_InitMetaData, _Xwidth, _Zdepth, _CellSize, _uvDevide);
 		CalIB (_InitMetaData, _Xwidth, _Zdepth);
 	}
 
 	// 버텍스 계산
-	void CalVtx(InitMetaData* _InitMetaData, float& _Xwidth, float& _Zdepth, float& _CellSize)
+	void CalVtx(InitMetaData* _InitMetaData, float& _Xwidth, float& _Zdepth, float& _CellSize, float& _uvDevide)
 	{
 		// 중간좌표 저장
 		float halfWidth = 0.5f * (_Xwidth * _CellSize);
 		float halfDepth = 0.5f * (_Zdepth * _CellSize);
 
 		// 정규화된 텍스처 좌표계로 넘긴다.
-		float du = 1.0f / (_Xwidth / _CellSize - 1);
-		float dv = 1.0f / (_Zdepth / _CellSize - 1);
+		float du = 1.0f / (_Xwidth / _uvDevide - 1);
+		float dv = 1.0f / (_Zdepth / _uvDevide - 1);
 
 		// 맵 중앙에 원점을 두고 맵 생성 
 		for (UINT y = 0; y < (UINT)_Zdepth; ++y)

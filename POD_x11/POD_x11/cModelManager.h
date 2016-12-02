@@ -48,13 +48,20 @@ public:
 		AddTex        ("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
 
 		// 맵 추가
-		CreateMap     ("Map1", "Export/HeightMap/Map1.raw"  , 100.0f, 100.0f, 50.0f, 1000.0f, e_ShaderPongTexMap);
+		CreateMap     ("Map1", "Export/HeightMap/Map1.raw"  , 100.0f, 100.0f, 50.0f, 1000.0f, 50.0f, e_ShaderPongTexMap);
 		AddTex        ("Map1", "Export/ground_diff.dds"     , e_DiffuseMap);
 		AddTex        ("Map1", "Export/ground_norm.dds"     , e_NomalMap);
 		AddTex        ("Map1", "Export/ground_spec.dds"     , e_SpecularMap);
 
+		
+		// 맵 추가
+		CreateMap     ("Map2", "Export/HeightMap/Map1.raw"  , 100.0f, 100.0f, 500.0f, 1000.0f, 50.0f, e_ShaderPongTexMap);
+		AddTex        ("Map2", "Export/ground_diff.dds"     , e_DiffuseMap);
+		AddTex        ("Map2", "Export/ground_norm.dds"     , e_NomalMap);
+		AddTex        ("Map2", "Export/ground_spec.dds"     , e_SpecularMap);
+
 		// 큐브맵 추가
-		CreateSkyBox("CubeMap1", "Export/CubeMap/snowcube1024.dds", 0.5f, 20, 20, e_ShaderSkyBox);
+		CreateSkyBox("CubeMap1", "Export/CubeMap/sunsetcube1024.dds", 0.5f, 20, 20, e_ShaderSkyBox);
 
 
 		//-------------------------------------------------------------------------------//
@@ -800,7 +807,7 @@ public:
 	}
 
 	// 맵 생성
-	void CreateMap(string _Name, string _FileName, float _Xwidth, float _Zdepth, float _CellSize, float _HeightScale, SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	void CreateMap(string _Name, string _FileName, float _Xwidth, float _Zdepth, float _CellSize, float _HeightScale, float _uvDeived, SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
 	{
 		// 모델 체인에 이름 등록
 		mModelChain[_Name].push_back(_Name);
@@ -817,10 +824,10 @@ public:
 		strcpy(_nowModel->mObjName, _Name.c_str());
 
 		// 파싱 시작 
-		mXMLParser.LoadMap(_nowModel, _FileName, _Xwidth, _Zdepth, _CellSize, _HeightScale);
+		mXMLParser.LoadMap(_nowModel, _FileName, _Xwidth, _Zdepth, _CellSize, _HeightScale, _uvDeived);
 
 		// 변수 계산
-		_nowModel->CalValueMap();
+		_nowModel->CalValue();
 
 		// 쉐이더, 모델 등록 (필터링 용)
 		UseAllShaderModel(_ShaderMode);
@@ -1661,4 +1668,3 @@ private:
 		*buf = '\0';                  // eof 문자
 	}
 };
-

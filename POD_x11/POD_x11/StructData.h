@@ -1049,14 +1049,6 @@ public:
 		mIndexCount   = Indices.size();
 	}
 
-	// 변수 계산하기
-	void CalValueMap()
-	{
-		mVertexOffset = Vertices.size();
-		mIndexOffset  = Indices.size() - 1;
-		mIndexCount   = Indices.size() - 1;
-	}
-
 	// 오브젝트 데이터 1개 가져요기
 	ObjData& getObj(int _uniqueCode)
 	{

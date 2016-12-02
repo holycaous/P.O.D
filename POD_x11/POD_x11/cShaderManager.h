@@ -117,6 +117,8 @@ public:
 		////---------------------------------------------------
 
 		// 모델 매트릭스 업데이트
+
+
 		UpdateWorldMtxIns(world, worldInvTranspose, viewProj, view, viewInvTranspose, proj, projInvTranspose);
 
 		// 카메라 위치 업데이트

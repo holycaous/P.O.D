@@ -6,7 +6,7 @@
 #pragma warning(disable:4996)
 
 // 디버그 모드 활성
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 // 프로그램을 벗어나면 렌더링 중지
 //#define WINDOW_DISABLE_NO_RENDER
@@ -26,7 +26,7 @@ using namespace std;
 #define WIN_Y 600
 
 #define CAM_NEAR 1
-#define CAM_FAR 4500
+#define CAM_FAR 5100
 #define CAM_3PERSON_LENGTH 375
 
 #define GRAVITY 800
