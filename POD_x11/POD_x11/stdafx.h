@@ -26,7 +26,7 @@ using namespace std;
 #define WIN_Y 600
 
 #define CAM_NEAR 1
-#define CAM_FAR 4000
+#define CAM_FAR 4500
 #define CAM_3PERSON_LENGTH 375
 
 #define GRAVITY 800

@@ -72,7 +72,7 @@ PS_GBUFFER_OUT PackGBuffer(inout PNTVertexAniOut pin)
 	// 림라이트
 	float  rimWidth      = 0.82f;
 	float  RimLightColor = smoothstep(1.0f - rimWidth, 1.2f, 1 - max(0, dot(TangentNormal, vCameraDir)));
-	float4 FinRimLight = float4(RimLightColor * 0.6f, RimLightColor * 0.45f, RimLightColor * 0.42f, 1.0f);
+	float4 FinRimLight = float4(RimLightColor * 0.6f, RimLightColor * 0.45f, RimLightColor * 0.42f, 0.0f);
 
 	// 데미지 받았을때만 별도 처리
 	if (pin.AniData.x == 1.0f)
@@ -356,6 +356,9 @@ technique11 PongTexAni
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS()));
+
+		SetRasterizerState(0);
+		SetDepthStencilState(LessDSS, 0);
 	}
 }
 

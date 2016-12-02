@@ -142,6 +142,20 @@ struct PLVertexOut
 	float3 NormalW : NORMAL;
 };
 
+struct SkyBoxIn
+{
+	float3 PosL               : POSITION;
+	float1 Pedding            : PEDDING;
+	row_major float4x4 World  : WORLD;
+	uint InstanceId		      : SV_InstanceID;
+};
+
+struct SkyBoxOut
+{
+	float4 PosH : SV_POSITION;
+	float3 PosL : POSITION;
+};
+
 struct GVertexIn
 {
 	float3 PosL	              : POSITION;
@@ -230,6 +244,9 @@ Texture2D gGPositionTex;
 Texture2D gGSpecularTex;
 Texture2D gGNormalTex;
 
+// 큐브맵
+TextureCube gSkyBox;
+
 //-----------------------------------//
 // 매트릭스
 //-----------------------------------//
@@ -297,6 +314,23 @@ SamplerState samPoint
 	MinLOD   = 0;
 };
 
+RasterizerState NoCull
+{
+	CullMode = None;
+};
+
+DepthStencilState LessEqualDSS
+{
+	// 깊이 함수가 LESS_EQUAL이고 LESS가 아닌지 확인하십시오.
+	// 그렇지 않으면 z = 1 (NDC)에서 정규화 된 깊이 값이
+	// 깊이 버퍼가 1로 클리어되면 깊이 테스트에 실패합니다.
+	DepthFunc = LESS_EQUAL;
+};
+
+DepthStencilState LessDSS
+{
+	DepthFunc = LESS;
+};
 
 //// 테스트 전용
 //cbuffer cbSkinned

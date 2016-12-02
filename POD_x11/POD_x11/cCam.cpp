@@ -301,6 +301,11 @@ XMFLOAT3 cCam::GetThirdPosition() const
 	return tPos;
 }
 
+void cCam::SetCamY(float _y)
+{
+	mPosition.y = _y - mLook.y * m3PersonLength;
+}
+
 void cCam::SetPosition(float x, float y, float z)
 {
 	mPosition = XMFLOAT3(x, y, z);

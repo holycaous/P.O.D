@@ -518,6 +518,140 @@ public:
 		_InitMetaData->TexIndices.assign(&ti[0], &ti[36]);
 	}
 
+	// 스피어 만들기
+	void LoadSphere(InitMetaData* _InitMetaData, float& _radius, UINT& _sliceCount, UINT& _stackCount)
+	{
+		//
+		// 상단 극점에있는 꼭지점을 계산하고 스택 아래로 이동합니다.
+		//
+
+		// Poles : 텍스처 좌표 왜곡이있을 것입니다.
+		// 매핑 할 때 극에 할당 할 텍스처 맵상의 유일한 점이 아닙니다.
+		// 구형의 사각형 텍스처.
+
+		Vertex topVertex   (0.0f, +_radius, 0.0f, 0.0f, +1.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+		Vertex bottomVertex(0.0f, -_radius, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+		
+		topVertex.TexUV.x    = 0.0f;
+		topVertex.TexUV.y    = 0.0f;
+		bottomVertex.TexUV.x = 0.0f;
+		bottomVertex.TexUV.y = 1.0f;
+
+		_InitMetaData->Vertices   .push_back(topVertex);
+		_InitMetaData->TexVertices.push_back(XMFLOAT3(topVertex.TexUV.x, topVertex.TexUV.y, 0.0f));
+
+
+		float phiStep   = XM_PI / _stackCount;
+		float thetaStep = 2.0f * XM_PI / _sliceCount;
+
+		// 각 스택 링에 대한 정점을 계산합니다 (폴을 링으로 계산하지 않음).
+		for (UINT i = 1; i <= _stackCount - 1; ++i)
+		{
+			float phi = i * phiStep;
+
+			// 링의 정점.
+			for (UINT j = 0; j <= _sliceCount; ++j)
+			{
+				float theta = j * thetaStep;
+
+				Vertex v;
+
+				// spherical to cartesian
+				v.Position.x = _radius * sinf(phi) * cosf(theta);
+				v.Position.y = _radius * cosf(phi);
+				v.Position.z = _radius * sinf(phi) * sinf(theta);
+
+				// 쎄타에 관한 P의 부분 파생
+				v.TangentU.x = -_radius * sinf(phi) * sinf(theta);
+				v.TangentU.y = 0.0f;
+				v.TangentU.z = +_radius * sinf(phi) * cosf(theta);
+
+				XMVECTOR T = XMLoadFloat3(&v.TangentU);
+				XMStoreFloat3(&v.TangentU, XMVector3Normalize(T));
+
+				XMVECTOR p = XMLoadFloat3(&v.Position);
+				XMStoreFloat3(&v.Normal, XMVector3Normalize(p));
+
+				v.TexUV.x = theta / XM_2PI;
+				v.TexUV.y = phi   / XM_PI;
+
+				_InitMetaData->Vertices   .push_back(v);
+				_InitMetaData->TexVertices.push_back(XMFLOAT3(v.TexUV.x, v.TexUV.y, 0.0f));
+			}
+		}
+
+		_InitMetaData->Vertices   .push_back(bottomVertex);
+		_InitMetaData->TexVertices.push_back(XMFLOAT3(bottomVertex.TexUV.x, bottomVertex.TexUV.y, 0.0f));
+
+		//
+		// 최상위 스택의 인덱스를 계산합니다. 최상위 스택이 처음에 정점 버퍼에 쓰여졌습니다.
+		// 상단 극을 첫 번째 링에 연결합니다.
+		//
+
+		for (UINT i = 1; i <= _sliceCount; ++i)
+		{
+			_InitMetaData->Indices.push_back(0);
+			_InitMetaData->Indices.push_back(i + 1);
+			_InitMetaData->Indices.push_back(i);
+
+			_InitMetaData->TexIndices.push_back(0);
+			_InitMetaData->TexIndices.push_back(i + 1);
+			_InitMetaData->TexIndices.push_back(i);
+		}
+
+		//
+		// 내부 스택의 인덱스를 계산합니다 (폴에 연결되지 않음).
+		//
+
+		// 첫 번째 정점의 첫 번째 정점 인덱스에 대한 인덱스를 오프셋합니다.
+		// 이것은 극점 꼭지점을 건너 뛰고 있습니다.
+		UINT baseIndex = 1;
+		UINT ringVertexCount = _sliceCount + 1;
+		for (UINT i = 0; i < _stackCount - 2; ++i)
+		{
+			for (UINT j = 0; j < _sliceCount; ++j)
+			{
+				_InitMetaData->Indices.push_back(baseIndex + i*ringVertexCount + j);
+				_InitMetaData->Indices.push_back(baseIndex + i*ringVertexCount + j + 1);
+				_InitMetaData->Indices.push_back(baseIndex + (i + 1)*ringVertexCount + j);
+
+				_InitMetaData->Indices.push_back(baseIndex + (i + 1)*ringVertexCount + j);
+				_InitMetaData->Indices.push_back(baseIndex + i*ringVertexCount + j + 1);
+				_InitMetaData->Indices.push_back(baseIndex + (i + 1)*ringVertexCount + j + 1);
+
+				_InitMetaData->TexIndices.push_back(baseIndex + i*ringVertexCount + j);
+				_InitMetaData->TexIndices.push_back(baseIndex + i*ringVertexCount + j + 1);
+				_InitMetaData->TexIndices.push_back(baseIndex + (i + 1)*ringVertexCount + j);
+				
+				_InitMetaData->TexIndices.push_back(baseIndex + (i + 1)*ringVertexCount + j);
+				_InitMetaData->TexIndices.push_back(baseIndex + i*ringVertexCount + j + 1);
+				_InitMetaData->TexIndices.push_back(baseIndex + (i + 1)*ringVertexCount + j + 1);
+			}
+		}
+
+		//
+		// 하단 스택의 인덱스를 계산합니다. 맨 아래 스택이 마지막으로 버텍스 버퍼에 쓰여졌습니다.
+		// 하단 극을 하단 고리에 연결합니다.
+		//
+
+		// 마지막으로 남극 꼭지점이 추가되었습니다.
+		UINT southPoleIndex = (UINT)_InitMetaData->Vertices.size() - 1;
+
+		// 마지막 반지에서 첫 번째 정점의 인덱스에 인덱스를 오프셋합니다.
+		baseIndex = southPoleIndex - ringVertexCount;
+
+		for (UINT i = 0; i < _sliceCount; ++i)
+		{
+			_InitMetaData->Indices.push_back(southPoleIndex);
+			_InitMetaData->Indices.push_back(baseIndex + i);
+			_InitMetaData->Indices.push_back(baseIndex + i + 1);
+
+			_InitMetaData->TexIndices.push_back(southPoleIndex);
+			_InitMetaData->TexIndices.push_back(baseIndex + i);
+			_InitMetaData->TexIndices.push_back(baseIndex + i + 1);
+		}
+	}
+
 	void LoadScreen(InitMetaData* _InitMetaData, float width, float height)
 	{
 		Vertex v[8];

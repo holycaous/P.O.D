@@ -30,7 +30,8 @@ typedef enum
 	e_ShaderCartoonTex = 3,
 	e_ShaderDeferred   = 4,
 	e_ShaderPongTexAni = 5,
-	e_ShaderPongTexMap = 6
+	e_ShaderPongTexMap = 6,
+	e_ShaderSkyBox     = 7
 }SHADER_TYPE;
 
 // 쉐이더 변수 초기화
@@ -130,6 +131,12 @@ struct VertexPNTMap
 {
 	XMFLOAT2 Tex;
 	XMFLOAT2 VtxInfo; // 버텍스 정보 넣었음
+};
+
+struct VertexSkyBox
+{
+	XMFLOAT3 Pos;
+	float    Pedding; // 패딩 값
 };
 
 struct VertexG
@@ -500,7 +507,7 @@ public:
 		// 땅바닥 충돌체크
 		mWdMtx._42 = max(mGround, mWdMtx._42);
 
-		// 바닥에 닿으면 힘 제로 <-- 나중에 피킹으로 바꿔야함
+		// 바닥에 닿으면 힘 제로
 		if (mWdMtx._42 <= mGround)
 			mForce = 0.0f;
 	}
@@ -1130,52 +1137,50 @@ public:
 
 	float GetWidth()
 	{
-		// Total terrain width.
-		return (100.0f - 1) * 50.0f;
+		// 총 지형 폭.
+		return (mXwidth - 1) * mCellSize;
 	}
 	float GetDepth()
 	{
-		// Total terrain depth.
-		return (100.0f - 1) * 50.0f;
+		// 총 지형 깊이.
+		return (mZdepth - 1) * mCellSize;
 	}
 
 	// 높이 얻기 (임시로 처리)
 	float GetHeight(float& x, float& z)
 	{
-		//100.0f, 100.0f, 50.0f, 1000.0f, e_ShaderPongTexMap);
+		// 셀 좌표계로 옮기기
+		float c = (x + 0.5f * GetWidth()) /  mCellSize;
+		float d = (z - 0.5f * GetDepth()) / -mCellSize;
 
-		// Transform from terrain local space to "cell" space.
-		float c = (x + 0.5f * GetWidth()) /  50;
-		float d = (z - 0.5f * GetDepth()) / -50;
-
-		// Get the row and column we are in.
+		// 소숫점 버리기
 		int row = (int)floorf(d);
 		int col = (int)floorf(c);
 
-		// Grab the heights of the cell we are in.
+		// 셀에서 하이트맵 추출
 		// A*--*B
 		//  | /|
 		//  |/ |
 		// C*--*D
 		vector<float>& _heightMap = mModel->mHeightmap;
 
-		float A = _heightMap[row * 100 + col];
-		float B = _heightMap[row * 100 + col + 1];
-		float C = _heightMap[(row + 1) * 100 + col];
-		float D = _heightMap[(row + 1) * 100 + col + 1];
+		float A = _heightMap[row * (int)mXwidth + col];
+		float B = _heightMap[row * (int)mXwidth + col + 1];
+		float C = _heightMap[(row + 1) * (int)mXwidth + col];
+		float D = _heightMap[(row + 1) * (int)mXwidth + col + 1];
 
-		// Where we are relative to the cell.
+		// 셀과 관련된 상대적인 위치.
 		float s = c - (float)col;
 		float t = d - (float)row;
 
-		// If upper triangle ABC.
+		// 위쪽 삼각형 ABC 인 경우.
 		if (s + t <= 1.0f)
 		{
 			float uy = B - A;
 			float vy = C - A;
 			return A + s*uy + t*vy;
 		}
-		else // lower triangle DCB.
+		else // 아래쪽 삼각형 DCB
 		{
 			float uy = C - D;
 			float vy = B - D;
@@ -1353,6 +1358,10 @@ public:
 
 		case e_ShaderPongTexMap:
 			Build_PNT_Map();
+			break;
+
+		case e_ShaderSkyBox:
+			Build_SkyBox();
 			break;
 
 		default:
@@ -2377,7 +2386,112 @@ private:
 		iinitData.pSysMem = &indices[0];
 		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
+	// 모델의 메타데이터( 정보를 가지고 있는) , 저장할 모델 
+	void Build_SkyBox()
+	{
+		// 한곳으로 옮기는 작업 ( 가장 큰 버퍼 )
+		vector<VertexSkyBox> vertices;
 
+		// 총 버텍스 사이즈 계산
+		UINT totalVertexCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			totalVertexCount += itor->second->Vertices.size();
+		}
+
+		// 총 인덱스 사이즈 계산
+		UINT totalIndexCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			totalIndexCount += itor->second->Indices.size();
+		}
+
+		// 개별 버텍스 오프셋 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 직전 버텍스 저장
+			int AfterVtxOffset = 0;
+
+			// 처음이라면
+			if (itor == mModelList.begin())
+				itor->second->mVertexOffset = 0;
+			else
+				// 내것과, 내 직전 걸 더한다.
+				itor->second->mVertexOffset = (itor->second->mVertexOffset + AfterVtxOffset);
+
+			// 직전 버텍스 저장
+			AfterVtxOffset = itor->second->mVertexOffset;
+		}
+
+		// 개별 인덱스 오프셋 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 직전 인덱스 저장
+			int AfterIdxOffset = 0;
+
+			// 처음이라면
+			if (itor == mModelList.begin())
+				itor->second->mIndexOffset = 0;
+			else
+				// 내것과, 내 직전 걸 더한다.
+				itor->second->mIndexOffset = (itor->second->mIndexOffset + AfterIdxOffset);
+
+			// 직전 인덱스 저장
+			AfterIdxOffset = itor->second->mIndexOffset;
+		}
+
+		// 전체버퍼 사이즈 늘리기
+		vertices.resize(totalVertexCount);
+
+		// 가장 큰 버퍼로 복사
+		UINT k = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다.
+			for (unsigned int i = 0; i < itor->second->Vertices.size(); ++i, ++k)
+			{
+				vertices[k].Pos = itor->second->Vertices[i].Position;
+				vertices[k].Pedding = 0.0f;			// 패딩 값
+			}
+		}
+
+		// 버텍스 버퍼 만들기
+		D3D11_BUFFER_DESC vbd;
+		vbd.Usage = D3D11_USAGE_IMMUTABLE;
+		vbd.ByteWidth = sizeof(VertexSkyBox) * totalVertexCount;
+		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+		vbd.CPUAccessFlags = 0;
+		vbd.MiscFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA vinitData;
+		vinitData.pSysMem = &vertices[0];
+		HR(cCoreStorage::GetInstance()->md3dDevice->CreateBuffer(&vbd, &vinitData, &mVB));
+
+		// 인덱스 버퍼 만들기
+		std::vector<UINT> indices;
+
+		// 가장 큰 버퍼로 복사
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 이터레이터가 돌면서, 인덱스 크기만큼 더한다.
+			for (unsigned int i = 0; i < itor->second->Indices.size(); ++i)
+			{
+				indices.push_back(itor->second->Indices[i]);
+			}
+		}
+
+		// 인덱스 버퍼 만들기
+		D3D11_BUFFER_DESC ibd;
+		ibd.Usage = D3D11_USAGE_IMMUTABLE;
+		ibd.ByteWidth = sizeof(UINT) * totalIndexCount;
+		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER; // 인덱스
+		ibd.CPUAccessFlags = 0;
+		ibd.MiscFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA iinitData;
+		iinitData.pSysMem = &indices[0];
+		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
+	}
 	// 탄젠트 공간 계산
 	void CalTangentSpace(InitMetaData* _MetaData)
 	{

@@ -71,6 +71,7 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexOut pin)
 	Out.Depth = Depth;
 	Out.Color = DiffuseTex;
 
+
 	//--------------------------------------------------------------//
 	// 포지션 맵 저장
 	//--------------------------------------------------------------//
@@ -136,6 +137,9 @@ technique11 PongTex
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS()));
+
+		SetRasterizerState(0);
+		SetDepthStencilState(LessDSS, 0);
 	}
 }
 
@@ -147,5 +151,8 @@ technique11 CartoonTex
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS()));
+
+		SetRasterizerState(0);
+		SetDepthStencilState(LessDSS, 0);
 	}
 }

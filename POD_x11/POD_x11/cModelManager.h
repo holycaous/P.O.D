@@ -52,7 +52,10 @@ public:
 		AddTex        ("Map1", "Export/ground_diff.dds"     , e_DiffuseMap);
 		AddTex        ("Map1", "Export/ground_norm.dds"     , e_NomalMap);
 		AddTex        ("Map1", "Export/ground_spec.dds"     , e_SpecularMap);
-		//CreateModel("Map1", "Export/TestMapLoc.pod", e_ShaderPongTex);
+
+		// 큐브맵 추가
+		CreateSkyBox("CubeMap1", "Export/CubeMap/snowcube1024.dds", 0.5f, 20, 20, e_ShaderSkyBox);
+
 
 		//-------------------------------------------------------------------------------//
 		//
@@ -159,6 +162,19 @@ public:
 		// 텍스처 크기 갱신
 		getModelData(_key, _name).mTexWidth  = mAllModelData[_name]->mSkinModelTex[0]->mTexWidth;
 		getModelData(_key, _name).mTexHeight = mAllModelData[_name]->mSkinModelTex[0]->mTexHeight;
+
+		// 현재 맵 이름
+		cMapManager::GetInstance()->SetMapStage(_name);
+	}
+
+	// 큐브맵 만들기
+	void AddCubeMap(int _key, string _name, float _x, float _y, float _z)
+	{
+		AddModel(_key, _name, _x, _y, _z);
+
+		// 현재 맵 이름
+		cMapManager::GetInstance()->SetCubeMapStage(_name);
+
 	}
 
 	// 스크린 삭제
@@ -818,6 +834,37 @@ public:
 		cMapManager::GetInstance()->mData[_Name].mZdepth      = _Zdepth;
 	}
 
+	// 맵 생성
+	void CreateSkyBox(string _Name, string _FileName, float _radius, UINT _sliceCount, UINT _stackCount, SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	{
+		// 모델 체인에 이름 등록
+		mModelChain[_Name].push_back(_Name);
+
+		// 모델 생성
+		mAllModelData[_Name] = new InitMetaData(_Name.c_str(), _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
+
+		// 현재 모델 정보 얻기
+		InitMetaData* _nowModel = mAllModelData[_Name];
+
+		// 모델의 종류
+		_nowModel->mModelType  = e_ParsingModel;
+		_nowModel->mCreateName = _Name;
+		strcpy(_nowModel->mObjName, _Name.c_str());
+
+		// 파싱 시작
+		mXMLParser.LoadSphere(_nowModel, _radius, _sliceCount, _stackCount);
+
+		// 쉐이더, 모델 등록 (필터링 용)
+		UseAllShaderModel(_ShaderMode);
+		UsingModel(_Name);
+
+		// 계산
+		_nowModel->CalValue();
+
+		// 큐브맵 리소스 뷰 생성하기
+		mMapManager->CreateRSV(_Name, _FileName);
+	}
+
 	// 스크린 모델 생성하기
 	void CreateScreenModel(SHADER_TYPE _ShaderMode = e_ShaderDeferred, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
 	{
@@ -1163,6 +1210,10 @@ public:
 		SetRotate(mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
 		SetPosXZ (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
 
+		// y좌표 업데이트
+		float tYpos = mMapManager->GetHeightMap(mPlayer.mPos.x, mPlayer.mPos.z);
+		gCam.SetCamY(tYpos);
+
 		return mPlayer.mPos;
 	}
 
@@ -1181,6 +1232,10 @@ public:
 		mPlayer.mPos = gCam.GetThirdPosition();
 		SetRotate(mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
 		SetPosXZ (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+
+		// y좌표 업데이트
+		float tYpos = mMapManager->GetHeightMap(mPlayer.mPos.x, mPlayer.mPos.z);
+		gCam.SetCamY(tYpos);
 
 		return mPlayer.mPos;
 	}
@@ -1279,7 +1334,7 @@ public:
 			{
 				// y좌표 업데이트
 				XMFLOAT3 mPos = itor->second.getPos();
-				float tYpos = mMapManager->mData["Map1"].GetHeight(mPos.x, mPos.z);
+				float tYpos = mMapManager->GetHeightMap(mPos.x, mPos.z);
 
 				// 애니 업데이트
 				itor->second.Update(_dt, tYpos);

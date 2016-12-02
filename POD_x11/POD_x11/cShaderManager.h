@@ -9,6 +9,7 @@ class cShaderManager : public cSingleton<cShaderManager>
 {
 	cCoreStorage*  mCoreStorage  = cCoreStorage ::GetInstance();
 	cLightManager* mLightManager = cLightManager::GetInstance();
+	cMapManager*   mMapManager   = cMapManager  ::GetInstance();
 
 	// 렌더링 모드
 	SHADER_TYPE mShaderMode;
@@ -120,6 +121,9 @@ public:
 
 		// 카메라 위치 업데이트
 		UpdateCamPos(gCam.GetPosition());
+
+		// 큐브맵 갱신
+		SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
 	}
 
 	// '개별' 쉐이더 변수 업데이트
@@ -201,6 +205,9 @@ public:
 
 		case e_ShaderPongTexMap:
 			return sizeof(VertexPNTMap);
+
+		case e_ShaderSkyBox:
+			return sizeof(VertexSkyBox);
 
 		default:
 		case e_ShaderPongTex:
@@ -341,25 +348,25 @@ protected:
 	template <class T>
 	void UpdateWorldMtx(T& world, T& worldInvTranspose, T& worldViewProj, T& view, T& viewInvTranspose, T& proj, T& ProjInvTranspose)
 	{
-		SetShaderValue(e_ShaderValMtx, "gWorld", world);
+		SetShaderValue(e_ShaderValMtx, "gWorld"			   , world);
 		SetShaderValue(e_ShaderValMtx, "gWorldInvTranspose", worldInvTranspose);
-		SetShaderValue(e_ShaderValMtx, "gWorldViewProj", worldViewProj);
-		SetShaderValue(e_ShaderValMtx, "gView", view);
-		SetShaderValue(e_ShaderValMtx, "gViewInvTranspose", viewInvTranspose);
-		SetShaderValue(e_ShaderValMtx, "gProj", proj);
-		SetShaderValue(e_ShaderValMtx, "gProjInvTranspose", ProjInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gWorldViewProj"    , worldViewProj);
+		SetShaderValue(e_ShaderValMtx, "gView"			   , view);
+		SetShaderValue(e_ShaderValMtx, "gViewInvTranspose" , viewInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gProj"			   , proj);
+		SetShaderValue(e_ShaderValMtx, "gProjInvTranspose" , ProjInvTranspose);
 	}
 
 	template <class T>
 	void UpdateWorldMtxIns(T& world, T& worldInvTranspose, T& viewProj, T& view, T& viewInvTranspose, T& proj, T& ProjInvTranspose)
 	{
-		SetShaderValue(e_ShaderValMtx, "gWorld", world);
+		SetShaderValue(e_ShaderValMtx, "gWorld"			   , world);
 		SetShaderValue(e_ShaderValMtx, "gWorldInvTranspose", worldInvTranspose);
-		SetShaderValue(e_ShaderValMtx, "gViewProj", viewProj);
-		SetShaderValue(e_ShaderValMtx, "gView", view);
-		SetShaderValue(e_ShaderValMtx, "gViewInvTranspose", viewInvTranspose);
-		SetShaderValue(e_ShaderValMtx, "gProj", proj);
-		SetShaderValue(e_ShaderValMtx, "gProjInvTranspose", ProjInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gViewProj"		   , viewProj);
+		SetShaderValue(e_ShaderValMtx, "gView"			   , view);
+		SetShaderValue(e_ShaderValMtx, "gViewInvTranspose" , viewInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gProj"			   , proj);
+		SetShaderValue(e_ShaderValMtx, "gProjInvTranspose" , ProjInvTranspose);
 	}
 
 	template <class T>
@@ -395,6 +402,9 @@ private:
 
 		// 퐁쉐이더, 텍스처, 맵
 		BuildFX(e_ShaderPongTexMap, L"PNT_MAP.fx", "PongTexMap");
+
+		// 스카이박스
+		BuildFX(e_ShaderSkyBox, L"SKY_BOX.fx", "SkyBoxTech");
 
 		// 디퍼드 렌더링
 		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred");
@@ -459,6 +469,9 @@ private:
 		// 맵 모델 텍스처
 		GetShaderValue(tEffectStorage, "gMapTex"		   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gHeightMapTex"     , e_ShaderValResource);
+
+		// 큐브맵 텍스처
+		GetShaderValue(tEffectStorage, "gSkyBox"           , e_ShaderValResource);
 
 		// IA 생성
 		CreateIA(tEffectStorage);
@@ -581,6 +594,21 @@ private:
 			// Create the input layout
 			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
 		}
+		else if (mShaderMode == e_ShaderSkyBox)
+		{
+			D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+			{
+				{ "POSITION"   , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "PEDDING"    , 0, DXGI_FORMAT_R32_FLOAT		  , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "WORLD"      , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0                           , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+				// 인스턴스데이터에 애니 텍스처 번호, 프레임번호 넘겨야함
+			};
+			// Create the input layout
+			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
+		}
 	}
 
 	// IA 생성
@@ -617,14 +645,14 @@ private:
 		HRESULT hr = D3DCompileFromFile(_Name, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, 0, "fx_5_0", shaderFlags,
 			0, &compiledShader, &compilationMsgs);
 
-		// compilationMsgs can store errors or warnings.
+		// compilationMsgs는 오류나 경고를 저장할 수 있습니다.
 		if (compilationMsgs != 0)
 		{
 			//MessageBoxA(0, (char*)compilationMsgs->GetBufferPointer(), 0, 0);
 			ReleaseCOM(compilationMsgs);
 		}
 
-		// Even if there are no compilationMsgs, check to make sure there were no other errors.
+		// compilationMsg가없는 경우에도 다른 오류가 없는지 확인하십시오.
 		if (FAILED(hr))
 		{
 			MessageBox(NULL, NULL, L"D3DX11CompileFromFile", MB_OK);

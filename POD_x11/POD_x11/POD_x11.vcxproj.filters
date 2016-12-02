@@ -284,6 +284,9 @@
     <FxCompile Include="PNT_MAP.fx">
       <Filter>FX</Filter>
     </FxCompile>
+    <FxCompile Include="SKY_BOX.fx">
+      <Filter>FX</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

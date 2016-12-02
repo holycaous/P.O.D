@@ -127,7 +127,7 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	//	float3 gPointLight_Dir = normalize(gPointLight.Position.xyz - sData.PositionTex.xyz);
 	//		DotPointLightNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir)) * pow(gFinPointLength, 2.f) * 0.01f;		  // +=
 	//}
-		
+	//	
 	////// Ω∫∆Ã ∂Û¿Ã∆Æ
 	//float gSpotLight_Length = length(sData.PositionTex.xyz - gSpotLight.Position.xyz);
 	//
@@ -167,8 +167,8 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	//	diffuse += D * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
 	//	spec    += S * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
 	//}
-
-
+	//
+	//
 	//// Ω∫∆˝ ∂Û¿Ã∆Æ
 	//if (gSpotLight_Length < gSpotLight.Range)
 	//{
@@ -229,5 +229,8 @@ technique11 Deferred
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS(0)));
+
+		SetRasterizerState(0);
+		SetDepthStencilState(LessDSS, 0);
 	}
 }
