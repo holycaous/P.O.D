@@ -52,7 +52,6 @@ public:
 		AddTex        ("Map1", "Export/ground_diff.dds"     , e_DiffuseMap);
 		AddTex        ("Map1", "Export/ground_norm.dds"     , e_NomalMap);
 		AddTex        ("Map1", "Export/ground_spec.dds"     , e_SpecularMap);
-
 		
 		// 맵 추가
 		CreateMap     ("Map2", "Export/HeightMap/Map1.raw"  , 100.0f, 100.0f, 500.0f, 1000.0f, 50.0f, e_ShaderPongTexMap);
@@ -61,8 +60,10 @@ public:
 		AddTex        ("Map2", "Export/ground_spec.dds"     , e_SpecularMap);
 
 		// 큐브맵 추가
-		CreateSkyBox("CubeMap1", "Export/CubeMap/sunsetcube1024.dds", 0.5f, 20, 20, e_ShaderSkyBox);
+		CreateSkyBox("CubeMap1", "Export/CubeMap/snowcube1024.dds", 0.5f, 20, 20, e_ShaderSkyBox);
 
+		// 모델 오브젝트 추가
+		CreateObjModel();
 
 		//-------------------------------------------------------------------------------//
 		//
@@ -112,6 +113,35 @@ public:
 
 		// 만들어진 모델 등록
 		ModelRegistration();
+	}
+
+	// 모델 오브젝트 추가
+	void CreateObjModel()
+	{
+		CreateModel("MapObj1" , "Export/MapObj1Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj2" , "Export/MapObj2Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj3" , "Export/MapObj3Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj4" , "Export/MapObj4Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj5" , "Export/MapObj5Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj6" , "Export/MapObj6Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj7" , "Export/MapObj7Loc.pod" , e_ShaderPongTex);
+		//CreateModel("MapObj8" , "Export/MapObj8Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj9" , "Export/MapObj9Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj10", "Export/MapObj10Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj11", "Export/MapObj11Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj12", "Export/MapObj12Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj13", "Export/MapObj13Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj14", "Export/MapObj14Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj15", "Export/MapObj15Loc.pod", e_ShaderPongTex);
+		//CreateModel("MapObj16", "Export/MapObj16Loc.pod", e_ShaderPongTex);
+		//CreateModel("MapObj17", "Export/MapObj17Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj18", "Export/MapObj18Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj19", "Export/MapObj19Loc.pod", e_ShaderPongTex);
+		//CreateModel("MapObj20", "Export/MapObj20Loc.pod", e_ShaderPongTex);
+		//CreateModel("MapObj21", "Export/MapObj21Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj22", "Export/MapObj22Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj23", "Export/MapObj23Loc.pod", e_ShaderPongTex);
+
 	}
 
 	// 특정 모델의 본 그리기
@@ -943,6 +973,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _x, _y, _z, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -958,6 +989,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _Mtx, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -973,6 +1005,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -988,6 +1021,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -1004,6 +1038,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 일반 모델 인스턴스 버퍼 생성
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -1019,6 +1054,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -1034,6 +1070,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _frame, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -1049,6 +1086,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _frame, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -1080,6 +1118,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _x, _y, _z, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1092,6 +1131,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _Mtx, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1104,6 +1144,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1116,6 +1157,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1128,6 +1170,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1140,6 +1183,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1152,6 +1196,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _frame, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1164,6 +1209,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _frame, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1324,10 +1370,10 @@ public:
 	void Update(float& dt)
 	{
 		// 모든 모델들에게 일괄적인 명령을 내린다.
-		for (map<string, InitMetaData*>::iterator itor = mAllModelData.begin(); itor != mAllModelData.end(); ++itor)
+		for (unsigned int i = 0; i < mUseModel.size(); ++i)
 		{
 			// 애니메이션 업데이트
-			UpdateAni(itor->second, dt);
+			UpdateAni(mAllModelData[mUseModel[i]], dt);
 		}
 	}
 

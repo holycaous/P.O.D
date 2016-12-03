@@ -158,7 +158,7 @@ PNTVertexMapOut CalMap(inout PNTVertexMapIn vin)
 	_TexModelSelect.y = vin.VtxInfo.x / (vin.VtxInfo.y - 1.0f);	// 버택스 번호, 버택스 갯수	
 
 	// 스킨 모델 선택
-	SelectSkinModel(vin.TexData.x, _TexModelSelect, 4.001f, _MadeSkinMtx);
+	SelectSkinModel(vin.TexData.x, _TexModelSelect, 4.1f, _MadeSkinMtx);
 
 
 	//--------------------------------------------------------------------------------//

@@ -21,6 +21,73 @@ public:
 		// 큐브맵 적용
 		mModelManager->AddCubeMap(0, "CubeMap1", 0.0f, 0.0f, 0.0f);
 
+		mModelManager->AddModel(0, "MapObj1" ,200.0f, 5.0f,  1900.0f); // 풍차
+		mModelManager->SetScale(0, "MapObj1", 1.2f, 1.2f, 1.2f);
+
+		mModelManager->AddModel(1, "MapObj1", -500.0f, 5.0f, 2100.0f); // 풍차
+
+		mModelManager->AddModel(0, "MapObj3" , 1550.0f, 0.0f, 1700.0f); // 작은 건물2
+		mModelManager->AddModel(1, "MapObj3" , 1400.0f, 0.0f, 1700.0f); 
+		mModelManager->AddModel(2, "MapObj3" , 1250.0f, 0.0f, 1700.0f); 
+		mModelManager->AddModel(3, "MapObj3" , 1100.0f, 0.0f, 1700.0f);
+		mModelManager->SetScale(0, "MapObj3", 1.0f, 1.5f, 1.0f);
+		mModelManager->SetScale(1, "MapObj3", 1.0f, 1.5f, 1.0f);
+		mModelManager->SetScale(2, "MapObj3", 1.0f, 1.5f, 1.0f);
+		mModelManager->SetScale(3, "MapObj3", 1.0f, 1.5f, 1.0f);
+
+		mModelManager->AddModel(0, "MapObj2" , 1000.0f, 0.0f, 1700.0f); // 작은 건물1
+		mModelManager->AddModel(1, "MapObj2" ,  900.0f, 0.0f, 1700.0f);
+
+		mModelManager->AddModel(0, "MapObj4" , -500.0f, 0.0f,  -900.0f); // 풀밭
+		mModelManager->AddModel(1, "MapObj4",  -100.0f, 0.0f,  -900.0f);
+		mModelManager->AddModel(2, "MapObj4",  -500.0f, 0.0f,  -600.0f);
+		mModelManager->AddModel(3, "MapObj4",  -100.0f, 0.0f,  -600.0f);
+		mModelManager->SetScale(0, "MapObj4", 2.0f, 1.f, 2.0f);
+		mModelManager->SetScale(1, "MapObj4", 2.0f, 1.f, 2.0f);
+		mModelManager->SetScale(2, "MapObj4", 2.0f, 1.f, 2.0f);
+		mModelManager->SetScale(3, "MapObj4", 2.0f, 1.f, 2.0f);
+
+		mModelManager->AddModel(0, "MapObj6" , -1650.0f, 0.0f, -1400.0f); // 땅에 밖힌 지붕
+
+		mModelManager->AddModel(0, "MapObj7" , -1250.0f, 0.0f, -1550.0f);  // 위로 큰 건물
+		mModelManager->SetScale(0, "MapObj7",  2.5f, 2.5f, 2.5f);
+
+		mModelManager->AddModel(1, "MapObj7", 2200.0f, 0.0f, -1750.0f);  // 위로 큰 건물
+		mModelManager->SetScale(1, "MapObj7", 2.5f, 2.5f, 2.5f);
+
+		mModelManager->AddModel(2, "MapObj7", 2200.0f, 0.0f, -1300.0f);  // 위로 큰 건물
+		mModelManager->SetScale(2, "MapObj7", 2.5f, 2.5f, 2.5f);
+
+		mModelManager->AddModel(0, "MapObj9" , -1650.0f,-50.0f,  1500.0f); // 뚫린 조그만 건물
+		mModelManager->AddModel(0, "MapObj10", -1650.0f,-50.0f,  1500.0f); // 지붕
+		mModelManager->SetScale(0, "MapObj9" ,  2.5f, 3.2f, 5.f);
+		mModelManager->SetScale(0, "MapObj10",  2.5f, 3.2f, 5.f);
+
+		mModelManager->AddModel(0, "MapObj5" ,  -430.0f,  20.0f, -1900.0f); // 길쭉한 건물
+		mModelManager->AddModel(0, "MapObj15",  -430.0f, 170.0f, -1900.0f); // 지붕
+		mModelManager->SetScale(0, "MapObj5",  2.5f, 3.2f, 1.f);
+		mModelManager->SetScale(0, "MapObj15", 2.5f, 3.2f, 1.f);
+
+		mModelManager->AddModel(1, "MapObj5" ,  -950.0f,  20.0f, -1900.0f); // 길쭉한 건물
+		mModelManager->AddModel(1, "MapObj15",  -950.0f, 170.0f, -1900.0f); // 지붕
+		mModelManager->SetScale(1, "MapObj5" ,  2.5f, 3.2f, 1.f);
+		mModelManager->SetScale(1, "MapObj15",  2.5f, 3.2f, 1.f);
+
+		mModelManager->AddModel(0, "MapObj11",  620.0f, 0.0f,  1750.0f); // 큰 건물
+		mModelManager->AddModel(0, "MapObj12",  620.0f, 0.0f,  1750.0f); // 지붕 
+		mModelManager->SetScale(0, "MapObj1" ,  1.2f, 1.2f, 1.f);
+		mModelManager->SetScale(0, "MapObj12",  1.2f, 1.2f, 1.f);
+		
+		mModelManager->AddModel(0, "MapObj13",  1700.0f, 0.0f, 150.0f); // 마을 회관 급
+		mModelManager->SetScale(0, "MapObj13", 2.0f, 2.0f, 2.2f);
+
+		mModelManager->AddModel(0, "MapObj14",  1600.0f, 0.0f,  1800.0f); // 나무 단상
+		mModelManager->AddModel(0, "MapObj18",  1350.0f ,80.0f, -400.0f); // 계단1
+		mModelManager->AddModel(0, "MapObj19",  1570.0f, 80.0f, -400.0f); // 계단2
+		mModelManager->AddModel(0, "MapObj22",   380.0f, 0.0f,  1800.0f); // 우물
+		mModelManager->AddModel(0, "MapObj23",    50.0f, 0.0f, -1950.0f); // 지붕있는 풍차
+		mModelManager->SetScale(0, "MapObj23",  1.5f, 1.5f, 1.5f);
+
 		//--------------------------------------------------------------------------------------------------------------------//
 		// 본 테스트
 		//--------------------------------------------------------------------------------------------------------------------//
@@ -115,6 +182,7 @@ public:
 			//----------------------------------//
 			// 클라에서 계산한 플레이어 위치
 			XMFLOAT3 mPos = mModelManager->PlayerWalk(100.0f * dt);
+			//cout << "위치: " << mPos.x << ", " << mPos.y << ", " << mPos.z << endl;
 		}
 
 		if (GetAsyncKeyState('S') & 0x8000)

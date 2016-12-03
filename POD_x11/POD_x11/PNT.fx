@@ -138,7 +138,8 @@ technique11 PongTex
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS()));
 
-		SetRasterizerState(0);
+		//SetRasterizerState(0);
+		SetRasterizerState(NoCull);
 		SetDepthStencilState(LessDSS, 0);
 	}
 }
@@ -152,7 +153,7 @@ technique11 CartoonTex
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS()));
 
-		SetRasterizerState(0);
+		SetRasterizerState(NoCull);
 		SetDepthStencilState(LessDSS, 0);
 	}
 }

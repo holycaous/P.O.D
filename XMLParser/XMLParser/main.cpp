@@ -77,10 +77,11 @@ void main()
 	//
 	////-------------------------------------------------------------------------------------------------------------------//
 	//
-	//// ¸Ê Å×½ºÆ® ¿ë
-	mXMLParser.Init("Import/TestMap.xml", "fff");
-	mXMLParser.SetTexture("ground_diff.dds", 100.0f, "ground_norm.dds", "ground_spec.dds");
-	mXMLParser.LoadXMLModel();
+	
+	//mXMLParser.Init("Import/MapObj8.xml", "MapObj8");
+	//mXMLParser.SetTexture("SPR_Vill_Door_Diff.dds", 100.0f, "SPR_Vill_Door_Norm.dds", "SPR_Vill_Door_Spec.dds");
+	//mXMLParser.LoadXMLModel();
+
 
 }
 
