@@ -132,8 +132,9 @@ public:
 		UpdateCamPos(gCam.GetPosition());
 
 		// Å¥ºê¸Ê °»½Å
-		SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
-
+		if (mShaderMode == e_ShaderSkyBox)
+			SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
+		
 		// ½¦µµ¿ì¸Ê °»½Å
 		SetShaderValue(e_ShaderValResource, "gShadowMap" , mShadowMap->mDepthMapSRV);
 		SetShaderValue(e_ShaderValMtx, "gShadowTransform", mShadowMap->mScreenMtx);

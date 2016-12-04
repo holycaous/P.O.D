@@ -12,6 +12,9 @@ public:
 		// 이전 모델 데이터 삭제 ( 정확히말하면 월드 매트릭스 )
 		mModelManager->ClearModel();
 
+		// 쉐도우맵 추가 (풀 스크린쿼드)
+		mShadowMap->AddScreen(0.0f, 0.0f, 0.0f);
+
 		// 스크린 추가 (풀 스크린쿼드)
 		mModelManager->AddScreen(0.0f, 0.0f, 0.0f);
 

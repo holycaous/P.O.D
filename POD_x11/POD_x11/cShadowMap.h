@@ -35,6 +35,13 @@ public:
 		ReleaseCOM(mDepthMapDSV);
 	}
 
+	// ∏µ® √ﬂ∞°«œ±‚
+	void AddScreen(float _x, float _y, float _z)
+	{
+		mScreen->AddModel(_x, _y, _z, e_StaticObj);
+	}
+
+	// Ω¶µµøÏ ∏  √ ±‚»≠
 	void InitClass(UINT _Width, UINT _Height)
 	{
 		mWidth  = _Width;
