@@ -107,11 +107,21 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	// 포지션맵
 	//return sData.PositionTex;
 
-
 	// 디렉셔널 라이트
 	float3 gDirectionLight_Dir = normalize(-gDirLight.Direction);
 	DotDirectLightNomalMap     = saturate(dot(sData.TanNormalTex.xyz, gDirectionLight_Dir)) * 2.0f;
 	
+
+	//struct DirectionalLight
+	//{
+	//	float4 Ambient;
+	//	float4 Diffuse;
+	//	float4 Specular;
+	//	float3 Direction;
+	//	float  pad;
+	//};
+
+
 	// 테스트 1
 	// 포인트 라이트
 	//float gPointLight_Length = length(gPointLight.Position.xyz - sData.PositionTex.xyz);
@@ -142,6 +152,7 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	// Lighting.
 	//
 
+	
 	// Start with a sum of zero.
 	float4 A, D, S;
 
@@ -154,7 +165,7 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	ambient += A;
 	diffuse += D;
 	spec    += S;
-	
+
 	//// 포인트 라이트
 	//[flatten]
 	//if (gPointLight_Length < gPointLight.Range)
@@ -177,6 +188,10 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	//	diffuse += D;
 	//	spec    += S;
 	//}
+
+
+
+	
 
 	// 렌더링 모드
 	switch (gShaderMode)

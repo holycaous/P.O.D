@@ -87,6 +87,13 @@ PS_GBUFFER_OUT PackGBuffer(inout PNTVertexAniOut pin)
 
 	Out.Color = DiffuseTex + FinRimLight;
 
+	// 안개
+	float3 toEye    = gEyePosW - pin.PosW;
+	float distToEye = length(toEye);
+	float fogLerp   = saturate((distToEye - 180.0f) / 4800.0f);
+	Out.Color = lerp(Out.Color, float4(0.15f, 0.15f, 0.2f, 0.0f), fogLerp);
+
+
 	// 출력	
 	Out.Depth = Depth;
 	//Out.Color = DiffuseTex + FinRimLight + FinRimLight;

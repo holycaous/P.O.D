@@ -71,6 +71,13 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexOut pin)
 	Out.Depth = Depth;
 	Out.Color = DiffuseTex;
 
+	// 안개
+	float3 toEye    = gEyePosW - pin.PosW;
+	float distToEye = length(toEye);
+	float fogLerp   = saturate((distToEye - 180.0f) / 4800.0f);
+	Out.Color = lerp(Out.Color, float4(0.15f, 0.15f, 0.2f, 0.0f), fogLerp);
+
+
 
 	//--------------------------------------------------------------//
 	// 포지션 맵 저장

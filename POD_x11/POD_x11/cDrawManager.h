@@ -156,7 +156,7 @@ private:
 		static D3D11_RASTERIZER_DESC frameDesc;
 		ZeroMemory(&frameDesc, sizeof(D3D11_RASTERIZER_DESC));
 		frameDesc.FillMode              = D3D11_FILL_WIREFRAME;
-		frameDesc.CullMode              = D3D11_CULL_BACK;
+		frameDesc.CullMode              = D3D11_CULL_NONE;
 		frameDesc.FrontCounterClockwise = false;
 		frameDesc.DepthClipEnable       = true;
 
@@ -170,6 +170,13 @@ private:
 		frameDesc.DepthClipEnable       = true;
 
 		HR(cCoreStorage::GetInstance()->md3dDevice->CreateRasterizerState(&frameDesc, &mSolidframeRS));
+
+		// 깊이 버퍼 스테이트
+		D3D11_DEPTH_STENCIL_DESC;
+
+		// 블랜드 스테이트
+		D3D11_BLEND;
+
 	}
 
 	void UpdateCam(float& dt)

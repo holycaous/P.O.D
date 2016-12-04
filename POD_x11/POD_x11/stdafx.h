@@ -6,7 +6,7 @@
 #pragma warning(disable:4996)
 
 // 디버그 모드 활성
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 // 프로그램을 벗어나면 렌더링 중지
 //#define WINDOW_DISABLE_NO_RENDER

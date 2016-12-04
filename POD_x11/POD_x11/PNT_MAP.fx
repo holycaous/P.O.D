@@ -40,7 +40,7 @@ PS_GBUFFER_OUT PackGBuffer(inout PNTVertexMapOut pin)
 	// 깊이 버퍼 = (좌표-니어) / (파 - 니어)
 	// 좌표 = ( 파 - 니어 ) *  깊이버퍼 + 니어
 	float  Depth = (PosV.z - gNear) / (gFar - gNear);
-
+	
 
 	// 탄젠트 노멀 만들기
 	// 읽어들인 노멀맵의 정보를 월드맵으로 옮긴다.
@@ -69,12 +69,13 @@ PS_GBUFFER_OUT PackGBuffer(inout PNTVertexMapOut pin)
 	//// 카메라 방향벡터
 	//float3 vCameraDir = normalize(gEyePosW - pin.PosW);
 
-	//// 림라이트
-	//float  rimWidth      = 0.2f;
-	//float  RimLightColor = smoothstep(1.0f - rimWidth, 1.0f, 1 - max(0.0f, dot(TangentNormal, normalize(-gDirLight.Direction))));
-	//float4 FinRimLight = float4(RimLightColor * 0.7f, RimLightColor * 0.15f, RimLightColor * 0.01f, 1.0f);
+	Out.Color = DiffuseTex;
 
-	Out.Color = DiffuseTex/* + FinRimLight*/;
+	// 안개
+	float3 toEye    = gEyePosW - pin.PosW;
+	float distToEye = length(toEye);
+	float fogLerp   = saturate((distToEye - 180.0f) / 5000.0f);
+	Out.Color = lerp(Out.Color, float4(0.15f, 0.15f, 0.2f, 0.0f), fogLerp);
 
 	// 출력	
 	Out.Depth = Depth;

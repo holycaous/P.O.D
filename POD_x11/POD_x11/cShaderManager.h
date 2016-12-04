@@ -346,6 +346,32 @@ protected:
 		}
 	}
 
+	// 쉐이더 변수 Set 하기
+	template <class T>
+	void SetCommonShaderValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, T& _value, int _size)
+	{
+		switch (_ValueEnum)
+		{
+			// 일반 변수
+		case e_ShaderVal:
+			mShader[e_ShaderDeferred]->mfxValue[_Name]->SetRawValue(&_value, 0, sizeof(_value) * _size);
+			break;
+		}
+	}
+
+	// 쉐이더 변수 Set 하기
+	template <class T>
+	void SetShaderValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, T& _value, int _size)
+	{
+		switch (_ValueEnum)
+		{
+		// 일반 변수
+		case e_ShaderVal:
+			mShader[mShaderMode]->mfxValue[_Name]->SetRawValue(&_value, 0, sizeof(_value) * _size);
+			break;
+		}
+	}
+
 	// 기본 매트릭스 업데이트
 	template <class T>
 	void UpdateWorldMtx(T& world, T& worldInvTranspose, T& worldViewProj, T& view, T& viewInvTranspose, T& proj, T& ProjInvTranspose)
