@@ -10,6 +10,7 @@ class cShaderManager : public cSingleton<cShaderManager>
 	cCoreStorage*  mCoreStorage  = cCoreStorage ::GetInstance();
 	cLightManager* mLightManager = cLightManager::GetInstance();
 	cMapManager*   mMapManager   = cMapManager  ::GetInstance();
+	cShadowMap*    mShadowMap    = cShadowMap   ::GetInstance();
 
 	// 렌더링 모드
 	SHADER_TYPE mShaderMode;
@@ -57,10 +58,16 @@ public:
 		mShader[mShaderMode]->mfxMtx[_Name]->SetMatrixArray(reinterpret_cast<float*>(_Mtx), 0, _MtxSize);
 	}
 
-	// 스킨 행렬 저장
+	// 행렬 저장
 	void SetCommonShaderMtxArray(SHADER_VAL_TYPE _ValueEnum, char* _Name, XMFLOAT4X4* _Mtx, int _MtxSize)
 	{
 		mShader[e_ShaderDeferred]->mfxMtx[_Name]->SetMatrixArray(reinterpret_cast<float*>(_Mtx), 0, _MtxSize);
+	}
+
+	// 행렬 저장
+	void SetCommonShadowMtxArray(SHADER_VAL_TYPE _ValueEnum, char* _Name, XMFLOAT4X4* _Mtx, int _MtxSize)
+	{
+		mShader[e_ShaderShadowMap]->mfxMtx[_Name]->SetMatrixArray(reinterpret_cast<float*>(_Mtx), 0, _MtxSize);
 	}
 
 	// '기본' 쉐이더 변수 업데이트
@@ -126,6 +133,10 @@ public:
 
 		// 큐브맵 갱신
 		SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
+
+		// 쉐도우맵 갱신
+		SetShaderValue(e_ShaderValResource, "gShadowMap" , mShadowMap->mDepthMapSRV);
+		SetShaderValue(e_ShaderValMtx, "gShadowTransform", mShadowMap->mScreenMtx);
 	}
 
 	// '개별' 쉐이더 변수 업데이트
@@ -211,6 +222,9 @@ public:
 		case e_ShaderSkyBox:
 			return sizeof(VertexSkyBox);
 
+		case e_ShaderShadowMap:
+			return sizeof(VertexShadowMap);
+
 		default:
 		case e_ShaderPongTex:
 		case e_ShaderCartoonTex:
@@ -237,12 +251,6 @@ public:
 	void GetDesc(D3DX11_TECHNIQUE_DESC* techDesc)
 	{
 		mShader[mShaderMode]->mTech->GetDesc(techDesc);
-	}
-
-	// 디퍼드 쉐이더 얻기
-	void GetDefeeredDesc(D3DX11_TECHNIQUE_DESC* techDesc)
-	{
-		mShader[e_ShaderDeferred]->mTech->GetDesc(techDesc);
 	}
 
 	void GetPassByIndex(int idx)
@@ -361,6 +369,42 @@ protected:
 
 	// 쉐이더 변수 Set 하기
 	template <class T>
+	void SetCommonShadowValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, T& _value)
+	{
+		switch (_ValueEnum)
+		{
+			// 매트릭스
+		case e_ShaderValMtx:
+			mShader[e_ShaderShadowMap]->mfxMtx[_Name]->SetMatrix(reinterpret_cast<float*>(&_value));
+			break;
+
+			// 벡터
+		case e_ShaderValVtx:
+			mShader[e_ShaderShadowMap]->mfxVtx[_Name]->SetFloatVector(reinterpret_cast<float*>(&_value));
+			break;
+
+			// 일반 변수
+		case e_ShaderVal:
+			mShader[e_ShaderShadowMap]->mfxValue[_Name]->SetRawValue(&_value, 0, sizeof(_value));
+			break;
+		}
+	}
+
+	// 쉐이더 변수 Set 하기
+	template <class T>
+	void SetCommonShadowValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, T& _value, int _size)
+	{
+		switch (_ValueEnum)
+		{
+			// 일반 변수
+		case e_ShaderVal:
+			mShader[e_ShaderShadowMap]->mfxValue[_Name]->SetRawValue(&_value, 0, sizeof(_value)* _size);
+			break;
+		}
+	}
+
+	// 쉐이더 변수 Set 하기
+	template <class T>
 	void SetShaderValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, T& _value, int _size)
 	{
 		switch (_ValueEnum)
@@ -434,6 +478,9 @@ private:
 		// 스카이박스
 		BuildFX(e_ShaderSkyBox, L"SKY_BOX.fx", "SkyBoxTech");
 
+		// 쉐도우 맵
+		BuildFX(e_ShaderShadowMap, L"ShadowMap.fx", "BuildShadowMap");
+
 		// 디퍼드 렌더링
 		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred");
 	}
@@ -453,25 +500,28 @@ private:
 		GetTech(tEffectStorage, _TechniqueName);
 
 		// 상수버퍼 수정할 수 있게끔 값 얻기 (Get)
-		GetShaderValue(tEffectStorage, "gWorld"			   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gWorldInvTranspose", e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gView"		       , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gViewInvTranspose" , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gProj"			   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gProjInvTranspose" , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gWorldViewProj"	   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gViewProj"		   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gTexTFMtx"		   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gLocTMMtx"		   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gWdTMMtx"          , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gEyePosW"		   , e_ShaderValVtx);
-		GetShaderValue(tEffectStorage, "gDirLight"		   , e_ShaderVal);
+		GetShaderValue(tEffectStorage, "gWorld"			   , e_ShaderValMtx);      // 매트릭스
+		GetShaderValue(tEffectStorage, "gWorldInvTranspose", e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gView"		       , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gViewInvTranspose" , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gProj"			   , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gProjInvTranspose" , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gWorldViewProj"	   , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gViewProj"		   , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gTexTFMtx"		   , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gLocTMMtx"		   , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gWdTMMtx"          , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gShadowTransform"  , e_ShaderValMtx);      
+																			       
+		GetShaderValue(tEffectStorage, "gEyePosW"		   , e_ShaderValVtx);      // 버텍스
+																			       
+		GetShaderValue(tEffectStorage, "gDirLight"		   , e_ShaderVal);	       // 구조체
 		GetShaderValue(tEffectStorage, "gPointLight"	   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gSpotLight"		   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gMaterial"		   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gFar"			   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gNear"             , e_ShaderVal);
-		GetShaderValue(tEffectStorage, "gDiffuseTex"	   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gDiffuseTex"	   , e_ShaderValResource); // 리소스
 		GetShaderValue(tEffectStorage, "gSpecularTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gNormalTex"		   , e_ShaderValResource);
 
@@ -500,6 +550,9 @@ private:
 
 		// 큐브맵 텍스처
 		GetShaderValue(tEffectStorage, "gSkyBox"           , e_ShaderValResource);
+
+		// 쉐도우맵 텍스처
+		GetShaderValue(tEffectStorage, "gShadowMap"        , e_ShaderValResource);
 
 		// IA 생성
 		CreateIA(tEffectStorage);
@@ -628,6 +681,22 @@ private:
 			{
 				{ "POSITION"   , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
 				{ "PEDDING"    , 0, DXGI_FORMAT_R32_FLOAT		  , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "WORLD"      , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0                           , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+				{ "WORLD"      , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+				// 인스턴스데이터에 애니 텍스처 번호, 프레임번호 넘겨야함
+			};
+			// Create the input layout
+			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
+		}
+		else if (mShaderMode == e_ShaderShadowMap)
+		{
+			D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+			{
+				{ "POSITION"   , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "NORMAL"     , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
+				{ "TEXCOORD"   , 0, DXGI_FORMAT_R32G32_FLOAT      , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
 				{ "WORLD"      , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0                           , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 				{ "WORLD"      , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 				{ "WORLD"      , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },

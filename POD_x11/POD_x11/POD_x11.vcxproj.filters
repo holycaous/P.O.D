@@ -174,6 +174,9 @@
     <ClInclude Include="cMapManager.h">
       <Filter>헤더 파일\Manager\Etc</Filter>
     </ClInclude>
+    <ClInclude Include="cShadowMap.h">
+      <Filter>헤더 파일\Manager\Etc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -248,6 +251,9 @@
     <ClCompile Include="cMapManager.cpp">
       <Filter>소스 파일\Manager\Storage</Filter>
     </ClCompile>
+    <ClCompile Include="cShadowMap.cpp">
+      <Filter>소스 파일\Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="POD_x11.rc">
@@ -285,6 +291,9 @@
       <Filter>FX</Filter>
     </FxCompile>
     <FxCompile Include="SKY_BOX.fx">
+      <Filter>FX</Filter>
+    </FxCompile>
+    <FxCompile Include="ShadowMap.fx">
       <Filter>FX</Filter>
     </FxCompile>
   </ItemGroup>

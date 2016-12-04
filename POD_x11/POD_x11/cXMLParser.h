@@ -697,7 +697,7 @@ public:
 
 		_InitMetaData->TexIndices.assign(&ti[0], &ti[6]);
 	}
-
+	
 	// ¸Ê ¸¸µé±â
 	void LoadMap(InitMetaData* _InitMetaData, string& _hightMapPss, float& _Xwidth, float& _Zdepth, float& _CellSize, float& _HeightScale, float& _uvDevide)
 	{
