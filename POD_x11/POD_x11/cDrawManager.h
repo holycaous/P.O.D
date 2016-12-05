@@ -8,7 +8,7 @@ class cDrawManager : public cSingleton<cDrawManager>
 	cShaderManager*   mShaderManager   = cShaderManager  ::GetInstance();
 	cMaterialManager* mMaterialManager = cMaterialManager::GetInstance();
 	cModelManager*    mModelManager    = cModelManager   ::GetInstance();
-
+	cShadowMap*       mShadowMap       = cShadowMap      ::GetInstance();
 
 	// 어떻게 그릴 것인가
 	ID3D11RasterizerState* mWireframeRS  = nullptr;
@@ -89,6 +89,9 @@ public:
 	{
 		// 변수 셋팅
 		updateValue();
+
+		// 쉐도우 맵 그리기
+		DrawShadowMap();
 
 		// 첫 패스 렌더링
 		onePessRender(_ForMat);
@@ -244,6 +247,19 @@ private:
 		DrawScreen();
 #endif
 		//-------------------------------------------------------------------//
+	}
+
+	// 쉐도우 맵 렌더링
+	void DrawShadowMap()
+	{
+		// 쉐도우 맵 셋팅
+		//mShadowMap->BindDsvAndSetNullRenderTarget();
+
+		// 쉐도우 맵 렌더링
+
+
+		// 원래 상태로 돌리기
+
 	}
 
 	// 스크린 그리기

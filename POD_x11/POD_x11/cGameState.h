@@ -11,6 +11,8 @@ protected:
 	cModelManager*    mModelManager    = cModelManager   ::GetInstance(); // 각 스테이트에 모델을 사용 가능하게끔
 	cDrawManager*     mDrawManager     = cDrawManager    ::GetInstance(); // 각 스테이트에 렌더링이 가능하게끔
 	cShaderManager*   mShaderManager   = cShaderManager  ::GetInstance(); // 라이트 땜시?
+	cShadowMap    *   mShadowMap       = cShadowMap      ::GetInstance(); // 쉐도우 맵
+	cMapManager   *   mMapManager      = cMapManager     ::GetInstance(); // 맵 매니저
 
 	//cShaderManager*   mShaderManager   = cShaderManager  ::GetInstance();
 	//cMaterialManager* mMaterialManager = cMaterialManager::GetInstance();

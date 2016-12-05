@@ -10,6 +10,7 @@ class cShaderManager : public cSingleton<cShaderManager>
 	cCoreStorage*  mCoreStorage  = cCoreStorage ::GetInstance();
 	cLightManager* mLightManager = cLightManager::GetInstance();
 	cMapManager*   mMapManager   = cMapManager  ::GetInstance();
+	cShadowMap *   mShadowMap    = cShadowMap   ::GetInstance();
 
 	// 렌더링 모드
 	SHADER_TYPE mShaderMode;
@@ -125,7 +126,14 @@ public:
 		UpdateCamPos(gCam.GetPosition());
 
 		// 큐브맵 갱신
-		SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
+		if (mShaderMode == e_ShaderSkyBox)
+			SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
+		
+		// 쉐도우맵 갱신
+		SetShaderValue(e_ShaderValResource, "gShadowMap" , mShadowMap->mDepthMapSRV);
+		SetShaderValue(e_ShaderValMtx, "gShadowTransform", mShadowMap->mShadowTransform);
+		SetShaderValue(e_ShaderValMtx, "gLightViewProj"  , mShadowMap->mLightViewProj);
+
 	}
 
 	// '개별' 쉐이더 변수 업데이트
@@ -466,27 +474,31 @@ private:
 	{
 		// 테크닉 사용할 수 있게끔 값 얻기
 		GetTech(tEffectStorage, _TechType, _TechniqueName);
-
+		
 		// 상수버퍼 수정할 수 있게끔 값 얻기 (Get)
-		GetShaderValue(tEffectStorage, "gWorld"			   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gWorldInvTranspose", e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gView"		       , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gViewInvTranspose" , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gProj"			   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gProjInvTranspose" , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gWorldViewProj"	   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gViewProj"		   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gTexTFMtx"		   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gLocTMMtx"		   , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gWdTMMtx"          , e_ShaderValMtx);
-		GetShaderValue(tEffectStorage, "gEyePosW"		   , e_ShaderValVtx);
-		GetShaderValue(tEffectStorage, "gDirLight"		   , e_ShaderVal);
+		GetShaderValue(tEffectStorage, "gWorld"			   , e_ShaderValMtx);      // 매트릭스
+		GetShaderValue(tEffectStorage, "gWorldInvTranspose", e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gView"		       , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gViewInvTranspose" , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gProj"			   , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gProjInvTranspose" , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gWorldViewProj"	   , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gViewProj"		   , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gTexTFMtx"		   , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gLocTMMtx"		   , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gWdTMMtx"          , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gShadowTransform"  , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gLightViewProj"    , e_ShaderValMtx);  
+																			       
+		GetShaderValue(tEffectStorage, "gEyePosW"		   , e_ShaderValVtx);      // 버텍스
+																			       
+		GetShaderValue(tEffectStorage, "gDirLight"		   , e_ShaderVal);	       // 구조체
 		GetShaderValue(tEffectStorage, "gPointLight"	   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gSpotLight"		   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gMaterial"		   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gFar"			   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gNear"             , e_ShaderVal);
-		GetShaderValue(tEffectStorage, "gDiffuseTex"	   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gDiffuseTex"	   , e_ShaderValResource); // 리소스
 		GetShaderValue(tEffectStorage, "gSpecularTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gNormalTex"		   , e_ShaderValResource);
 
@@ -515,6 +527,10 @@ private:
 
 		// 큐브맵 텍스처
 		GetShaderValue(tEffectStorage, "gSkyBox"           , e_ShaderValResource);
+
+		// 쉐도우맵 텍스처
+		GetShaderValue(tEffectStorage, "gShadowMap"        , e_ShaderValResource);
+
 
 		// IA 생성
 		CreateIA(tEffectStorage, _TechType);

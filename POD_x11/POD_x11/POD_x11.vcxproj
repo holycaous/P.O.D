@@ -131,6 +131,7 @@
     <ClInclude Include="cModelManager.h" />
     <ClInclude Include="cPlayState.h" />
     <ClInclude Include="cShaderManager.h" />
+    <ClInclude Include="cShadowMap.h" />
     <ClInclude Include="cSingleton.h" />
     <ClInclude Include="cGameTimer.h" />
     <ClInclude Include="cInitD3D.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="cPlayState.cpp" />
     <ClCompile Include="cShaderManager.cpp" />
     <ClCompile Include="cEngine.cpp" />
+    <ClCompile Include="cShadowMap.cpp" />
     <ClCompile Include="cXMLParser.cpp" />
     <ClCompile Include="cXnaHelper.cpp" />
     <ClCompile Include="Main.cpp" />

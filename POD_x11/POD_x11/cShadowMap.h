@@ -3,42 +3,49 @@
 class cShadowMap : public cSingleton<cShadowMap>
 {
 public:
-	InitMetaData* mScreen       = nullptr;	  
-	BufferType  * mScreenBuffer = nullptr;
-	XMFLOAT4X4    mScreenMtx;
+	ID3D11ShaderResourceView* mDepthMapSRV;
+	ID3D11DepthStencilView  * mDepthMapDSV;
 
 	UINT mWidth;
 	UINT mHeight;
 
-	ID3D11ShaderResourceView* mDepthMapSRV;
-	ID3D11DepthStencilView  * mDepthMapDSV;
+	XMFLOAT4X4    mShadowTransform;
+	XMFLOAT4X4    mLightViewProj;
+	XMFLOAT4X4    mLightView;
+	XMFLOAT4X4    mLightProj;
 
-	D3D11_VIEWPORT mViewport;
+	//D3D11_VIEWPORT mViewport;
+	BoundingSphere mSceneBounds;
 
-	cCoreStorage* mCoreStorage = cCoreStorage::GetInstance();
+	cLightManager* mLightManager = cLightManager::GetInstance();
+	cCoreStorage*  mCoreStorage  = cCoreStorage ::GetInstance();
 public:
 	// 쉐도우 맵 크기는 임의 지정 크기
 	cShadowMap()
 	{
+		mSceneBounds.Radius = 0.0f;
+		mSceneBounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		mWidth = mHeight = 0;
 		mDepthMapSRV = nullptr;
 		mDepthMapDSV = nullptr;
+
+		XMMATRIX I = XMMatrixIdentity();
+		XMStoreFloat4x4(&mShadowTransform, I);
+		XMStoreFloat4x4(&mLightViewProj, I);
+		XMStoreFloat4x4(&mLightView, I);
+		XMStoreFloat4x4(&mLightProj, I);
 	}
 
 	~cShadowMap()
 	{
-		ClearIns();
-
-		SafeDelete(mScreenBuffer);
-		SafeDelete(mScreen);
 		ReleaseCOM(mDepthMapSRV);
 		ReleaseCOM(mDepthMapDSV);
 	}
 
 	// 모델 추가하기
-	void AddScreen(float _x, float _y, float _z)
+	void SetmSceneBoundsRadius(float _Radius)
 	{
-		mScreen->AddModel(_x, _y, _z, e_StaticObj);
+		mSceneBounds.Radius = _Radius;
 	}
 
 	// 쉐도우 맵 초기화
@@ -47,12 +54,12 @@ public:
 		mWidth  = _Width;
 		mHeight = _Height;
 
-		mViewport.TopLeftX = 0.0f;
-		mViewport.TopLeftY = 0.0f;
-		mViewport.Width    = static_cast<float>(mWidth);
-		mViewport.Height   = static_cast<float>(mHeight);
-		mViewport.MinDepth = 0.0f;
-		mViewport.MaxDepth = 1.0f;
+		//mViewport.TopLeftX = 0.0f;
+		//mViewport.TopLeftY = 0.0f;
+		//mViewport.Width    = static_cast<float>(mWidth);
+		//mViewport.Height   = static_cast<float>(mHeight);
+		//mViewport.MinDepth = 0.0f;
+		//mViewport.MaxDepth = 1.0f;
 
 		// DSV가 해석하려고하기 때문에 형식이없는 형식을 사용한다.
 		// 비트는 DXGI_FORMAT_D24_UNORM_S8_UINT와 같지만 SRV는 해석 할 것입니다.
@@ -93,7 +100,7 @@ public:
 	
 	void BindDsvAndSetNullRenderTarget()
 	{
-		mCoreStorage->md3dImmediateContext->RSSetViewports(1, &mViewport);
+		//mCoreStorage->md3dImmediateContext->RSSetViewports(1, &mViewport);
 
 		// 깊이 버퍼에 드로잉 할 것이기 때문에 널 렌더 타겟을 설정하십시오.
 		// null 렌더 타겟을 설정하면 컬러 쓰기가 비활성화됩니다.
@@ -102,20 +109,43 @@ public:
 		mCoreStorage->md3dImmediateContext->ClearDepthStencilView(mDepthMapDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	void MakeShadowInsBuf()
+	void BuildShadowTransform()
 	{
-		// 쉐도우맵 인스턴스 버퍼생성
-		mScreenBuffer->MakeShadowInsBuf(mScreen);
+		// 주 디렉셔널 라이트에서만 쉐도우 적용
+		XMVECTOR lightDir  = XMLoadFloat3(&mLightManager->mSunDirLight.Direction);
+		XMVECTOR lightPos  = -2.0f * mSceneBounds.Radius * lightDir; // 빛 방향 * 지름
+		XMVECTOR targetPos = XMLoadFloat3(&mSceneBounds.Center);
+		XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+		XMMATRIX V = XMMatrixLookAtLH(lightPos, targetPos, up);
+
+		// Transform bounding sphere to light space.
+		XMFLOAT3 sphereCenterLS;
+		XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, V));
+
+		// Ortho frustum in light space encloses scene.
+		float l = sphereCenterLS.x - mSceneBounds.Radius;
+		float b = sphereCenterLS.y - mSceneBounds.Radius;
+		float n = sphereCenterLS.z - mSceneBounds.Radius;
+		float r = sphereCenterLS.x + mSceneBounds.Radius;
+		float t = sphereCenterLS.y + mSceneBounds.Radius;
+		float f = sphereCenterLS.z + mSceneBounds.Radius;
+		XMMATRIX P = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
+
+		// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
+		XMMATRIX T(
+			0.5f,  0.0f, 0.0f, 0.0f,
+			0.0f, -0.5f, 0.0f, 0.0f,
+			0.0f,  0.0f, 1.0f, 0.0f,
+			0.5f,  0.5f, 0.0f, 1.0f);
+
+		XMMATRIX S  = V*P*T;
+		XMMATRIX VP = V*P;
+
+		XMStoreFloat4x4(&mLightView, V);
+		XMStoreFloat4x4(&mLightProj, P);
+		XMStoreFloat4x4(&mShadowTransform, S);
+		XMStoreFloat4x4(&mLightViewProj, VP);
 	}
 
-	void UpdateIns()
-	{
-		mScreenBuffer->UpdateScreenIns(mScreen);
-	}
-
-	void ClearIns()
-	{
-		mScreen      ->ClearWdMtx();
-		mScreenBuffer->ClearInsBuf();
-	}
 };

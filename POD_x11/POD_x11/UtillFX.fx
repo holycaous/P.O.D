@@ -1,4 +1,5 @@
 
+
 // 라이트
 struct DirectionalLight
 {
@@ -150,6 +151,21 @@ struct SkyBoxIn
 	uint InstanceId		      : SV_InstanceID;
 };
 
+struct ShadowVertexIn
+{
+	float3 PosL				  : POSITION;
+	float3 NormalL			  : NORMAL;
+	float2 Tex				  : TEXCOORD;
+	row_major float4x4 World  : WORLD;
+	uint InstanceId		      : SV_InstanceID;
+};
+
+struct ShadowVertexOut
+{
+	float4 PosH : SV_POSITION;
+	float2 Tex  : TEXCOORD;
+};
+
 struct SkyBoxOut
 {
 	float4 PosH : SV_POSITION;
@@ -237,6 +253,9 @@ Texture2D gAttackModelTex;
 Texture2D gMapTex;
 Texture2D gHeightMapTex;
 
+// 쉐도우 맵 텍스처
+Texture2D gShadowMap;
+
 // G버퍼 텍스처
 Texture2D gGDepthTex;
 Texture2D gGDiffuseTex;
@@ -271,6 +290,9 @@ float4x4 gTexTFMtx;
 float4x4 gLocTMMtx;
 float4x4 gWdTMMtx;
 
+// 쉐도우맵 변환
+float4x4 gShadowTransform;
+float4x4 gLightViewProj;
 
 //------------------------------------------------------------------------------------//
 // Mip Filter 는 '밉맵8을 처리할 때의 필터링 옵션' 이고,
@@ -310,8 +332,40 @@ SamplerState samPoint
 	AddressU = Wrap;
 	AddressV = Wrap;
 	AddressW = Wrap;
-	MaxLOD   = 0;
-	MinLOD   = 0;
+	MaxLOD = 0;
+	MinLOD = 0;
+};
+
+SamplerComparisonState samShadow
+{
+	Filter = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+	AddressU = BORDER;
+	AddressV = BORDER;
+	AddressW = BORDER;
+	BorderColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	ComparisonFunc = LESS;
+};
+
+RasterizerState Depth
+{
+	// [MSDN에서 보낸]
+	// 현재 출력 합병 단계에 바인딩 된 깊이 버퍼가 UNORM 형식이거나
+	// 깊이 버퍼가 없다. 바이어스 값은 다음과 같이 계산된다.
+	//
+	// Bias = (float) DepthBias * r + SlopeScaledDepthBias * MaxDepthSlope;
+	//
+	// 여기서 r은 깊이 버퍼 형식에서 최소 표현 가능 값> 0이고 float32로 변환됩니다.
+	// [/ MSDN 끝내기]
+	//
+	// 24 비트 깊이 버퍼의 경우 r = 1 / 2 ^ 24입니다.
+	//
+	// 예 : DepthBias = 100000 ==> 실제 DepthBias = 100000 / 2 ^ 24 = .006
+
+	// 당신은 당신의 씬에 이 값들을 실험 할 필요가 있다.
+	DepthBias = 100000;
+	DepthBiasClamp = 0.0f;
+	SlopeScaledDepthBias = 1.0f;
 };
 
 RasterizerState NoCull

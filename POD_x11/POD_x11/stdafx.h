@@ -59,6 +59,7 @@ using namespace std;
 // << 일반 클래스 >>
 #include "cCam.h"
 #include "cLightManager.h"
+#include "cShadowMap.h"
 #include "cAniManager.h"
 #include "cMapManager.h"
 #include "cModelManager.h"

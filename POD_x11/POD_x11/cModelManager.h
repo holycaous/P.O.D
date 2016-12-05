@@ -21,11 +21,10 @@ public:
 	// 파서
 	cXMLParser mXMLParser;
 	
-	// 애니 매니저
+	// 매니저
 	cAniManager* mAniManager = cAniManager::GetInstance();
-
-	// 맵 매니저
 	cMapManager* mMapManager = cMapManager::GetInstance();
+	cShadowMap * mShadowMap  = cShadowMap ::GetInstance();
 
 	// 플레이어
 	PlayerInfo mPlayer;
@@ -36,6 +35,9 @@ public:
 	{
 		// 스크린 만들기
 		CreateScreen();
+
+		// 쉐도우 맵 초기화
+		mShadowMap->InitClass(2048, 2048);
 
 		// 모델 등록 (다른 종류의 모델만 1개씩)
 		CreateBoxModel("BOX1", e_ShaderColor, 0.7f, D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
@@ -1404,6 +1406,9 @@ public:
 		{
 			mBufferType[mUseShader[i]]->UpdateIns();
 		}
+
+		// 쉐두우맵 변수 업데이트
+		mShadowMap->BuildShadowTransform();
 
 		// 스크린 인스턴스 버퍼 업데이트
 		mScreenBuffer->UpdateScreenIns(mScreen);
