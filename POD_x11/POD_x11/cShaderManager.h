@@ -434,10 +434,10 @@ private:
 		BuildFX(e_ShaderPongTexMap, L"PNT_MAP.fx", "PongTexMap", "SDPongTexMap");
 
 		// 스카이박스
-		BuildFX(e_ShaderSkyBox, L"SKY_BOX.fx", "SkyBoxTech", "SDSkyBoxTech");
+		BuildFX(e_ShaderSkyBox, L"SKY_BOX.fx", "SkyBoxTech", "SkyBoxTech");
 
 		// 디퍼드 렌더링
-		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred", "SDDeferred");
+		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred", "Deferred");
 	}
 
 	void BuildFX(SHADER_TYPE _ShaderMode, const wchar_t* _FxName, char* _TechniqueName, char* _ShadowTechniqueName)

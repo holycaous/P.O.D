@@ -256,7 +256,7 @@ private:
 		//mShadowMap->BindDsvAndSetNullRenderTarget();
 
 		// 쉐도우 맵 렌더링
-
+		//DrawSDInsALLModel();
 
 		// 원래 상태로 돌리기
 
