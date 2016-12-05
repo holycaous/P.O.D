@@ -311,6 +311,12 @@ void cCam::SetPosition(float x, float y, float z)
 	mPosition = XMFLOAT3(x, y, z);
 }
 
+void cCam::SetPositionXZ(float x, float z)
+{
+	mPosition.x = x - mLook.x * m3PersonLength;
+	mPosition.z = z - mLook.z * m3PersonLength;
+}
+
 void cCam::SetPosition(const XMFLOAT3& v)
 {
 	mPosition = v;

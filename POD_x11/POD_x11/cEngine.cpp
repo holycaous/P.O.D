@@ -36,7 +36,6 @@ cEngine::~cEngine()
 	cDrawManager    ::GetInstance()->ClearClass();
 	cDrawManager    ::DestroyInstance();
 	cMapManager     ::DestroyInstance();
-	cShadowMap      ::DestroyInstance();
 
 	cCoreStorage::GetInstance()->ClearClass();
 	cCoreStorage::DestroyInstance();

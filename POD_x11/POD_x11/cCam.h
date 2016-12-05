@@ -20,6 +20,7 @@ public:
 	void SetPositionX(float x);
 	void SetPositionY(float y);
 	void SetPositionZ(float z);
+	void SetPositionXZ(float x, float z);
 	void SetCamY(float _y);
 
 

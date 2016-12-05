@@ -27,9 +27,6 @@ public:
 	// 맵 매니저
 	cMapManager* mMapManager = cMapManager::GetInstance();
 
-	// 쉐도우 맵
-	cShadowMap* mShadowMap = cShadowMap::GetInstance();
-
 	// 플레이어
 	PlayerInfo mPlayer;
 	
@@ -37,9 +34,6 @@ public:
 public:
 	void Init()
 	{
-		// 쉐도우맵 생성
-		CreateShadowMap(2048, 2048);
-
 		// 스크린 만들기
 		CreateScreen();
 
@@ -70,6 +64,8 @@ public:
 
 		// 모델 오브젝트 추가
 		CreateObjModel();
+
+		
 
 		//-------------------------------------------------------------------------------//
 		//
@@ -577,9 +573,6 @@ public:
 			// 스크린 클리어
 			mScreen->ClearWdMtx();
 			mScreenBuffer->ClearInsBuf();
-
-			// 쉐도우 맵 클리어
-			mShadowMap->ClearIns();
 		}
 		else
 		{
@@ -933,43 +926,6 @@ public:
 
 		// 버퍼 빌드
 		mScreenBuffer->Build_GScreen(mScreen);
-	}
-
-	// 쉐도우 맵 생성
-	void CreateShadowMap(UINT _Width, UINT _Height, SHADER_TYPE _ShaderMode = e_ShaderShadowMap, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
-	{
-		if (mShadowMap->mScreen == nullptr)
-		{
-			// 스크린 모델 월드 매트릭스 초기화
-			// 매트릭스 초기화
-			XMMATRIX I = XMMatrixIdentity();
-
-			// 스크린 월드 매트릭스 초기화
-			XMStoreFloat4x4(&mShadowMap->mScreenMtx, I);
-
-			// 쉐도우맵 생성
-			mShadowMap->InitClass(_Width, _Height);
-
-			// 현재 모델 정보 얻기
-			mShadowMap->mScreen = new InitMetaData("ShadowScreen", _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
-
-			// 모델의 종류
-			mShadowMap->mScreen->mModelType  = e_BasicModel;
-			mShadowMap->mScreen->mCreateName = "ShadowScreen";
-			strcpy(mShadowMap->mScreen->mObjName, mShadowMap->mScreen->mCreateName.c_str());
-
-			// 파싱 시작 (풀 스크린 쿼드 만들기)
-			mXMLParser.LoadScreen(mShadowMap->mScreen, 1.0f, 1.0f); // 풀 스크린쿼드
-
-			// 변수 계산
-			mShadowMap->mScreen->CalValue();
-
-			// 버퍼 생성
-			mShadowMap->mScreenBuffer = new BufferType();
-
-			// 버퍼 빌드
-			mShadowMap->mScreenBuffer->Build_ShadowMap(mShadowMap->mScreen);
-		}
 	}
 
 	// 모델에 사용한 모든 쉐이더 추가
@@ -1397,9 +1353,6 @@ public:
 
 		// 스크린 인스턴스 버퍼 생성
 		mScreenBuffer->MakeScreenInsBuf(mScreen);
-
-		// 쉐도우맵 인스턴스 버퍼생성
-		mShadowMap->MakeShadowInsBuf();
 	}
 
 
@@ -1454,9 +1407,6 @@ public:
 
 		// 스크린 인스턴스 버퍼 업데이트
 		mScreenBuffer->UpdateScreenIns(mScreen);
-
-		// 쉐도우맵 인스턴스버퍼 업데이트
-		mShadowMap->UpdateIns();
 	}
 
 	// FSM 변경

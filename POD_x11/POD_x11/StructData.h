@@ -31,8 +31,7 @@ typedef enum
 	e_ShaderDeferred   = 4,
 	e_ShaderPongTexAni = 5,
 	e_ShaderPongTexMap = 6,
-	e_ShaderSkyBox     = 7,
-	e_ShaderShadowMap  = 8
+	e_ShaderSkyBox     = 7
 }SHADER_TYPE;
 
 // 쉐이더 변수 초기화
@@ -44,6 +43,12 @@ typedef enum
 	e_ShaderValResource = 3,
 	e_ShaderValMtxArray = 4
 }SHADER_VAL_TYPE;
+
+typedef enum
+{
+	e_Basic  = 0,
+	e_Shadow = 1
+}TECH_TYPE;
 
 // 모델 FSM
 typedef enum
@@ -138,13 +143,6 @@ struct VertexSkyBox
 {
 	XMFLOAT3 Pos;
 	float    Pedding; // 패딩 값
-};
-
-struct VertexShadowMap
-{
-	XMFLOAT3 Pos;
-	XMFLOAT3 Normal;
-	XMFLOAT2 Tex;
 };
 
 struct VertexG
@@ -1194,20 +1192,18 @@ class EffectStorage
 {
 public:
 	ID3DX11Effect* mFX;			   // 이펙트
-	ID3DX11EffectTechnique* mTech; // 테크닉
+	map<int, ID3DX11EffectTechnique*> mTech; // 테크닉
 	map<string, ID3DX11EffectMatrixVariable*> mfxMtx; // 행렬
 	map<string, ID3DX11EffectVectorVariable*> mfxVtx; // 벡터
 	map<string, ID3DX11EffectVariable*>     mfxValue; // 변수
 
 	map<string, ID3DX11EffectShaderResourceVariable*>  mfxResource; // 리소스
 	
-	ID3D11InputLayout* mInputLayout;
+	map<int, ID3D11InputLayout*> mInputLayout;
 public:
 	EffectStorage()
 	{
-		mFX = 0;
-		mTech = 0;
-		mInputLayout = 0;
+		mFX = nullptr;
 	}
 
 	~EffectStorage()
@@ -1223,15 +1219,21 @@ public:
 
 		for (auto itor = mfxResource.begin(); itor != mfxResource.end(); ++itor)
 			ReleaseCOM(itor->second);
-		
+
+		for (auto itor = mTech.begin(); itor != mTech.end(); ++itor)
+			ReleaseCOM(itor->second);
+
+		for (auto itor = mInputLayout.begin(); itor != mInputLayout.end(); ++itor)
+			ReleaseCOM(itor->second);
+
 		mfxMtx.clear();
 		mfxVtx.clear();
 		mfxValue.clear();
 		mfxResource.clear();
+		mTech.clear();
+		mInputLayout.clear();
 
-		ReleaseCOM(mTech);
 		ReleaseCOM(mFX);
-		ReleaseCOM(mInputLayout);
 	}
 };
 
@@ -1389,29 +1391,6 @@ public:
 
 			if (_Screen->mObjData.size() != 1)
 				cout << "스크린 버퍼가 1개가 아닙니다!!" << endl;
-
-			// 공간할당
-			//mInstancedBuffer[itor->second->mCreateName] = NULL;
-			HR(mCoreStorage->md3dDevice->CreateBuffer(&vbd, 0, &mInstancedBuffer[_Screen->mCreateName]));
-		}
-	}
-
-	void MakeShadowInsBuf(InitMetaData* _Screen)
-	{
-		// 인스턴스 버퍼 생성
-		// 월드 매트릭스가 있어야만 생성
-		if (_Screen->mObjData.size())
-		{
-			D3D11_BUFFER_DESC vbd;
-			vbd.Usage               = D3D11_USAGE_DYNAMIC;
-			vbd.ByteWidth           = sizeof(XMFLOAT4X4) * _Screen->mObjData.size();
-			vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
-			vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
-			vbd.MiscFlags           = 0;
-			vbd.StructureByteStride = 0;
-
-			if (_Screen->mObjData.size() != 1)
-				cout << "쉐도우 맵 버퍼가 1개가 아닙니다!!" << endl;
 
 			// 공간할당
 			//mInstancedBuffer[itor->second->mCreateName] = NULL;
@@ -1628,6 +1607,7 @@ public:
 		_Screen->mVertexOffset = 0;
 		_Screen->mIndexOffset  = 0;
 
+
 		// 총 버텍스 사이즈 계산
 		vector<VertexG> vertices; // 한곳으로 옮기는 작업 ( 가장 큰 버퍼 )
 		UINT totalVertexCount = _Screen->Vertices.size();
@@ -1685,68 +1665,6 @@ public:
 		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
 
-	// 모델의 메타데이터( 정보를 가지고 있는) , 저장할 모델 
-	void Build_ShadowMap(InitMetaData* _Screen)
-	{
-		_Screen->mVertexOffset = 0;
-		_Screen->mIndexOffset  = 0;
-
-		// 총 버텍스 사이즈 계산
-		vector<VertexShadowMap> vertices; // 한곳으로 옮기는 작업 ( 가장 큰 버퍼 )
-		UINT totalVertexCount = _Screen->Vertices.size();
-
-		// 정점 늘리기
-		CalVtxINCAndSet(_Screen);
-
-		// 전체버퍼 사이즈 늘리기
-		vertices.resize(totalVertexCount);
-
-		// 가장 큰 버퍼로 복사
-		// 이터레이터가 돌면서, 버텍스 크기만큼 더한다.
-		for (unsigned int i = 0; i < _Screen->Vertices.size(); ++i)
-		{
-			vertices[i].Pos    = _Screen->Vertices[i].Position;
-			vertices[i].Normal = _Screen->Vertices[i].Normal;
-			vertices[i].Tex    = _Screen->Vertices[i].TexUV;
-		}
-
-		// 버텍스 버퍼 만들기
-		D3D11_BUFFER_DESC vbd;
-		vbd.Usage          = D3D11_USAGE_IMMUTABLE;
-		vbd.ByteWidth      = sizeof(VertexShadowMap) * totalVertexCount;
-		vbd.BindFlags      = D3D11_BIND_VERTEX_BUFFER; // 버텍스
-		vbd.CPUAccessFlags = 0;
-		vbd.MiscFlags      = 0;
-
-		D3D11_SUBRESOURCE_DATA vinitData;
-		vinitData.pSysMem = &vertices[0];
-		HR(cCoreStorage::GetInstance()->md3dDevice->CreateBuffer(&vbd, &vinitData, &mVB));
-
-		// 총 인덱스 사이즈 계산
-		UINT totalIndexCount = _Screen->Indices.size();
-
-		// 인덱스 버퍼 만들기
-		std::vector<UINT> indices;
-
-		// 가장 큰 버퍼로 복사
-		// 이터레이터가 돌면서, 인덱스 크기만큼 더한다.
-		for (unsigned int i = 0; i < _Screen->Indices.size(); ++i)
-		{
-			indices.push_back(_Screen->Indices[i]);
-		}
-
-		// 인덱스 버퍼 만들기
-		D3D11_BUFFER_DESC ibd;
-		ibd.Usage          = D3D11_USAGE_IMMUTABLE;
-		ibd.ByteWidth      = sizeof(UINT)* totalIndexCount;
-		ibd.BindFlags      = D3D11_BIND_INDEX_BUFFER; // 인덱스
-		ibd.CPUAccessFlags = 0;
-		ibd.MiscFlags      = 0;
-
-		D3D11_SUBRESOURCE_DATA iinitData;
-		iinitData.pSysMem = &indices[0];
-		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
-	}
 private:
 	// 모델의 메타데이터( 정보를 가지고 있는) , 저장할 모델 
 	void Build_PC()

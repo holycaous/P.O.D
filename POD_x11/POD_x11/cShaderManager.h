@@ -10,7 +10,6 @@ class cShaderManager : public cSingleton<cShaderManager>
 	cCoreStorage*  mCoreStorage  = cCoreStorage ::GetInstance();
 	cLightManager* mLightManager = cLightManager::GetInstance();
 	cMapManager*   mMapManager   = cMapManager  ::GetInstance();
-	cShadowMap*    mShadowMap    = cShadowMap   ::GetInstance();
 
 	// 렌더링 모드
 	SHADER_TYPE mShaderMode;
@@ -58,16 +57,10 @@ public:
 		mShader[mShaderMode]->mfxMtx[_Name]->SetMatrixArray(reinterpret_cast<float*>(_Mtx), 0, _MtxSize);
 	}
 
-	// 행렬 저장
+	// 스킨 행렬 저장
 	void SetCommonShaderMtxArray(SHADER_VAL_TYPE _ValueEnum, char* _Name, XMFLOAT4X4* _Mtx, int _MtxSize)
 	{
 		mShader[e_ShaderDeferred]->mfxMtx[_Name]->SetMatrixArray(reinterpret_cast<float*>(_Mtx), 0, _MtxSize);
-	}
-
-	// 행렬 저장
-	void SetCommonShadowMtxArray(SHADER_VAL_TYPE _ValueEnum, char* _Name, XMFLOAT4X4* _Mtx, int _MtxSize)
-	{
-		mShader[e_ShaderShadowMap]->mfxMtx[_Name]->SetMatrixArray(reinterpret_cast<float*>(_Mtx), 0, _MtxSize);
 	}
 
 	// '기본' 쉐이더 변수 업데이트
@@ -132,12 +125,7 @@ public:
 		UpdateCamPos(gCam.GetPosition());
 
 		// 큐브맵 갱신
-		if (mShaderMode == e_ShaderSkyBox)
-			SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
-		
-		// 쉐도우맵 갱신
-		SetShaderValue(e_ShaderValResource, "gShadowMap" , mShadowMap->mDepthMapSRV);
-		SetShaderValue(e_ShaderValMtx, "gShadowTransform", mShadowMap->mScreenMtx);
+		SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
 	}
 
 	// '개별' 쉐이더 변수 업데이트
@@ -223,9 +211,6 @@ public:
 		case e_ShaderSkyBox:
 			return sizeof(VertexSkyBox);
 
-		case e_ShaderShadowMap:
-			return sizeof(VertexShadowMap);
-
 		default:
 		case e_ShaderPongTex:
 		case e_ShaderCartoonTex:
@@ -243,20 +228,20 @@ public:
 	}
 
 	// 현재 레이어 전송
-	ID3D11InputLayout* GetInputLayout()
+	ID3D11InputLayout* GetInputLayout(TECH_TYPE _TechType)
 	{
-		return mShader[mShaderMode]->mInputLayout;
+		return mShader[mShaderMode]->mInputLayout[(int)_TechType];
 	}
 
 	// 일반 쉐이더 얻기
-	void GetDesc(D3DX11_TECHNIQUE_DESC* techDesc)
+	void GetDesc(D3DX11_TECHNIQUE_DESC* techDesc, TECH_TYPE _TechType)
 	{
-		mShader[mShaderMode]->mTech->GetDesc(techDesc);
+		mShader[mShaderMode]->mTech[int(_TechType)]->GetDesc(techDesc);
 	}
 
-	void GetPassByIndex(int idx)
+	void GetPassByIndex(int idx, TECH_TYPE _TechType)
 	{
-		mShader[mShaderMode]->mTech->GetPassByIndex(idx)->Apply(0, mCoreStorage->md3dImmediateContext);
+		mShader[mShaderMode]->mTech[int(_TechType)]->GetPassByIndex(idx)->Apply(0, mCoreStorage->md3dImmediateContext);
 	}
 
 	// 라이트 매니저 얻기
@@ -370,42 +355,6 @@ protected:
 
 	// 쉐이더 변수 Set 하기
 	template <class T>
-	void SetCommonShadowValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, T& _value)
-	{
-		switch (_ValueEnum)
-		{
-			// 매트릭스
-		case e_ShaderValMtx:
-			mShader[e_ShaderShadowMap]->mfxMtx[_Name]->SetMatrix(reinterpret_cast<float*>(&_value));
-			break;
-
-			// 벡터
-		case e_ShaderValVtx:
-			mShader[e_ShaderShadowMap]->mfxVtx[_Name]->SetFloatVector(reinterpret_cast<float*>(&_value));
-			break;
-
-			// 일반 변수
-		case e_ShaderVal:
-			mShader[e_ShaderShadowMap]->mfxValue[_Name]->SetRawValue(&_value, 0, sizeof(_value));
-			break;
-		}
-	}
-
-	// 쉐이더 변수 Set 하기
-	template <class T>
-	void SetCommonShadowValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, T& _value, int _size)
-	{
-		switch (_ValueEnum)
-		{
-			// 일반 변수
-		case e_ShaderVal:
-			mShader[e_ShaderShadowMap]->mfxValue[_Name]->SetRawValue(&_value, 0, sizeof(_value)* _size);
-			break;
-		}
-	}
-
-	// 쉐이더 변수 Set 하기
-	template <class T>
 	void SetShaderValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, T& _value, int _size)
 	{
 		switch (_ValueEnum)
@@ -459,34 +408,31 @@ private:
 	void InitFX()
 	{
 		// 색상
-		BuildFX(e_ShaderColor, L"PC.fx", "ColorTech");
+		BuildFX(e_ShaderColor, L"PC.fx", "ColorTech", "SDColorTech");
 
 		// 퐁 쉐이더
-		BuildFX(e_ShaderLight, L"PL.fx", "LightTech");
+		BuildFX(e_ShaderLight, L"PL.fx", "LightTech", "SDLightTech");
 
 		// 퐁쉐이더, 텍스처
-		BuildFX(e_ShaderPongTex, L"PNT.fx", "PongTex");
+		BuildFX(e_ShaderPongTex, L"PNT.fx", "PongTex", "SDPongTex");
 
 		// 카툰쉐이더, 텍스처
-		BuildFX(e_ShaderCartoonTex, L"PNT.fx", "CartoonTex");
+		BuildFX(e_ShaderCartoonTex, L"PNT.fx", "CartoonTex", "SDCartoonTex");
 
 		// 퐁쉐이더, 텍스처, 애니
-		BuildFX(e_ShaderPongTexAni, L"PNT_ANI.fx", "PongTexAni");
+		BuildFX(e_ShaderPongTexAni, L"PNT_ANI.fx", "PongTexAni", "SDPongTexAni");
 
 		// 퐁쉐이더, 텍스처, 맵
-		BuildFX(e_ShaderPongTexMap, L"PNT_MAP.fx", "PongTexMap");
+		BuildFX(e_ShaderPongTexMap, L"PNT_MAP.fx", "PongTexMap", "SDPongTexMap");
 
 		// 스카이박스
-		BuildFX(e_ShaderSkyBox, L"SKY_BOX.fx", "SkyBoxTech");
-
-		// 쉐도우 맵
-		BuildFX(e_ShaderShadowMap, L"ShadowMap.fx", "BuildShadowMap");
+		BuildFX(e_ShaderSkyBox, L"SKY_BOX.fx", "SkyBoxTech", "SDSkyBoxTech");
 
 		// 디퍼드 렌더링
-		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred");
+		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred", "SDDeferred");
 	}
 
-	void BuildFX(SHADER_TYPE _ShaderMode, const wchar_t* _FxName, char* _TechniqueName)
+	void BuildFX(SHADER_TYPE _ShaderMode, const wchar_t* _FxName, char* _TechniqueName, char* _ShadowTechniqueName)
 	{
 		// 쉐이더 셋
 		mShaderMode = _ShaderMode;
@@ -497,32 +443,50 @@ private:
 		// FX 파일 로드
 		LoadFX(tEffectStorage, _FxName);
 
+		// 테크 셋
+		SetTech(tEffectStorage, e_Basic , _TechniqueName);
+		SetTech(tEffectStorage, e_Shadow, _ShadowTechniqueName);
+		
+		// 기본 재질 설정
+		// 흰색 (머테리얼 매니저를 불러올 수 없어서, 일단 이렇게 처리)
+		Material tMat;
+		tMat.Ambient  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		tMat.Diffuse  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		tMat.Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
+		// 기본 재질 적용
+		tEffectStorage->mfxValue["gMaterial"]->SetRawValue(&tMat, 0, sizeof(tMat));
+
+		// 저장
+		mShader[mShaderMode] = tEffectStorage;
+	}
+
+	// 테크 셋
+	void SetTech(EffectStorage* tEffectStorage, TECH_TYPE _TechType, char* _TechniqueName)
+	{
 		// 테크닉 사용할 수 있게끔 값 얻기
-		GetTech(tEffectStorage, _TechniqueName);
+		GetTech(tEffectStorage, _TechType, _TechniqueName);
 
 		// 상수버퍼 수정할 수 있게끔 값 얻기 (Get)
-		GetShaderValue(tEffectStorage, "gWorld"			   , e_ShaderValMtx);      // 매트릭스
-		GetShaderValue(tEffectStorage, "gWorldInvTranspose", e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gView"		       , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gViewInvTranspose" , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gProj"			   , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gProjInvTranspose" , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gWorldViewProj"	   , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gViewProj"		   , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gTexTFMtx"		   , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gLocTMMtx"		   , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gWdTMMtx"          , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gShadowTransform"  , e_ShaderValMtx);      
-																			       
-		GetShaderValue(tEffectStorage, "gEyePosW"		   , e_ShaderValVtx);      // 버텍스
-																			       
-		GetShaderValue(tEffectStorage, "gDirLight"		   , e_ShaderVal);	       // 구조체
+		GetShaderValue(tEffectStorage, "gWorld"			   , e_ShaderValMtx);
+		GetShaderValue(tEffectStorage, "gWorldInvTranspose", e_ShaderValMtx);
+		GetShaderValue(tEffectStorage, "gView"		       , e_ShaderValMtx);
+		GetShaderValue(tEffectStorage, "gViewInvTranspose" , e_ShaderValMtx);
+		GetShaderValue(tEffectStorage, "gProj"			   , e_ShaderValMtx);
+		GetShaderValue(tEffectStorage, "gProjInvTranspose" , e_ShaderValMtx);
+		GetShaderValue(tEffectStorage, "gWorldViewProj"	   , e_ShaderValMtx);
+		GetShaderValue(tEffectStorage, "gViewProj"		   , e_ShaderValMtx);
+		GetShaderValue(tEffectStorage, "gTexTFMtx"		   , e_ShaderValMtx);
+		GetShaderValue(tEffectStorage, "gLocTMMtx"		   , e_ShaderValMtx);
+		GetShaderValue(tEffectStorage, "gWdTMMtx"          , e_ShaderValMtx);
+		GetShaderValue(tEffectStorage, "gEyePosW"		   , e_ShaderValVtx);
+		GetShaderValue(tEffectStorage, "gDirLight"		   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gPointLight"	   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gSpotLight"		   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gMaterial"		   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gFar"			   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gNear"             , e_ShaderVal);
-		GetShaderValue(tEffectStorage, "gDiffuseTex"	   , e_ShaderValResource); // 리소스
+		GetShaderValue(tEffectStorage, "gDiffuseTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gSpecularTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gNormalTex"		   , e_ShaderValResource);
 
@@ -552,28 +516,12 @@ private:
 		// 큐브맵 텍스처
 		GetShaderValue(tEffectStorage, "gSkyBox"           , e_ShaderValResource);
 
-		// 쉐도우맵 텍스처
-		GetShaderValue(tEffectStorage, "gShadowMap"        , e_ShaderValResource);
-
 		// IA 생성
-		CreateIA(tEffectStorage);
-
-		// 기본 재질 설정
-		// 흰색 (머테리얼 매니저를 불러올 수 없어서, 일단 이렇게 처리)
-		Material tMat;
-		tMat.Ambient  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		tMat.Diffuse  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		tMat.Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-
-		// 기본 재질 적용
-		tEffectStorage->mfxValue["gMaterial"]->SetRawValue(&tMat, 0, sizeof(tMat));
-
-		// 저장
-		mShader[mShaderMode] = tEffectStorage;
+		CreateIA(tEffectStorage, _TechType);
 	}
 
 	// 입력 조립기 초기화 (FVF)
-	void CreateIA(EffectStorage* tEffectStorage)
+	void CreateIA(EffectStorage* tEffectStorage, TECH_TYPE& _TechType)
 	{
 		// 레이아웃 초기화
 		if (mShaderMode == e_ShaderColor)
@@ -591,7 +539,7 @@ private:
 			};
 
 			// Create the input layout
-			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
+			NEW_IA(tEffectStorage, _TechType, vertexDesc, _countof(vertexDesc));
 		}
 		else if (mShaderMode == e_ShaderLight)
 		{
@@ -607,7 +555,7 @@ private:
 			};
 
 			// Create the input layout
-			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
+			NEW_IA(tEffectStorage, _TechType, vertexDesc, _countof(vertexDesc));
 		}
 		else if (mShaderMode == e_ShaderPongTex || mShaderMode == e_ShaderCartoonTex)
 		{
@@ -625,7 +573,7 @@ private:
 				{ "WORLD"   , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 }		
 			};
 			// Create the input layout
-			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
+			NEW_IA(tEffectStorage, _TechType, vertexDesc, _countof(vertexDesc));
 		}
 		else if (mShaderMode == e_ShaderDeferred)
 		{
@@ -640,7 +588,7 @@ private:
 				{ "WORLD"   , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 }		
 			};
 			// Create the input layout
-			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
+			NEW_IA(tEffectStorage, _TechType, vertexDesc, _countof(vertexDesc));
 		}
 		else if (mShaderMode == e_ShaderPongTexAni)
 		{
@@ -658,7 +606,7 @@ private:
 				// 인스턴스데이터에 애니 텍스처 번호, 프레임번호 넘겨야함
 			};
 			// Create the input layout
-			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
+			NEW_IA(tEffectStorage, _TechType, vertexDesc, _countof(vertexDesc));
 		}
 		else if (mShaderMode == e_ShaderPongTexMap)
 		{
@@ -674,7 +622,7 @@ private:
 				// 인스턴스데이터에 애니 텍스처 번호, 프레임번호 넘겨야함
 			};
 			// Create the input layout
-			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
+			NEW_IA(tEffectStorage, _TechType, vertexDesc, _countof(vertexDesc));
 		}
 		else if (mShaderMode == e_ShaderSkyBox)
 		{
@@ -689,34 +637,18 @@ private:
 				// 인스턴스데이터에 애니 텍스처 번호, 프레임번호 넘겨야함
 			};
 			// Create the input layout
-			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
-		}
-		else if (mShaderMode == e_ShaderShadowMap)
-		{
-			D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
-			{
-				{ "POSITION"   , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-				{ "NORMAL"     , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-				{ "TEXCOORD"   , 0, DXGI_FORMAT_R32G32_FLOAT      , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA  , 0 },
-				{ "WORLD"      , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0                           , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-				{ "WORLD"      , 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-				{ "WORLD"      , 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-				{ "WORLD"      , 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48                          , D3D11_INPUT_PER_INSTANCE_DATA, 1 }
-				// 인스턴스데이터에 애니 텍스처 번호, 프레임번호 넘겨야함
-			};
-			// Create the input layout
-			NEW_IA(tEffectStorage, vertexDesc, _countof(vertexDesc));
+			NEW_IA(tEffectStorage, _TechType, vertexDesc, _countof(vertexDesc));
 		}
 	}
 
 	// IA 생성
-	void NEW_IA(EffectStorage* tEffectStorage, D3D11_INPUT_ELEMENT_DESC* vertexDesc, int _FVFNum)
+	void NEW_IA(EffectStorage* tEffectStorage, TECH_TYPE& _TechType, D3D11_INPUT_ELEMENT_DESC* vertexDesc, int _FVFNum)
 	{
 		// Create the input layout
 		static D3DX11_PASS_DESC passDesc;
 
 		// 쉐이더 정보 가져오기
-		tEffectStorage->mTech->GetPassByIndex(0)->GetDesc(&passDesc);
+		tEffectStorage->mTech[(int)_TechType]->GetPassByIndex(0)->GetDesc(&passDesc);
 
 		// IA 생성
 		HR(cCoreStorage::GetInstance()->md3dDevice->CreateInputLayout(
@@ -724,7 +656,7 @@ private:
 			_FVFNum,
 			passDesc.pIAInputSignature,
 			passDesc.IAInputSignatureSize,
-			&tEffectStorage->mInputLayout));
+			&tEffectStorage->mInputLayout[(int)_TechType]));
 	}
 
 	// FX 파일 로드
@@ -805,9 +737,9 @@ private:
 	}
 
 	// 태크닉 초기화
-	void GetTech(EffectStorage* tEffectStorage, char* _Name)
+	void GetTech(EffectStorage* tEffectStorage, TECH_TYPE _TechType, char* _Name)
 	{
-		tEffectStorage->mTech = tEffectStorage->mFX->GetTechniqueByName(_Name);
+		tEffectStorage->mTech[(int)_TechType] = tEffectStorage->mFX->GetTechniqueByName(_Name);
 	}
 
 };

@@ -8,7 +8,6 @@ class cDrawManager : public cSingleton<cDrawManager>
 	cShaderManager*   mShaderManager   = cShaderManager  ::GetInstance();
 	cMaterialManager* mMaterialManager = cMaterialManager::GetInstance();
 	cModelManager*    mModelManager    = cModelManager   ::GetInstance();
-	cShadowMap*       mShadowMap       = cShadowMap      ::GetInstance();
 
 
 	// 어떻게 그릴 것인가
@@ -173,10 +172,10 @@ private:
 		HR(cCoreStorage::GetInstance()->md3dDevice->CreateRasterizerState(&frameDesc, &mSolidframeRS));
 
 		// 깊이 버퍼 스테이트
-		//D3D11_DEPTH_STENCIL_DESC;
+		D3D11_DEPTH_STENCIL_DESC;
 
 		// 블랜드 스테이트
-		//D3D11_BLEND;
+		D3D11_BLEND;
 
 	}
 
@@ -200,15 +199,13 @@ private:
 	void clearValue()
 	{
 		mShaderManager->ClearGbuffer();
-		mShaderManager->GetPassByIndex(0);
+		mShaderManager->GetPassByIndex(0, e_Basic);
+		mShaderManager->GetPassByIndex(0, e_Shadow);
 	}
 
 	// 첫 패스 렌더링
 	void onePessRender(DXGI_FORMAT& _ForMat)
 	{
-		// 쉐도우 맵 그리기
-		RendShadowMap();
-
 		// 렌더 타겟 클리어
 		mCoreStorage->PreRender();
 
@@ -220,19 +217,6 @@ private:
 
 		// MRT 클리어 ( 다음에서 쓰기 위해 )
 		mCoreStorage->PostRender();
-	}
-	
-	// 쉐도우 맵 렌더링
-	void RendShadowMap()
-	{
-		// 쉐도우 맵 셋팅
-		mShadowMap;
-
-		// 쉐도우 맵 렌더링
-
-
-		// 원래 상태로 돌리기
-
 	}
 
 	// 디퍼드 렌더링 시작
@@ -273,6 +257,7 @@ private:
 		// 쉐이더 모드 갱신
 		// 사각형 그리기
 		SHADER_TYPE _ShaderMode = e_ShaderDeferred;
+
 		mShaderManager->SetModelShaderMode(mModelManager->mScreen, _ShaderMode);
 
 		// 쉐이더 모드에 셋팅된 값 가져오기
@@ -280,7 +265,7 @@ private:
 		UINT stride[2] = { mShaderManager->GetIAStride(), sizeof(XMFLOAT4X4) };
 
 		// 쉐이더 입력조립기 세팅 (Set)
-		mCoreStorage->md3dImmediateContext->IASetInputLayout(mShaderManager->GetInputLayout());
+		mCoreStorage->md3dImmediateContext->IASetInputLayout(mShaderManager->GetInputLayout(e_Basic));
 		mCoreStorage->md3dImmediateContext->IASetPrimitiveTopology(mModelManager->mScreen->_PRIMITIVE_TOPOLOGY);
 
 		// 버퍼 생성
@@ -291,7 +276,7 @@ private:
 		mCoreStorage->md3dImmediateContext->IASetIndexBuffer(mModelManager->mScreenBuffer->mIB, DXGI_FORMAT_R32_UINT, 0);
 
 		// 쉐이더 정보 얻기
-		mShaderManager->GetDesc(&TechDesc);
+		mShaderManager->GetDesc(&TechDesc, e_Basic);
 
 		// 모델 그리기
 		// 패스만큼, 반복
@@ -300,7 +285,7 @@ private:
 			// 드로우 콜마다 밑에 있는 모델구조 전체를 한번에 다 그림
 
 			// 쉐이더 패스 적용
-			mShaderManager->GetPassByIndex(p);
+			mShaderManager->GetPassByIndex(p, e_Basic);
 
 			// 사진 그리기
 			mCoreStorage->md3dImmediateContext->DrawIndexedInstanced
@@ -310,56 +295,6 @@ private:
 				 mModelManager->mScreen->mVertexOffset,
 				 0);
 
-		}
-	}
-
-	// 쉐도우 맵 그리기
-	void DrawShadowMap()
-	{
-		static D3DX11_TECHNIQUE_DESC TechDesc;
-
-		// 기본 쉐이더 업데이트
-		mShaderManager->SetBasicShaderValueIns();
-
-		// 쉐이더 모드 갱신
-		// 사각형 그리기
-		SHADER_TYPE _ShaderMode = e_ShaderShadowMap;
-		mShaderManager->SetModelShaderMode(mShadowMap->mScreen, _ShaderMode);
-
-		// 쉐이더 모드에 셋팅된 값 가져오기
-		UINT offset[2] = { 0, 0 };
-		UINT stride[2] = { mShaderManager->GetIAStride(), sizeof(XMFLOAT4X4) };
-
-		// 쉐이더 입력조립기 세팅 (Set)
-		mCoreStorage->md3dImmediateContext->IASetInputLayout(mShaderManager->GetInputLayout());
-		mCoreStorage->md3dImmediateContext->IASetPrimitiveTopology(mShadowMap->mScreen->_PRIMITIVE_TOPOLOGY);
-
-		// 버퍼 생성
-		ID3D11Buffer* VBs[2] = { mShadowMap->mScreenBuffer->mVB, mShadowMap->mScreenBuffer->mInstancedBuffer[mShadowMap->mScreen->mCreateName] };
-
-		// 입력조립기에 버퍼 할당 <-- 일단 밖으로 뺐는데.. 현재 패스가 0이라 밑에꺼와 차이점이 없음.. 패스를 늘려봐야 알 듯
-		mCoreStorage->md3dImmediateContext->IASetVertexBuffers(0, 2, VBs, stride, offset);
-		mCoreStorage->md3dImmediateContext->IASetIndexBuffer(mShadowMap->mScreenBuffer->mIB, DXGI_FORMAT_R32_UINT, 0);
-
-		// 쉐이더 정보 얻기
-		mShaderManager->GetDesc(&TechDesc);
-
-		// 모델 그리기
-		// 패스만큼, 반복
-		for (UINT p = 0; p < TechDesc.Passes; ++p)
-		{
-			// 드로우 콜마다 밑에 있는 모델구조 전체를 한번에 다 그림
-
-			// 쉐이더 패스 적용
-			mShaderManager->GetPassByIndex(p);
-
-			// 사진 그리기
-			mCoreStorage->md3dImmediateContext->DrawIndexedInstanced
-				(mShadowMap->mScreen->mIndexCount,
-				 mShadowMap->mScreen->mObjData.size(),
-				 mShadowMap->mScreen->mIndexOffset,
-				 mShadowMap->mScreen->mVertexOffset,
-				 0);
 		}
 	}
 
@@ -388,7 +323,7 @@ private:
 
 
 				// 쉐이더 입력조립기 세팅 (Set)
-				mCoreStorage->md3dImmediateContext->IASetInputLayout(mShaderManager->GetInputLayout());
+				mCoreStorage->md3dImmediateContext->IASetInputLayout(mShaderManager->GetInputLayout(e_Basic));
 				mCoreStorage->md3dImmediateContext->IASetPrimitiveTopology(itor->second->_PRIMITIVE_TOPOLOGY);
 
 				// 입력조립기에 버퍼 할당 <-- 일단 밖으로 뺐는데.. 현재 패스가 0이라 밑에꺼와 차이점이 없음.. 패스를 늘려봐야 알 듯
@@ -396,7 +331,7 @@ private:
 				mCoreStorage->md3dImmediateContext->IASetIndexBuffer(mModelManager->GetBuffer(_ShaderMode)->mIB, _ForMat, 0);
 
 				// 정보 얻기
-				mShaderManager->GetDesc(&TechDesc);
+				mShaderManager->GetDesc(&TechDesc, e_Basic);
 
 				// 현재 쉐이더 모드 갱신
 				_BeforeShaderMode = itor->second->mShaderMode;
@@ -423,7 +358,7 @@ private:
 				{
 					// 쉐이더 패스 적용
 					mShaderManager->SetBasicShaderValue(itor->second, ++i);
-					mShaderManager->GetPassByIndex(p);
+					mShaderManager->GetPassByIndex(p, e_Basic);
 
 					// 모델 그리기
 					mCoreStorage->md3dImmediateContext->DrawIndexed(itor->second->mIndexCount, itor->second->mIndexOffset, itor->second->mVertexOffset);
@@ -490,7 +425,7 @@ private:
 					}
 
 					// 쉐이더 입력조립기 세팅 (Set)
-					mCoreStorage->md3dImmediateContext->IASetInputLayout(mShaderManager->GetInputLayout());
+					mCoreStorage->md3dImmediateContext->IASetInputLayout(mShaderManager->GetInputLayout(e_Basic));
 					mCoreStorage->md3dImmediateContext->IASetPrimitiveTopology(_CurrentModel->_PRIMITIVE_TOPOLOGY);
 
 					// 버퍼 생성
@@ -504,8 +439,8 @@ private:
 					_BeforeShaderMode = _CurrentModel->mShaderMode;
 					_BeforeModelName  = _CurrentModel->mCreateName;
 
-					// 쉐이더 정보 얻기
-					mShaderManager->GetDesc(&TechDesc);
+					// 쉐이더 정보 얻기 (어떤 쉐이더를 사용할지 결정하는 곳)
+					mShaderManager->GetDesc(&TechDesc, e_Basic);
 				}
 
 				// 모델 그리기
@@ -515,7 +450,7 @@ private:
 					// 드로우 콜마다 밑에 있는 모델구조 전체를 한번에 다 그림
 
 					// 쉐이더 패스 적용
-					mShaderManager->GetPassByIndex(p);
+					mShaderManager->GetPassByIndex(p, e_Basic);
 
 					if (_ShaderMode == e_ShaderPongTexMap)
 					{
@@ -537,6 +472,118 @@ private:
 							_CurrentModel->mVertexOffset,
 							0);
 					}					
+				}
+			}
+		}
+	}
+
+	// 쉐도우 모델 그리기(인스턴스)
+	void DrawSDInsALLModel(DXGI_FORMAT _ForMat)
+	{
+		static int _BeforeShaderMode;
+		static string _BeforeModelName;
+		static D3DX11_TECHNIQUE_DESC TechDesc;
+		static SHADER_TYPE _ShaderMode;
+
+
+		// 이터레이터 내부에 있는 모든 모델을 그리자
+		for (map<string, InitMetaData*>::iterator itor = mModelManager->mAllModelData.begin(); itor != mModelManager->mAllModelData.end(); ++itor)
+		{
+			// 현재 쉐이더 모드를 가져온다.
+			InitMetaData* _CurrentModel = itor->second;
+
+			// 스카이 박스는 포함되지 않음
+			if (_CurrentModel->mShaderMode != e_ShaderSkyBox)
+			{
+				// 쉐이더 모드 저장
+				_ShaderMode = _CurrentModel->mShaderMode;
+
+				// 해당 모델의 인스턴싱 버퍼가 활성화 되어있으면, 그린다.
+				if (mModelManager->GetBuffer(_ShaderMode)->mInstancedBuffer[_CurrentModel->mCreateName] != nullptr)
+				{
+					// 쉐이더 모드 갱신
+					// 쉐이더 모드나, 모델 이름이 같으면 버퍼를 갱신할 필요가 없음.
+					if (_CurrentModel->mShaderMode != _BeforeShaderMode || _CurrentModel->mCreateName != _BeforeModelName)
+					{
+						// 기본 쉐이더 업데이트
+						mShaderManager->SetBasicShaderValueIns();
+
+						// 개별 쉐이더 업데이트
+						mShaderManager->SetModelShaderMode(_CurrentModel, _ShaderMode);
+
+						// 쉐이더 모드에 셋팅된 값 가져오기
+						UINT offset[2] = { 0, 0 };
+						UINT stride[2];
+
+						// 애니가 들어간 텍스처는 별도 처리
+						if (_ShaderMode == e_ShaderPongTexAni)
+						{
+							stride[0] = mShaderManager->GetIAStride();
+							stride[1] = sizeof(InsAni);
+						}
+						// 맵 버퍼
+						else if (_ShaderMode == e_ShaderPongTexMap)
+						{
+							stride[0] = mShaderManager->GetIAStride();
+							stride[1] = sizeof(InsMap);
+
+						}
+						// 그 외 인스턴스 텍스처
+						else
+						{
+							stride[0] = mShaderManager->GetIAStride();
+							stride[1] = sizeof(XMFLOAT4X4);
+						}
+
+						// 쉐이더 입력조립기 세팅 (Set)
+						mCoreStorage->md3dImmediateContext->IASetInputLayout(mShaderManager->GetInputLayout(e_Shadow));
+						mCoreStorage->md3dImmediateContext->IASetPrimitiveTopology(_CurrentModel->_PRIMITIVE_TOPOLOGY);
+
+						// 버퍼 생성
+						ID3D11Buffer* VBs[2] = { mModelManager->GetBuffer(_ShaderMode)->mVB, mModelManager->GetBuffer(_ShaderMode)->mInstancedBuffer[_CurrentModel->mCreateName] };
+
+						// 입력조립기에 버퍼 할당 <-- 일단 밖으로 뺐는데.. 현재 패스가 0이라 밑에꺼와 차이점이 없음.. 패스를 늘려봐야 알 듯
+						mCoreStorage->md3dImmediateContext->IASetVertexBuffers(0, 2, VBs, stride, offset);
+						mCoreStorage->md3dImmediateContext->IASetIndexBuffer(mModelManager->GetBuffer(_ShaderMode)->mIB, _ForMat, 0);
+
+						// 현재 쉐이더 모드 갱신
+						_BeforeShaderMode = _CurrentModel->mShaderMode;
+						_BeforeModelName = _CurrentModel->mCreateName;
+
+						// 쉐이더 정보 얻기 (어떤 쉐이더를 사용할지 결정하는 곳)
+						mShaderManager->GetDesc(&TechDesc, e_Shadow);
+					}
+
+					// 모델 그리기
+					// 패스만큼, 반복
+					for (UINT p = 0; p < TechDesc.Passes; ++p)
+					{
+						// 드로우 콜마다 밑에 있는 모델구조 전체를 한번에 다 그림
+
+						// 쉐이더 패스 적용
+						mShaderManager->GetPassByIndex(p, e_Shadow);
+
+						if (_ShaderMode == e_ShaderPongTexMap)
+						{
+							// 모델 그리기
+							mCoreStorage->md3dImmediateContext->DrawIndexedInstanced
+								(_CurrentModel->mIndexCount - 1,
+								_CurrentModel->mObjData.size(),
+								_CurrentModel->mIndexOffset,
+								_CurrentModel->mVertexOffset,
+								0);
+						}
+						else
+						{
+							// 모델 그리기
+							mCoreStorage->md3dImmediateContext->DrawIndexedInstanced
+								(_CurrentModel->mIndexCount,
+								_CurrentModel->mObjData.size(),
+								_CurrentModel->mIndexOffset,
+								_CurrentModel->mVertexOffset,
+								0);
+						}
+					}
 				}
 			}
 		}

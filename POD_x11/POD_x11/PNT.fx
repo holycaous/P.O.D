@@ -164,3 +164,32 @@ technique11 CartoonTex
 		SetDepthStencilState(LessDSS, 0);
 	}
 }
+
+
+technique11 SDPongTex
+{
+	pass P0
+	{
+		SetVertexShader(CompileShader(vs_5_0, VS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_5_0, PS()));
+
+		//SetRasterizerState(0);
+		SetRasterizerState(NoCull);
+		SetDepthStencilState(LessDSS, 0);
+	}
+}
+
+// 라이트 + 텍스처 버전
+technique11 SDCartoonTex
+{
+	pass P0
+	{
+		SetVertexShader(CompileShader(vs_5_0, VS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_5_0, PS()));
+
+		SetRasterizerState(NoCull);
+		SetDepthStencilState(LessDSS, 0);
+	}
+}
