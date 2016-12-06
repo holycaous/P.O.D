@@ -139,8 +139,8 @@ public:
 			0.0f,  0.0f, 1.0f, 0.0f,
 			0.5f,  0.5f, 0.0f, 1.0f);
 
-		XMMATRIX S  = V*P*T;
 		XMMATRIX VP = V*P;
+		XMMATRIX S  = V*P*T; // 혹시 모르니까 일단은..?
 
 		XMStoreFloat4x4(&mLightView, V);
 		XMStoreFloat4x4(&mLightProj, P);

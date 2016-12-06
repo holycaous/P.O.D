@@ -49,20 +49,6 @@ technique11 LightTech
 	}
 }
 
-technique11 SDLightTech
-{
-	pass P0
-	{
-		SetVertexShader(CompileShader(vs_5_0, VS()));
-		SetGeometryShader(NULL);
-		SetPixelShader(CompileShader(ps_5_0, PS()));
-
-		SetRasterizerState(0);
-		SetDepthStencilState(LessDSS, 0);
-	}
-}
-
-
 
 
 

@@ -416,10 +416,10 @@ private:
 	void InitFX()
 	{
 		// »ö»ó
-		BuildFX(e_ShaderColor, L"PC.fx", "ColorTech", "SDColorTech");
+		BuildFX(e_ShaderColor, L"PC.fx", "ColorTech", "ColorTech");
 
 		// Æþ ½¦ÀÌ´õ
-		BuildFX(e_ShaderLight, L"PL.fx", "LightTech", "SDLightTech");
+		BuildFX(e_ShaderLight, L"PL.fx", "LightTech", "LightTech");
 
 		// Æþ½¦ÀÌ´õ, ÅØ½ºÃ³
 		BuildFX(e_ShaderPongTex, L"PNT.fx", "PongTex", "SDPongTex");

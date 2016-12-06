@@ -133,6 +133,21 @@ PS_GBUFFER_OUT PS(PNTVertexOut pin)/* : SV_Target*/
 }
 
 
+// 버텍스
+ShadowVertexOut SDVS(PNTVertexIn vin)
+{
+	ShadowVertexOut vout;
+
+	// Transform to world space space.
+	float3 PosW = mul(float4(vin.PosL, 1.0f), vin.World).xyz;
+
+	// Transform to homogeneous clip space.
+	vout.PosH = mul(float4(PosW, 1.0f), gLightViewProj);
+	vout.Tex  = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
+
+	return vout;
+}
+
 // 여러개의 라이트를 만든다.
 // 매개변수를 직접적으로 설정함으로써, 골라 쓸 수 있게 만듬.
 
@@ -170,12 +185,11 @@ technique11 SDPongTex
 {
 	pass P0
 	{
-		SetVertexShader(CompileShader(vs_5_0, VS()));
+		SetVertexShader(CompileShader(vs_5_0, SDVS()));
 		SetGeometryShader(NULL);
-		SetPixelShader(CompileShader(ps_5_0, PS()));
+		SetPixelShader(NULL);
 
-		//SetRasterizerState(0);
-		SetRasterizerState(NoCull);
+		SetRasterizerState(Depth);
 		SetDepthStencilState(LessDSS, 0);
 	}
 }
@@ -185,11 +199,11 @@ technique11 SDCartoonTex
 {
 	pass P0
 	{
-		SetVertexShader(CompileShader(vs_5_0, VS()));
+		SetVertexShader(CompileShader(vs_5_0, SDVS()));
 		SetGeometryShader(NULL);
-		SetPixelShader(CompileShader(ps_5_0, PS()));
+		SetPixelShader(NULL);
 
-		SetRasterizerState(NoCull);
+		SetRasterizerState(Depth);
 		SetDepthStencilState(LessDSS, 0);
 	}
 }

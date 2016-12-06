@@ -184,6 +184,46 @@ PNTVertexMapOut CalMap(inout PNTVertexMapIn vin)
 }
 
 
+
+// 맵 계산
+ShadowVertexOut SDCalMap(inout PNTVertexMapIn vin)
+{
+	// 출력할 버텍스 정보
+	ShadowVertexOut vout;
+	
+	// 현재 프레임이 스킨 모델 
+	float4x4 _MadeSkinMtx = { 1.0f, 0.0f, 0.0f, 0.0f, 
+		                      0.0f, 1.0f, 0.0f, 0.0f,
+					          0.0f, 0.0f, 1.0f, 0.0f,
+					 	      0.0f, 0.0f, 0.0f, 1.0f };
+
+	//-------------------------------------------------------------------------------//
+	// 맵 모델 데이터 추출
+	//-------------------------------------------------------------------------------//		
+	// 맵 모델 선택
+	float2 _TexModelSelect;
+	_TexModelSelect.x = 0.0f;
+	_TexModelSelect.y = vin.VtxInfo.x / (vin.VtxInfo.y - 1.0f);	// 버택스 번호, 버택스 갯수	
+
+	// 스킨 모델 선택
+	SelectSkinModel(vin.TexData.x, _TexModelSelect, 4.1f, _MadeSkinMtx);
+
+
+	//--------------------------------------------------------------------------------//
+	// 변환
+	//--------------------------------------------------------------------------------//
+	float3 PosW = mul(float4(_MadeSkinMtx[0].xyz, 1.0f), vin.World).xyz;      // W
+	
+	// 동차절단공간으로 변환
+	vout.PosH = mul(float4(PosW, 1.0f), gLightViewProj); // WVP
+
+	// 어차피 변환결과는 같음. ( 거의 로컬 TM 행렬임 )
+	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
+
+	return vout;
+}
+
+
 // 버텍스
 PNTVertexMapOut VS(PNTVertexMapIn vin)
 {
@@ -195,6 +235,12 @@ PS_GBUFFER_OUT PS(PNTVertexMapOut pin)/* : SV_Target*/
 {
 	// G버퍼를 패킹한다.
 	return PackGBuffer(pin);
+}
+
+// 버텍스
+ShadowVertexOut SDVS(PNTVertexMapIn vin)
+{
+	return SDCalMap(vin);
 }
 
 // 셰이더 본문
@@ -211,17 +257,15 @@ technique11 PongTexMap
 	}
 }
 
-// 셰이더 본문
 technique11 SDPongTexMap
 {
 	pass P0
 	{
-		SetVertexShader(CompileShader(vs_5_0, VS()));
+		SetVertexShader(CompileShader(vs_5_0, SDVS()));
 		SetGeometryShader(NULL);
-		SetPixelShader(CompileShader(ps_5_0, PS()));
+		SetPixelShader(NULL);
 
-		SetRasterizerState(0);
+		SetRasterizerState(Depth);
 		SetDepthStencilState(LessDSS, 0);
 	}
 }
-

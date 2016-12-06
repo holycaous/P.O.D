@@ -106,6 +106,9 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	//
 	// Æ÷Áö¼Ç¸Ê
 	//return sData.PositionTex;
+	//
+	// ½¦µµ¿ì¸Ê
+	//return gShadowMap.Sample(samLinear, pin.Tex);
 
 	// µð·º¼Å³Î ¶óÀÌÆ®
 	float3 gDirectionLight_Dir = normalize(-gDirLight.Direction);

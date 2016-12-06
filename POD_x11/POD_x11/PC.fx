@@ -36,11 +36,6 @@ PS_GBUFFER_OUT PS(PCVertexOut pin)/* : SV_Target*/
 	return Out;
 }
 
-//float4 PS(PCVertexOut pin) : SV_Target
-//{
-//    return pin.Color;
-//}
-
 technique11 ColorTech
 {
     pass P0
@@ -52,18 +47,4 @@ technique11 ColorTech
 		SetRasterizerState(0);
 		SetDepthStencilState(LessDSS, 0);
     }
-}
-
-
-technique11 SDColorTech
-{
-	pass P0
-	{
-		SetVertexShader(CompileShader(vs_5_0, VS()));
-		SetGeometryShader(NULL);
-		SetPixelShader(CompileShader(ps_5_0, PS()));
-
-		SetRasterizerState(0);
-		SetDepthStencilState(LessDSS, 0);
-	}
 }

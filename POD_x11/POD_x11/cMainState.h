@@ -19,7 +19,7 @@ public:
 		mModelManager->AddMap(0, "Map1", 0.0f, 0.0f, 0.0f);
 
 		// ½¦µµ¿ì¸Ê °æ°è±¸ ¹İÁö¸§ Ãß°¡
-		mShadowMap->SetmSceneBoundsRadius(mMapManager->mData["Map1"].GetWidth());
+		mShadowMap->SetmSceneBoundsRadius(mMapManager->mData["Map1"].GetWidth() / 2.0f);
 
 		// Å¥ºê¸Ê Àû¿ë
 		mModelManager->AddCubeMap(0, "CubeMap1", 0.0f, 0.0f, 0.0f);

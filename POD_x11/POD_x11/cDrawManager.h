@@ -91,7 +91,7 @@ public:
 		updateValue();
 
 		// 쉐도우 맵 그리기
-		DrawShadowMap();
+		DrawShadowMap(_ForMat);
 
 		// 첫 패스 렌더링
 		onePessRender(_ForMat);
@@ -250,13 +250,13 @@ private:
 	}
 
 	// 쉐도우 맵 렌더링
-	void DrawShadowMap()
+	void DrawShadowMap(DXGI_FORMAT& _ForMat)
 	{
 		// 쉐도우 맵 셋팅
-		//mShadowMap->BindDsvAndSetNullRenderTarget();
+		mShadowMap->BindDsvAndSetNullRenderTarget();
 
 		// 쉐도우 맵 렌더링
-		//DrawSDInsALLModel();
+		DrawSDInsALLModel(_ForMat);
 
 		// 원래 상태로 돌리기
 
@@ -508,8 +508,8 @@ private:
 			// 현재 쉐이더 모드를 가져온다.
 			InitMetaData* _CurrentModel = itor->second;
 
-			// 스카이 박스는 포함되지 않음
-			if (_CurrentModel->mShaderMode != e_ShaderSkyBox)
+			// 칼라, 라이트, 스카이 박스는 포함되지 않음
+			if (_CurrentModel->mShaderMode != e_ShaderColor && _CurrentModel->mShaderMode != e_ShaderLight && _CurrentModel->mShaderMode != e_ShaderSkyBox)
 			{
 				// 쉐이더 모드 저장
 				_ShaderMode = _CurrentModel->mShaderMode;
@@ -564,7 +564,7 @@ private:
 
 						// 현재 쉐이더 모드 갱신
 						_BeforeShaderMode = _CurrentModel->mShaderMode;
-						_BeforeModelName = _CurrentModel->mCreateName;
+						_BeforeModelName  = _CurrentModel->mCreateName;
 
 						// 쉐이더 정보 얻기 (어떤 쉐이더를 사용할지 결정하는 곳)
 						mShaderManager->GetDesc(&TechDesc, e_Shadow);

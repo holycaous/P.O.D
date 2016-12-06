@@ -175,7 +175,7 @@
       <Filter>헤더 파일\Manager\Etc</Filter>
     </ClInclude>
     <ClInclude Include="cShadowMap.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Manager\Etc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -252,7 +252,7 @@
       <Filter>소스 파일\Manager\Storage</Filter>
     </ClCompile>
     <ClCompile Include="cShadowMap.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
