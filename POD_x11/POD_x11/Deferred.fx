@@ -163,11 +163,15 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 spec    = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
+	// Only the first light casts a shadow.
+	float shadow = 1.0f;
+	//shadow = CalcShadowFactor(samShadow, gShadowMap, pin.ShadowPosH);
+
 	// 디렉셔널 라이트 
 	ComputeDirectionalLight(gMaterial, gDirLight, sData.TanNormalTex.xyz, toEye, A, D, S);
-	ambient += A;
-	diffuse += D;
-	spec    += S;
+	ambient += A;    
+	diffuse += shadow * D;
+	spec    += shadow * S;
 
 	//// 포인트 라이트
 	//[flatten]

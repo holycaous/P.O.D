@@ -122,6 +122,9 @@ PNTVertexOut VS(PNTVertexIn vin)
 	vout.WT = mul(vin.Tangent , (float3x3)vin.World);
 	vout.WB = mul(vin.BiNormal, (float3x3)vin.World);
 
+	// ½¦µµ¿ì
+	vout.ShadowPosH = mul(float4(vin.PosL, 1.0f), gShadowTransform);
+
 	return vout;
 }
 

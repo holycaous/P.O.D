@@ -178,6 +178,9 @@ PNTVertexMapOut CalMap(inout PNTVertexMapIn vin)
 	// 어차피 변환결과는 같음. ( 거의 로컬 TM 행렬임 )
 	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
 
+	// 쉐도우
+	vout.ShadowPosH = mul(float4(_MadeSkinMtx[0].xyz, 1.0f), gShadowTransform);
+
 	// 원래는 이렇게 하라고 되어있었지만...
 	//vout.NormalW = mul(_NormalL, (float3x3)gWorldInvTranspose);    // W  // 역전치월드를 로컬에 곱해주면, 오로지 회전 부분만 로컬 노멀에 적용, (회전유지, 이동X, 스케일 1로 초기화)
 	return vout;
