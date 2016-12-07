@@ -8,6 +8,9 @@
 // 디버그 모드 활성
 //#define DEBUG_MODE
 
+// 그림자 활성
+#define SHADOW_ON
+
 // 프로그램을 벗어나면 렌더링 중지
 //#define WINDOW_DISABLE_NO_RENDER
 

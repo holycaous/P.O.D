@@ -90,8 +90,10 @@ public:
 		// 변수 셋팅
 		updateValue();
 
+#ifdef SHADOW_ON
 		// 쉐도우 맵 그리기
 		DrawShadowMap(_ForMat);
+#endif
 
 		// 첫 패스 렌더링
 		onePessRender(_ForMat);

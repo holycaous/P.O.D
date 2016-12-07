@@ -539,7 +539,6 @@ private:
 		// 溅档快甘 咆胶贸
 		GetShaderValue(tEffectStorage, "gShadowMap"        , e_ShaderValResource);
 
-
 		// IA 积己
 		CreateIA(tEffectStorage, _TechType);
 	}

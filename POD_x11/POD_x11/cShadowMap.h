@@ -124,7 +124,7 @@ public:
 	{
 		// 주 디렉셔널 라이트에서만 쉐도우 적용
 		XMVECTOR lightDir  = XMLoadFloat3(&mLightManager->mSunDirLight.Direction);
-		XMVECTOR lightPos  = -2.0f * mSceneBounds.Radius * lightDir; // 빛 방향 * 지름
+		XMVECTOR lightPos  = -2.0f * mSceneBounds.Radius * lightDir; // 빛 방향 * 지름 (mSceneBounds.Radius * -lightDir 해도 결과가 같음..-_-) 
 		XMVECTOR targetPos = XMLoadFloat3(&mSceneBounds.Center);
 		XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 

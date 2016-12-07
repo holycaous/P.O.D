@@ -192,8 +192,6 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 
 
 
-	
-
 	// ·»´õ¸µ ¸ðµå
 	switch (gShaderMode)
 	{
