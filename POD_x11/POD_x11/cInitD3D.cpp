@@ -34,11 +34,13 @@ mDepthSRV(0),
 mPositionSRV(0),
 mColorSRV(0),
 mSpecularSRV(0),
+mShadowSRV(0),
 mSreenRTV(0),
 mNomalRTV(0),
 mSpecularRTV(0),
 mPositionRTV(0),
 mDepthRTV(0),
+mShadowRTV(0),
 mMainDSV(0),
 mOnlyReadDSV(0),
 mDepthStencilState(0),
@@ -67,6 +69,7 @@ void cInitD3D::ClearResourceView()
 	ReleaseCOM(mSpecularRTV);
 	ReleaseCOM(mColorRTV);
 	ReleaseCOM(mDepthRTV);
+	ReleaseCOM(mShadowRTV);
 
 	// 버퍼
 	ReleaseCOM(mNomalSRV);
@@ -74,6 +77,7 @@ void cInitD3D::ClearResourceView()
 	ReleaseCOM(mSpecularSRV);
 	ReleaseCOM(mColorSRV);
 	ReleaseCOM(mDepthSRV);
+	ReleaseCOM(mShadowSRV);
 
 	ReleaseCOM(mDepthStencilState);
 	ReleaseCOM(mDepthStencilTexture);
@@ -184,6 +188,7 @@ void cInitD3D::SetCoreStorage()
 	cCoreStorage::GetInstance()->mDepthSRV    = mDepthSRV;
 	cCoreStorage::GetInstance()->mPositionSRV = mPositionSRV;
 	cCoreStorage::GetInstance()->mSpecularSRV = mSpecularSRV;
+	cCoreStorage::GetInstance()->mShadowSRV   = mShadowSRV;
 
 	// RTV
 	cCoreStorage::GetInstance()->mNomalRTV    = mNomalRTV;
@@ -191,6 +196,7 @@ void cInitD3D::SetCoreStorage()
 	cCoreStorage::GetInstance()->mSpecularRTV = mSpecularRTV;
 	cCoreStorage::GetInstance()->mColorRTV    = mColorRTV;
 	cCoreStorage::GetInstance()->mDepthRTV    = mDepthRTV;
+	cCoreStorage::GetInstance()->mShadowRTV   = mShadowRTV;
 	cCoreStorage::GetInstance()->mSreenRTV	  = mSreenRTV; // 화면과 연결된
 
 	// DSV
@@ -348,6 +354,18 @@ void cInitD3D::OnResize()
 	HR(md3dDevice->CreateShaderResourceView(mPositionTex, &SRV_Desc, &mPositionSRV));
 
 	//--------------------------------------------------------------------------------------//
+	// 쉐도우 버퍼 텍스처 만들기 & 쉐도우 버퍼 연결하기
+	//--------------------------------------------------------------------------------------//
+	TextureDesc.Format = positionTextureFormat;
+	SRV_Desc.Format    = positionRenderViewFormat;
+	RTV_Desc.Format    = positionRenderViewFormat;
+
+	ID3D11Texture2D* mShadowTex = 0;
+	HR(md3dDevice->CreateTexture2D		   (&TextureDesc, 0		   , &mShadowTex));
+	HR(md3dDevice->CreateRenderTargetView  (mShadowTex  , &RTV_Desc, &mShadowRTV));
+	HR(md3dDevice->CreateShaderResourceView(mShadowTex  , &SRV_Desc, &mShadowSRV));
+
+	//--------------------------------------------------------------------------------------//
 	// 스팩큘러 버퍼 텍스처 만들기 & 스팩큘러 버퍼 연결하기
 	//--------------------------------------------------------------------------------------//
 	TextureDesc.Format = SpecularTextureFormat;
@@ -367,6 +385,7 @@ void cInitD3D::OnResize()
 	ReleaseCOM(mNomalTex);
 	ReleaseCOM(mPositionTex);
 	ReleaseCOM(mSpecTex);
+	ReleaseCOM(mShadowTex);
 
 	// 파이프 라인에 뷰와 깊이, 스탠실버퍼를 바인딩 한다. (1개를 묶고 있음)
 	// CreateDepthStencilView에서는 렌더타겟 뷰와 함께 깊이/스텐실 버퍼도 동시에 같이 설정합니다
@@ -402,6 +421,10 @@ void cInitD3D::OnResize()
 
 	// 코어에 저장
 	SetCoreStorage();
+
+	// 쉐도우 맵 초기화
+	//cShadowMap::GetInstance()->ClearClass();
+	//cShadowMap::GetInstance()->InitClass(mClientWidth, mClientHeight);
 }
 
 // 메인 프로시져 (매세지 프로시져 실행)

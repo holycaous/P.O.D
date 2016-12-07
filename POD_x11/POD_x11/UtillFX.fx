@@ -198,6 +198,7 @@ struct PS_GBUFFER_OUT
 	float4 Normal       : SV_TARGET2;
 	float4 Position     : SV_TARGET3;
 	float4 Specular     : SV_TARGET4;
+	float4 Shadow       : SV_TARGET5;
 };
 
 struct SURFACE_DATA
@@ -207,6 +208,7 @@ struct SURFACE_DATA
 	float4 SpecularTex;
 	float4 TanNormalTex;
 	float4 PositionTex;
+	float4 ShadowTex;
 };
 
 // 라이트
@@ -222,6 +224,9 @@ Material gMaterial;
 float gNearFarlength;
 float gNear;
 float gFar;
+
+// 윈도우 너비
+float gWinWidth;
 
 // 카메라
 float3 gEyePosW;
@@ -265,6 +270,7 @@ Texture2D gGDiffuseTex;
 Texture2D gGPositionTex;
 Texture2D gGSpecularTex;
 Texture2D gGNormalTex;
+Texture2D gGShadowTex;
 
 // 큐브맵
 TextureCube gSkyBox;
@@ -341,13 +347,13 @@ SamplerState samPoint
 
 SamplerComparisonState samShadow
 {
-	Filter = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+	Filter   = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
 	AddressU = BORDER;
 	AddressV = BORDER;
 	AddressW = BORDER;
 	BorderColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	ComparisonFunc = LESS;
+    ComparisonFunc = LESS_EQUAL;
 };
 
 RasterizerState Depth
@@ -366,7 +372,7 @@ RasterizerState Depth
 	// 예 : DepthBias = 100000 ==> 실제 DepthBias = 100000 / 2 ^ 24 = .006
 
 	// 당신은 당신의 씬에 이 값들을 실험 할 필요가 있다.
-	DepthBias = 100000;
+	DepthBias = 10000;
 	DepthBiasClamp = 0.0f;
 	SlopeScaledDepthBias = 1.0f;
 };
@@ -390,7 +396,7 @@ DepthStencilState LessDSS
 };
 
 
-static const float SMAP_SIZE = 2048.0f;
+static const float SMAP_SIZE = 800.0f;
 static const float SMAP_DX = 1.0f / SMAP_SIZE;
 
 float CalcShadowFactor(SamplerComparisonState samShadow, 
@@ -404,7 +410,7 @@ float CalcShadowFactor(SamplerComparisonState samShadow,
 	float depth = shadowPosH.z;
 
 	// Texel size.
-	const float dx = SMAP_DX;
+	const float dx = 1.0f / SMAP_SIZE;;
 
 	float percentLit = 0.0f;
 	const float2 offsets[9] = 
@@ -418,7 +424,7 @@ float CalcShadowFactor(SamplerComparisonState samShadow,
 	for(int i = 0; i < 9; ++i)
 	{
 		percentLit += shadowMap.SampleCmpLevelZero(samShadow, 
-			shadowPosH.xy + offsets[i], depth).r;
+		shadowPosH.xy + offsets[i], depth).r;
 	}
 
 	return percentLit /= 9.0f;

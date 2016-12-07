@@ -18,6 +18,7 @@ SURFACE_DATA UnpackGBuffer(float4 PosL, float2 Tex)
 	Out.PositionTex  = gGPositionTex.Sample(samPoint , Tex);
 	Out.SpecularTex  = gGSpecularTex.Sample(samLinear, Tex);
 	Out.TanNormalTex = gGNormalTex  .Sample(samLinear, Tex);
+	Out.ShadowTex    = gGShadowTex  .Sample(samLinear , Tex);
 
 	// 타젠트 노멀
 	// 좌표 -1 ~ 1사이로 바꾸기 (혹은 복구)
@@ -108,23 +109,13 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	//return sData.PositionTex;
 	//
 	// 쉐도우맵
-	//return gShadowMap.Sample(samLinear, pin.Tex);
+	//return sData.ShadowTex;
+	//return gShadowMap.Sample(samPoint, pin.Tex);
 
 	// 디렉셔널 라이트
 	float3 gDirectionLight_Dir = normalize(-gDirLight.Direction);
 	DotDirectLightNomalMap     = saturate(dot(sData.TanNormalTex.xyz, gDirectionLight_Dir)) * 2.0f;
 	
-
-	//struct DirectionalLight
-	//{
-	//	float4 Ambient;
-	//	float4 Diffuse;
-	//	float4 Specular;
-	//	float3 Direction;
-	//	float  pad;
-	//};
-
-
 	// 테스트 1
 	// 포인트 라이트
 	//float gPointLight_Length = length(gPointLight.Position.xyz - sData.PositionTex.xyz);
@@ -164,8 +155,8 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	float4 spec    = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// Only the first light casts a shadow.
-	float shadow = 1.0f;
-	//shadow = CalcShadowFactor(samShadow, gShadowMap, pin.ShadowPosH);
+	float shadow = CalcShadowFactor(samShadow, gShadowMap, sData.ShadowTex);
+	//float shadow = sData.ShadowTex.x;
 
 	// 디렉셔널 라이트 
 	ComputeDirectionalLight(gMaterial, gDirLight, sData.TanNormalTex.xyz, toEye, A, D, S);

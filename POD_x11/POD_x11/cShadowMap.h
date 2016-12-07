@@ -38,6 +38,11 @@ public:
 
 	~cShadowMap()
 	{
+		ClearClass();
+	}
+
+	void ClearClass()
+	{
 		ReleaseCOM(mDepthMapSRV);
 		ReleaseCOM(mDepthMapDSV);
 	}
@@ -69,7 +74,7 @@ public:
 		texDesc.Height             = mHeight;
 		texDesc.MipLevels          = 1;
 		texDesc.ArraySize          = 1;
-		texDesc.Format             = DXGI_FORMAT_R24G8_TYPELESS;
+		texDesc.Format             = DXGI_FORMAT_R24G8_TYPELESS; //DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS
 		texDesc.SampleDesc.Count   = 1;
 		texDesc.SampleDesc.Quality = 0;
 		texDesc.Usage              = D3D11_USAGE_DEFAULT;
@@ -82,7 +87,7 @@ public:
 
 		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 		dsvDesc.Flags                     = 0;
-		dsvDesc.Format                    = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		dsvDesc.Format                    = DXGI_FORMAT_D24_UNORM_S8_UINT; //DXGI_FORMAT_D32_FLOAT_S8X24_UINT
 		dsvDesc.ViewDimension             = D3D11_DSV_DIMENSION_TEXTURE2D;
 		dsvDesc.Texture2D.MipSlice        = 0;
 		HR(mCoreStorage->md3dDevice->CreateDepthStencilView(tDepthMap, &dsvDesc, &mDepthMapDSV));
@@ -104,10 +109,23 @@ public:
 
 		// 깊이 버퍼에 드로잉 할 것이기 때문에 널 렌더 타겟을 설정하십시오.
 		// null 렌더 타겟을 설정하면 컬러 쓰기가 비활성화됩니다.
-		ID3D11RenderTargetView* renderTargets[1] = { 0 };
-		mCoreStorage->md3dImmediateContext->OMSetRenderTargets(1, renderTargets, mDepthMapDSV);
+		ID3D11RenderTargetView* renderTargets = NULL;
 		mCoreStorage->md3dImmediateContext->ClearDepthStencilView(mDepthMapDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		mCoreStorage->md3dImmediateContext->OMSetRenderTargets(1, &renderTargets, mDepthMapDSV);
 	}
+
+	void ClearDsvAndSetNullRenderTarget()
+	{
+		//mCoreStorage->md3dImmediateContext->RSSetViewports(1, &mViewport);
+
+		// 깊이 버퍼에 드로잉 할 것이기 때문에 널 렌더 타겟을 설정하십시오.
+		//// null 렌더 타겟을 설정하면 컬러 쓰기가 비활성화됩니다.
+		//ID3D11RenderTargetView* renderTargets = NULL;
+		//mCoreStorage->md3dImmediateContext->OMSetRenderTargets(1, &renderTargets, NULL);
+		//mCoreStorage->md3dImmediateContext->RSSetState(0);
+		//mCoreStorage->md3dImmediateContext->OMSetDepthStencilState(0, 0);
+	}
+
 
 	void BuildShadowTransform()
 	{
@@ -139,13 +157,12 @@ public:
 			0.0f,  0.0f, 1.0f, 0.0f,
 			0.5f,  0.5f, 0.0f, 1.0f);
 
-		XMMATRIX VP = V*P;
-		XMMATRIX S  = V*P*T; // 혹시 모르니까 일단은..?
+		XMMATRIX VP = XMMatrixMultiply(V, P);
+		XMMATRIX S  = V*P*T;
 
 		XMStoreFloat4x4(&mLightView, V);
 		XMStoreFloat4x4(&mLightProj, P);
 		XMStoreFloat4x4(&mShadowTransform, S);
 		XMStoreFloat4x4(&mLightViewProj, VP);
 	}
-
 };

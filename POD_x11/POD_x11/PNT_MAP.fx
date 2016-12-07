@@ -102,6 +102,8 @@ PS_GBUFFER_OUT PackGBuffer(inout PNTVertexMapOut pin)
 	//Out.Normal   = float4(pin.NormalW, 1.0f)  * 0.5 + 0.5;
 	Out.Specular = SpecularTex;
 
+	Out.Shadow = pin.ShadowPosH;
+	//Out.Shadow = CalcShadowFactor(samShadow, gShadowMap, pin.ShadowPosH);
 	return Out;
 }
 
@@ -179,7 +181,7 @@ PNTVertexMapOut CalMap(inout PNTVertexMapIn vin)
 	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
 
 	// 쉐도우
-	vout.ShadowPosH = mul(float4(_MadeSkinMtx[0].xyz, 1.0f), gShadowTransform);
+	vout.ShadowPosH = mul(float4(vout.PosW, 1.0f), gShadowTransform);
 
 	// 원래는 이렇게 하라고 되어있었지만...
 	//vout.NormalW = mul(_NormalL, (float3x3)gWorldInvTranspose);    // W  // 역전치월드를 로컬에 곱해주면, 오로지 회전 부분만 로컬 노멀에 적용, (회전유지, 이동X, 스케일 1로 초기화)
@@ -269,6 +271,5 @@ technique11 SDPongTexMap
 		SetPixelShader(NULL);
 
 		SetRasterizerState(Depth);
-		SetDepthStencilState(LessDSS, 0);
 	}
 }

@@ -27,6 +27,7 @@ PS_GBUFFER_OUT PS(SkyBoxOut pin)/* : SV_Target*/
 	Out.Normal   = gSkyBox.Sample(samLinear, pin.PosL);
 	Out.Position = pin.PosH;
 	Out.Specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	Out.Shadow   = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	return Out;
 }

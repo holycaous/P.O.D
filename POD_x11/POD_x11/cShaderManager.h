@@ -269,6 +269,7 @@ public:
 		GetGBufferShaderValue(tEffectStorage, "gGPositionTex");
 		GetGBufferShaderValue(tEffectStorage, "gGSpecularTex");
 		GetGBufferShaderValue(tEffectStorage, "gGNormalTex");
+		GetGBufferShaderValue(tEffectStorage, "gGShadowTex");
 
 		// G 버퍼 Set
 		SetShaderValue(e_ShaderValResource, "gGDepthTex"   , mCoreStorage->mDepthSRV);
@@ -276,12 +277,15 @@ public:
 		SetShaderValue(e_ShaderValResource, "gGPositionTex", mCoreStorage->mPositionSRV);
 		SetShaderValue(e_ShaderValResource, "gGSpecularTex", mCoreStorage->mSpecularSRV);
 		SetShaderValue(e_ShaderValResource, "gGNormalTex"  , mCoreStorage->mNomalSRV);
-	
+		SetShaderValue(e_ShaderValResource, "gGShadowTex"  , mCoreStorage->mShadowSRV);
 	}
 
 	// 공통 쉐이더
 	void SetCommonShaderValue()
 	{
+		// 윈도우 크기
+		SetCommonShaderValue(e_ShaderVal, "gWinWidth", mCoreStorage->mClientWidth);
+
 		// 나머지 쉐이더 변수 설정
 		SetCommonShaderValue(e_ShaderVal, "gDirLight"     , mLightManager->mSunDirLight);
 		SetCommonShaderValue(e_ShaderVal, "gPointLight"   , mLightManager->mPointLight);
@@ -299,6 +303,7 @@ public:
 		ClearGBufferShaderValue(tEffectStorage, "gGPositionTex");
 		ClearGBufferShaderValue(tEffectStorage, "gGSpecularTex");
 		ClearGBufferShaderValue(tEffectStorage, "gGNormalTex"  );
+		ClearGBufferShaderValue(tEffectStorage, "gGShadowTex"  );
 	}
 
 protected:
@@ -491,8 +496,9 @@ private:
 		GetShaderValue(tEffectStorage, "gLightViewProj"    , e_ShaderValMtx);  
 																			       
 		GetShaderValue(tEffectStorage, "gEyePosW"		   , e_ShaderValVtx);      // 버텍스
-																			       
-		GetShaderValue(tEffectStorage, "gDirLight"		   , e_ShaderVal);	       // 구조체
+																		
+		GetShaderValue(tEffectStorage, "gWinWidth"		   , e_ShaderVal);	       // 구조체
+		GetShaderValue(tEffectStorage, "gDirLight"		   , e_ShaderVal);	       
 		GetShaderValue(tEffectStorage, "gPointLight"	   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gSpotLight"		   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gMaterial"		   , e_ShaderVal);

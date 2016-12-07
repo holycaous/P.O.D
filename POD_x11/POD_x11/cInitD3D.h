@@ -59,6 +59,7 @@ protected:
 	ID3D11ShaderResourceView* mPositionSRV;
 	ID3D11ShaderResourceView* mSpecularSRV;
 	ID3D11ShaderResourceView* mDepthSRV;
+	ID3D11ShaderResourceView* mShadowSRV;
 
 	// RTV
 	ID3D11RenderTargetView* mNomalRTV;
@@ -67,6 +68,7 @@ protected:
 	ID3D11RenderTargetView* mSpecularRTV;
 	ID3D11RenderTargetView* mSreenRTV;
 	ID3D11RenderTargetView* mDepthRTV;
+	ID3D11RenderTargetView* mShadowRTV;
 
 	// DSV
 	ID3D11DepthStencilView* mMainDSV;

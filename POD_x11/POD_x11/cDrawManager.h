@@ -259,7 +259,7 @@ private:
 		DrawSDInsALLModel(_ForMat);
 
 		// 원래 상태로 돌리기
-
+		mShadowMap->ClearDsvAndSetNullRenderTarget();
 	}
 
 	// 스크린 그리기
@@ -509,7 +509,7 @@ private:
 			InitMetaData* _CurrentModel = itor->second;
 
 			// 칼라, 라이트, 스카이 박스는 포함되지 않음
-			if (_CurrentModel->mShaderMode != e_ShaderColor && _CurrentModel->mShaderMode != e_ShaderLight && _CurrentModel->mShaderMode != e_ShaderSkyBox)
+			if (_CurrentModel->mShaderMode != e_ShaderColor && _CurrentModel->mShaderMode != e_ShaderLight && _CurrentModel->mShaderMode != e_ShaderSkyBox && _CurrentModel->mShaderMode != e_ShaderPongTexMap)
 			{
 				// 쉐이더 모드 저장
 				_ShaderMode = _CurrentModel->mShaderMode;

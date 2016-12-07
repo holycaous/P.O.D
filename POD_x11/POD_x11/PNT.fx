@@ -99,6 +99,8 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexOut pin)
 	//Out.Normal   = float4(pin.NormalW, 1.0f)  * 0.5 + 0.5;
 	Out.Specular = SpecularTex;
 
+	Out.Shadow = pin.ShadowPosH;
+	//Out.Shadow = CalcShadowFactor(samShadow, gShadowMap, pin.ShadowPosH);
 	return Out;
 }
 
@@ -123,7 +125,7 @@ PNTVertexOut VS(PNTVertexIn vin)
 	vout.WB = mul(vin.BiNormal, (float3x3)vin.World);
 
 	// ½¦µµ¿ì
-	vout.ShadowPosH = mul(float4(vin.PosL, 1.0f), gShadowTransform);
+	vout.ShadowPosH = mul(float4(vout.PosW, 1.0f), gShadowTransform);
 
 	return vout;
 }
@@ -207,6 +209,5 @@ technique11 SDCartoonTex
 		SetPixelShader(NULL);
 
 		SetRasterizerState(Depth);
-		SetDepthStencilState(LessDSS, 0);
 	}
 }
