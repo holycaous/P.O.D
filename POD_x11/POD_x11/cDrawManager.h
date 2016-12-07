@@ -258,8 +258,6 @@ private:
 		// 쉐도우 맵 렌더링
 		DrawSDInsALLModel(_ForMat);
 
-		// 원래 상태로 돌리기
-		mShadowMap->ClearDsvAndSetNullRenderTarget();
 	}
 
 	// 스크린 그리기
@@ -268,7 +266,7 @@ private:
 		static D3DX11_TECHNIQUE_DESC TechDesc;
 
 		// 기본 쉐이더 업데이트
-		mShaderManager->SetBasicShaderValueIns();
+		mShaderManager->SetBasicShaderValueIns(e_Basic);
 
 		// 쉐이더 모드 갱신
 		// 사각형 그리기
@@ -411,7 +409,7 @@ private:
 				if (_CurrentModel->mShaderMode != _BeforeShaderMode || _CurrentModel->mCreateName != _BeforeModelName)
 				{
 					// 기본 쉐이더 업데이트
-					mShaderManager->SetBasicShaderValueIns();
+					mShaderManager->SetBasicShaderValueIns(e_Basic);
 
 					// 개별 쉐이더 업데이트
 					mShaderManager->SetModelShaderMode(_CurrentModel, _ShaderMode);
@@ -522,7 +520,7 @@ private:
 					if (_CurrentModel->mShaderMode != _BeforeShaderMode || _CurrentModel->mCreateName != _BeforeModelName)
 					{
 						// 기본 쉐이더 업데이트
-						mShaderManager->SetBasicShaderValueIns();
+						mShaderManager->SetBasicShaderValueIns(e_Shadow);
 
 						// 개별 쉐이더 업데이트
 						mShaderManager->SetModelShaderMode(_CurrentModel, _ShaderMode);

@@ -372,7 +372,7 @@ RasterizerState Depth
 	// 예 : DepthBias = 100000 ==> 실제 DepthBias = 100000 / 2 ^ 24 = .006
 
 	// 당신은 당신의 씬에 이 값들을 실험 할 필요가 있다.
-	DepthBias = 10000;
+	DepthBias = 9500;
 	DepthBiasClamp = 0.0f;
 	SlopeScaledDepthBias = 1.0f;
 };
@@ -396,8 +396,6 @@ DepthStencilState LessDSS
 };
 
 
-static const float SMAP_SIZE = 800.0f;
-static const float SMAP_DX = 1.0f / SMAP_SIZE;
 
 float CalcShadowFactor(SamplerComparisonState samShadow, 
                        Texture2D shadowMap, 
@@ -410,7 +408,7 @@ float CalcShadowFactor(SamplerComparisonState samShadow,
 	float depth = shadowPosH.z;
 
 	// Texel size.
-	const float dx = 1.0f / SMAP_SIZE;;
+	const float dx = 1.0f / gWinWidth;
 
 	float percentLit = 0.0f;
 	const float2 offsets[9] = 

@@ -35,10 +35,7 @@ public:
 	{
 		// 스크린 만들기
 		CreateScreen();
-
-		// 쉐도우 맵 초기화
-		mShadowMap->InitClass(800, 600);
-
+	
 		// 모델 등록 (다른 종류의 모델만 1개씩)
 		CreateBoxModel("BOX1", e_ShaderColor, 0.7f, D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
 		

@@ -18,7 +18,7 @@ SURFACE_DATA UnpackGBuffer(float4 PosL, float2 Tex)
 	Out.PositionTex  = gGPositionTex.Sample(samPoint , Tex);
 	Out.SpecularTex  = gGSpecularTex.Sample(samLinear, Tex);
 	Out.TanNormalTex = gGNormalTex  .Sample(samLinear, Tex);
-	Out.ShadowTex    = gGShadowTex  .Sample(samLinear , Tex);
+	Out.ShadowTex    = gGShadowTex  .Sample(samLinear, Tex);
 
 	// 타젠트 노멀
 	// 좌표 -1 ~ 1사이로 바꾸기 (혹은 복구)
@@ -157,6 +157,9 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	// Only the first light casts a shadow.
 	float shadow = CalcShadowFactor(samShadow, gShadowMap, sData.ShadowTex);
 	//float shadow = sData.ShadowTex.x;
+
+	// 쉐도우 맵
+	//return shadow;
 
 	// 디렉셔널 라이트 
 	ComputeDirectionalLight(gMaterial, gDirLight, sData.TanNormalTex.xyz, toEye, A, D, S);

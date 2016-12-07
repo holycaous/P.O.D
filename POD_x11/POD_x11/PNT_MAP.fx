@@ -103,7 +103,6 @@ PS_GBUFFER_OUT PackGBuffer(inout PNTVertexMapOut pin)
 	Out.Specular = SpecularTex;
 
 	Out.Shadow = pin.ShadowPosH;
-	//Out.Shadow = CalcShadowFactor(samShadow, gShadowMap, pin.ShadowPosH);
 	return Out;
 }
 

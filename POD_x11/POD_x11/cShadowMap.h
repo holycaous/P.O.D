@@ -97,7 +97,7 @@ public:
 		srvDesc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels       = texDesc.MipLevels;
 		srvDesc.Texture2D.MostDetailedMip = 0;
-		HR(mCoreStorage->md3dDevice->CreateShaderResourceView(tDepthMap, &srvDesc, &mDepthMapSRV));
+		HR(mCoreStorage->md3dDevice->CreateShaderResourceView(tDepthMap, &srvDesc, &mDepthMapSRV)); // 같은 텍스처로 바인딩 되어있어서, 연결됨
 
 		// View는 텍스처에 대한 참조를 저장하므로 참조를 릴리즈 할 수 있습니다.
 		ReleaseCOM(tDepthMap);
@@ -107,25 +107,18 @@ public:
 	{
 		//mCoreStorage->md3dImmediateContext->RSSetViewports(1, &mViewport);
 
+		// 다음 프레임으로 렌더링하기 때문에 그림자 맵을 셰이더 입력으로 바인딩 해제합니다.
+		// 그림자는 모든 슬롯에있을 수 있으므로 모든 슬롯을 지웁니다.
+		ID3D11ShaderResourceView* nullSRV[16] = { 0 };
+		mCoreStorage->md3dImmediateContext->PSSetShaderResources(0, 16, nullSRV);
+
 		// 깊이 버퍼에 드로잉 할 것이기 때문에 널 렌더 타겟을 설정하십시오.
 		// null 렌더 타겟을 설정하면 컬러 쓰기가 비활성화됩니다.
 		ID3D11RenderTargetView* renderTargets = NULL;
+
 		mCoreStorage->md3dImmediateContext->ClearDepthStencilView(mDepthMapDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 		mCoreStorage->md3dImmediateContext->OMSetRenderTargets(1, &renderTargets, mDepthMapDSV);
 	}
-
-	void ClearDsvAndSetNullRenderTarget()
-	{
-		//mCoreStorage->md3dImmediateContext->RSSetViewports(1, &mViewport);
-
-		// 깊이 버퍼에 드로잉 할 것이기 때문에 널 렌더 타겟을 설정하십시오.
-		//// null 렌더 타겟을 설정하면 컬러 쓰기가 비활성화됩니다.
-		//ID3D11RenderTargetView* renderTargets = NULL;
-		//mCoreStorage->md3dImmediateContext->OMSetRenderTargets(1, &renderTargets, NULL);
-		//mCoreStorage->md3dImmediateContext->RSSetState(0);
-		//mCoreStorage->md3dImmediateContext->OMSetDepthStencilState(0, 0);
-	}
-
 
 	void BuildShadowTransform()
 	{

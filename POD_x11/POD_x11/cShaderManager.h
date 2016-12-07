@@ -96,7 +96,7 @@ public:
 	}
 
 	// '기본' 쉐이더 변수 업데이트
-	void SetBasicShaderValueIns()
+	void SetBasicShaderValueIns(TECH_TYPE _TechType)
 	{
 		// 기본 정보 세팅
 		XMMATRIX world = XMMatrixIdentity();
@@ -118,22 +118,24 @@ public:
 		////---------------------------------------------------
 
 		// 모델 매트릭스 업데이트
-
-
 		UpdateWorldMtxIns(world, worldInvTranspose, viewProj, view, viewInvTranspose, proj, projInvTranspose);
 
 		// 카메라 위치 업데이트
 		UpdateCamPos(gCam.GetPosition());
 
-		// 큐브맵 갱신
-		if (mShaderMode == e_ShaderSkyBox)
-			SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
-		
-		// 쉐도우맵 갱신
-		SetShaderValue(e_ShaderValResource, "gShadowMap" , mShadowMap->mDepthMapSRV);
-		SetShaderValue(e_ShaderValMtx, "gShadowTransform", mShadowMap->mShadowTransform);
-		SetShaderValue(e_ShaderValMtx, "gLightViewProj"  , mShadowMap->mLightViewProj);
+		if (_TechType == e_Basic)
+		{
+			// 큐브맵 갱신
+			if (mShaderMode == e_ShaderSkyBox)
+				SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
 
+			// 쉐도우맵 갱신
+			//SetShaderValue(e_ShaderValResource, "gShadowMap", mShadowMap->mDepthMapSRV);
+		}
+		// 쉐도우맵 갱신
+		SetShaderValue(e_ShaderValResource, "gShadowMap", mShadowMap->mDepthMapSRV);
+		SetShaderValue(e_ShaderValMtx, "gShadowTransform", mShadowMap->mShadowTransform);
+		SetShaderValue(e_ShaderValMtx, "gLightViewProj", mShadowMap->mLightViewProj);
 	}
 
 	// '개별' 쉐이더 변수 업데이트
