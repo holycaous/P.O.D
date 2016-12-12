@@ -22,9 +22,10 @@ public:
 	cXMLParser mXMLParser;
 	
 	// 매니저
-	cAniManager* mAniManager = cAniManager::GetInstance();
-	cMapManager* mMapManager = cMapManager::GetInstance();
-	cShadowMap * mShadowMap  = cShadowMap ::GetInstance();
+	cAniManager * mAniManager = cAniManager::GetInstance();
+	cMapManager * mMapManager = cMapManager::GetInstance();
+	cShadowMap  * mShadowMap  = cShadowMap ::GetInstance();
+	cHDRManager * mHDRManager = cHDRManager::GetInstance();
 
 	// 플레이어
 	PlayerInfo mPlayer;
@@ -1403,6 +1404,9 @@ public:
 		{
 			mBufferType[mUseShader[i]]->UpdateIns();
 		}
+
+		// HDR 변수 업데이트
+		mHDRManager->Update();
 
 		// 쉐두우맵 변수 업데이트
 		mShadowMap->BuildShadowTransform();

@@ -9,6 +9,7 @@ class cDrawManager : public cSingleton<cDrawManager>
 	cMaterialManager* mMaterialManager = cMaterialManager::GetInstance();
 	cModelManager*    mModelManager    = cModelManager   ::GetInstance();
 	cShadowMap*       mShadowMap       = cShadowMap      ::GetInstance();
+	cHDRManager*      mHDRManager	   = cHDRManager     ::GetInstance();
 
 	// 어떻게 그릴 것인가
 	ID3D11RasterizerState* mWireframeRS  = nullptr;
@@ -18,9 +19,6 @@ public:
 	// 모드 설정
 	bool mSolidDraw;
 
-	//// 깊이, 스텐실 테스트 설정
-	//ID3D11DepthStencilState* m_pNoDepthWriteLessStencilMaskState = nullptr;
-	//ID3D11DepthStencilState* mDepthStencilState = nullptr;
 public:
 	void Init()
 	{
@@ -34,38 +32,6 @@ public:
 		{
 			mShaderManager->SetModelShaderValue(itor->second);
 		}
-
-		//// 깊이 버퍼 1
-		//D3D11_DEPTH_STENCIL_DESC descDepth;
-		//ZeroMemory(&descDepth, sizeof(descDepth));
-		//
-		//descDepth.DepthEnable                           = TRUE;
-		//descDepth.DepthWriteMask                        = D3D11_DEPTH_WRITE_MASK_ZERO;
-		//descDepth.DepthFunc                             = D3D11_COMPARISON_LESS;
-		//descDepth.StencilEnable                         = TRUE;
-		//descDepth.StencilReadMask                       = D3D11_DEFAULT_STENCIL_READ_MASK;
-		//descDepth.StencilWriteMask                      = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-		//const D3D11_DEPTH_STENCILOP_DESC noSkyStencilOp = { D3D11_STENCIL_OP_KEEP, D3D11_STENCIL_OP_KEEP, D3D11_STENCIL_OP_KEEP, D3D11_COMPARISON_ALWAYS };
-		//descDepth.FrontFace                             = noSkyStencilOp;
-		//descDepth.BackFace                              = noSkyStencilOp;
-		//
-		//mCoreStorage->md3dDevice->CreateDepthStencilState(&descDepth, &m_pNoDepthWriteLessStencilMaskState);
-		//
-		//// 깊이 버퍼 2
-		//ZeroMemory(&descDepth, sizeof(descDepth));
-		//
-		//descDepth.DepthEnable                          = TRUE;
-		//descDepth.DepthWriteMask                       = D3D11_DEPTH_WRITE_MASK_ALL;
-		//descDepth.DepthFunc                            = D3D11_COMPARISON_LESS;
-		//descDepth.StencilEnable                        = TRUE;
-		//descDepth.StencilReadMask                      = D3D11_DEFAULT_STENCIL_READ_MASK;
-		//descDepth.StencilWriteMask                     = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-		//const D3D11_DEPTH_STENCILOP_DESC stencilMarkOp = { D3D11_STENCIL_OP_REPLACE, D3D11_STENCIL_OP_REPLACE, D3D11_STENCIL_OP_REPLACE, D3D11_COMPARISON_ALWAYS };
-		//descDepth.FrontFace                            = stencilMarkOp;
-		//descDepth.BackFace                             = stencilMarkOp;
-		//
-		//// Create the depth stencil state.
-		//mCoreStorage->md3dDevice->CreateDepthStencilState(&descDepth, &mDepthStencilState);
 	}
 
 	void ClearClass()
@@ -73,8 +39,6 @@ public:
 		// 어떻게 그릴것인가 (와이어)
 		ReleaseCOM(mWireframeRS);
 		ReleaseCOM(mSolidframeRS);
-		//ReleaseCOM(m_pNoDepthWriteLessStencilMaskState);
-		//ReleaseCOM(mDepthStencilState);
 	}
 		
 	// 오버로딩 할 예정
@@ -94,10 +58,13 @@ public:
 		// 쉐도우 맵 그리기
 		DrawShadowMap(_ForMat);
 #endif
-
 		// 첫 패스 렌더링
 		onePessRender(_ForMat);
-		
+
+#ifdef POSTEFFECT_ON
+		// HDR 계산
+		CalHDR();
+#endif
 		// 두번째 패스 렌더링
 		twoPessRender();
 
@@ -224,11 +191,54 @@ private:
 		mCoreStorage->PostRender();
 	}
 
+	// 포스트 이펙트
+	void CalHDR()
+	{
+		D3DX11_TECHNIQUE_DESC TechDesc;
+
+		// HDR
+		//BuildFX(e_ShaderHDR, L"HDR_CS.fx", "HDRDownScale", "CombineHDR");
+
+		// 기본 쉐이더 업데이트
+		//mShaderManager->mShaderMode = e_ShaderHDR;
+		//mShaderManager->SetBasicShaderValueIns(e_Basic); 
+
+		//--------------------------------------------------------------------------//
+		// 1패스
+		//--------------------------------------------------------------------------//
+		//mShaderManager->HDR_1Set(TechDesc);
+
+		// 계산 쉐이더 실행
+		//for (UINT p = 0; p < TechDesc.Passes; ++p)
+		//{
+			//mShaderManager->GetPassByIndex(p, e_Basic);
+			//mCoreStorage->md3dImmediateContext->Dispatch(mHDRManager->mDownScaleGroups, 1, 1);
+		//}
+		// 컴퓨트 쉐이더 정리
+		//mHDRManager->ClearComputeShader();
+
+		//--------------------------------------------------------------------------//
+		// 2패스
+		//--------------------------------------------------------------------------//
+		//mShaderManager->HDR_2Set(TechDesc);
+
+		// 계산 쉐이더 실행
+		//for (UINT p = 0; p < TechDesc.Passes; ++p)
+		//{
+			//mShaderManager->GetPassByIndex(p, e_Shadow);
+			//mCoreStorage->md3dImmediateContext->Dispatch(1, 1, 1);
+		//}
+
+		// 컴퓨트 쉐이더 정리
+		//mHDRManager->ClearComputeShader();
+
+		//// 계산 쉐이더를 비활성화합니다.
+		//mCoreStorage->md3dImmediateContext->CSSetShader(0, 0, 0);
+	}
+
 	// 디퍼드 렌더링 시작
 	void twoPessRender()
 	{
-		//mCoreStorage->md3dImmediateContext->OMSetDepthStencilState(m_pNoDepthWriteLessStencilMaskState, 1);
-
 		// 렌더 타겟 셋 
 		mCoreStorage->SetRenderTaget();
 
@@ -508,8 +518,11 @@ private:
 			// 현재 쉐이더 모드를 가져온다.
 			InitMetaData* _CurrentModel = itor->second;
 
-			// 칼라, 라이트, 스카이 박스는 포함되지 않음
-			if (_CurrentModel->mShaderMode != e_ShaderColor && _CurrentModel->mShaderMode != e_ShaderLight && _CurrentModel->mShaderMode != e_ShaderSkyBox && _CurrentModel->mShaderMode != e_ShaderPongTexMap)
+			// 칼라, 라이트, 스카이 박스, 맵은 포함되지 않음
+			if (   _CurrentModel->mShaderMode != e_ShaderColor 
+				&& _CurrentModel->mShaderMode != e_ShaderLight 
+				&& _CurrentModel->mShaderMode != e_ShaderSkyBox 
+				&& _CurrentModel->mShaderMode != e_ShaderPongTexMap)
 			{
 				// 쉐이더 모드 저장
 				_ShaderMode = _CurrentModel->mShaderMode;

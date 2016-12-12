@@ -31,7 +31,8 @@ typedef enum
 	e_ShaderDeferred   = 4,
 	e_ShaderPongTexAni = 5,
 	e_ShaderPongTexMap = 6,
-	e_ShaderSkyBox     = 7
+	e_ShaderSkyBox     = 7,
+	e_ShaderHDR        = 8
 }SHADER_TYPE;
 
 // 쉐이더 변수 초기화
@@ -41,7 +42,8 @@ typedef enum
 	e_ShaderValVtx      = 1,
 	e_ShaderVal         = 2,
 	e_ShaderValResource = 3,
-	e_ShaderValMtxArray = 4
+	e_ShaderValMtxArray = 4,
+	e_ShaderValUAV      = 5
 }SHADER_VAL_TYPE;
 
 typedef enum
@@ -194,6 +196,23 @@ struct Vertex
 	XMFLOAT3 BiNormal;
 	XMFLOAT2 TexUV;
 };
+
+// HDR 변수1
+typedef struct
+{
+	UINT nWidth;
+	UINT nHeight;
+	UINT nTotalPixels;
+	UINT nGroupSize;
+} TDownScaleCB;
+
+// HDR 변수2
+typedef struct
+{
+	float fMiddleGrey;
+	float fLumWhiteSqr;
+	UINT pad[2];
+} TFinalPassCB;
 
 // 바운딩 박스
 class BoundBox
@@ -1198,7 +1217,8 @@ public:
 	map<string, ID3DX11EffectVariable*>     mfxValue; // 변수
 
 	map<string, ID3DX11EffectShaderResourceVariable*>  mfxResource; // 리소스
-	
+	map<string, ID3DX11EffectUnorderedAccessViewVariable*>  mfxUAV; // UAV
+
 	map<int, ID3D11InputLayout*> mInputLayout;
 public:
 	EffectStorage()
@@ -1220,6 +1240,9 @@ public:
 		for (auto itor = mfxResource.begin(); itor != mfxResource.end(); ++itor)
 			ReleaseCOM(itor->second);
 
+		for (auto itor = mfxUAV.begin(); itor != mfxUAV.end(); ++itor)
+			ReleaseCOM(itor->second);
+
 		for (auto itor = mTech.begin(); itor != mTech.end(); ++itor)
 			ReleaseCOM(itor->second);
 
@@ -1230,6 +1253,7 @@ public:
 		mfxVtx.clear();
 		mfxValue.clear();
 		mfxResource.clear();
+		mfxUAV.clear();
 		mTech.clear();
 		mInputLayout.clear();
 
@@ -1364,6 +1388,9 @@ public:
 
 		case e_ShaderSkyBox:
 			Build_SkyBox();
+			break;
+
+		case e_ShaderHDR:
 			break;
 
 		default:
@@ -2494,6 +2521,8 @@ private:
 		iinitData.pSysMem = &indices[0];
 		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
+
+	
 	// 탄젠트 공간 계산
 	void CalTangentSpace(InitMetaData* _MetaData)
 	{

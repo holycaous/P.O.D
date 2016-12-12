@@ -59,13 +59,6 @@ public:
 		mWidth  = _Width;
 		mHeight = _Height;
 
-		//mViewport.TopLeftX = 0.0f;
-		//mViewport.TopLeftY = 0.0f;
-		//mViewport.Width    = static_cast<float>(mWidth);
-		//mViewport.Height   = static_cast<float>(mHeight);
-		//mViewport.MinDepth = 0.0f;
-		//mViewport.MaxDepth = 1.0f;
-
 		// DSV가 해석하려고하기 때문에 형식이없는 형식을 사용한다.
 		// 비트는 DXGI_FORMAT_D24_UNORM_S8_UINT와 같지만 SRV는 해석 할 것입니다.
 		// 비트는 DXGI_FORMAT_R24_UNORM_X8_TYPELESS입니다.
@@ -105,8 +98,6 @@ public:
 	
 	void BindDsvAndSetNullRenderTarget()
 	{
-		//mCoreStorage->md3dImmediateContext->RSSetViewports(1, &mViewport);
-
 		// 다음 프레임으로 렌더링하기 때문에 그림자 맵을 셰이더 입력으로 바인딩 해제합니다.
 		// 그림자는 모든 슬롯에있을 수 있으므로 모든 슬롯을 지웁니다.
 		ID3D11ShaderResourceView* nullSRV[16] = { 0 };
@@ -130,11 +121,11 @@ public:
 
 		XMMATRIX V = XMMatrixLookAtLH(lightPos, targetPos, up);
 
-		// Transform bounding sphere to light space.
+		// 경계구를 라이트 뷰 공간으로 넘김
 		XMFLOAT3 sphereCenterLS;
 		XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, V));
 
-		// Ortho frustum in light space encloses scene.
+		// 라이트 공간에서 바운드 스피어 직교투영이 장면을 둘러 쌉니다.
 		float l = sphereCenterLS.x - mSceneBounds.Radius;
 		float b = sphereCenterLS.y - mSceneBounds.Radius;
 		float n = sphereCenterLS.z - mSceneBounds.Radius;
@@ -143,7 +134,7 @@ public:
 		float f = sphereCenterLS.z + mSceneBounds.Radius;
 		XMMATRIX P = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
 
-		// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
+		// NDC 공간 [-1, + 1] ^ 2을 텍스처 공간 [0,1] ^ 2로 변환합니다.
 		XMMATRIX T(
 			0.5f,  0.0f, 0.0f, 0.0f,
 			0.0f, -0.5f, 0.0f, 0.0f,

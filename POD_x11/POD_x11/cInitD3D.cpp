@@ -425,6 +425,10 @@ void cInitD3D::OnResize()
 	// 쉐도우 맵 초기화
 	cShadowMap::GetInstance()->ClearClass();
 	cShadowMap::GetInstance()->InitClass(mClientWidth, mClientHeight);
+
+	// HDR 초기화
+	cHDRManager::GetInstance()->ClearClass();
+	cHDRManager::GetInstance()->InitClass(mClientWidth, mClientHeight);
 }
 
 // 메인 프로시져 (매세지 프로시져 실행)

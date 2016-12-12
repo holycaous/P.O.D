@@ -11,6 +11,10 @@
 // 그림자 활성
 #define SHADOW_ON
 
+// 포스트 이펙트 활성
+#define POSTEFFECT_ON
+
+
 // 프로그램을 벗어나면 렌더링 중지
 //#define WINDOW_DISABLE_NO_RENDER
 
@@ -63,6 +67,7 @@ using namespace std;
 #include "cCam.h"
 #include "cLightManager.h"
 #include "cShadowMap.h"
+#include "cHDRManager.h"
 #include "cAniManager.h"
 #include "cMapManager.h"
 #include "cModelManager.h"

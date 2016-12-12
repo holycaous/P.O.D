@@ -13,6 +13,7 @@ SURFACE_DATA UnpackGBuffer(float4 PosL, float2 Tex)
 	SURFACE_DATA Out;
 	
 	// 각 텍스처 뽑기
+	//Out.DepthTex     = pow(gGDepthTex.Sample(samLinear, Tex), 2.2f);
 	Out.DepthTex     = gGDepthTex   .Sample(samLinear, Tex);
 	Out.DiffuseTex   = gGDiffuseTex .Sample(samLinear, Tex);
 	Out.PositionTex  = gGPositionTex.Sample(samPoint , Tex);
@@ -222,15 +223,30 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	//litColor = DotNomalMap * sData.DiffuseTex + sData.SpecularTex;
 	//return litColor; 
 
+	////---------------------------------------------------------//
+	//// 무슨 값이 나오는지 테스트 해봐야 함.
+	////
+	//// HDR 입히기 
+	////---------------------------------------------------------//
+	//// 색상 샘플 가져 오기
+	//float3 color = gHDRTex.Sample(samPoint, pin.Tex).xyz;
+
+	//// 톤 매핑
+	//color = ToneMapping(color);
+
+	//// LDR 값을 출력합니다.
+	//return float4(color, 1.0);
+
 	//---------------------------------------------------------//
 	// 완료 
 	// 법선 매핑 곱하기
 	litColor.xyz *= (DotDirectLightNomalMap + DotPointLightNomalMap);
 	//litColor.xyz *= (length(DotDirectLightNomalMap + DotPointLightNomalMap) < 1.5f ? DotDirectLightNomalMap + DotPointLightNomalMap : 1.5f );
-	return litColor; 
+
+	return litColor;
+	//return pow(litColor, 1/2.2f); 
 	//---------------------------------------------------------//
 }
-
 
 // 여러개의 라이트를 만든다.
 // 매개변수를 직접적으로 설정함으로써, 골라 쓸 수 있게 만듬.

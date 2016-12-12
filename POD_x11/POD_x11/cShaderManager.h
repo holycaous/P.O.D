@@ -11,13 +11,16 @@ class cShaderManager : public cSingleton<cShaderManager>
 	cLightManager* mLightManager = cLightManager::GetInstance();
 	cMapManager*   mMapManager   = cMapManager  ::GetInstance();
 	cShadowMap *   mShadowMap    = cShadowMap   ::GetInstance();
+	cHDRManager*   mHDRManager   = cHDRManager  ::GetInstance();
 
-	// 렌더링 모드
-	SHADER_TYPE mShaderMode;
 public:
 	// 쉐이더 종류
 	map<int, EffectStorage*> mShader;
 
+	// 렌더링 모드
+	SHADER_TYPE mShaderMode;
+
+public:
 	void Init()
 	{
 		// FX 초기화 & 빌드
@@ -50,6 +53,11 @@ public:
 	void SetShaderValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, SHADER_TYPE _ShaderMode, ID3D11ShaderResourceView* _value)
 	{
 		mShader[_ShaderMode]->mfxResource[_Name]->SetResource(_value);
+	}
+
+	void SetShaderValue(SHADER_VAL_TYPE _ValueEnum, char* _Name, SHADER_TYPE _ShaderMode, ID3D11UnorderedAccessView* _value)
+	{
+		mShader[_ShaderMode]->mfxUAV[_Name]->SetUnorderedAccessView(_value);
 	}
 
 	// 스킨 행렬 저장
@@ -95,56 +103,97 @@ public:
 		UpdateCamPos(gCam.GetPosition());
 	}
 
+	// HDR 1번 패스 업데이트
+	void HDR_1Set(D3DX11_TECHNIQUE_DESC& TechDesc)
+	{
+		// 1번패스
+		SetShaderValue(e_ShaderValUAV, "gAverageLum1", mHDRManager->mDownScale1DUAV); // 결과
+
+		// 쉐이더 정보 얻기 (어떤 쉐이더를 사용할지 결정하는 곳)
+		GetDesc(&TechDesc, e_Basic);
+	}
+
+	// HDR 2번 패스 업데이트
+	void HDR_2Set(D3DX11_TECHNIQUE_DESC& TechDesc)
+	{
+		// 2번패스
+		SetShaderValue(e_ShaderValResource, "gAverageValues1D", mHDRManager->mDownScale1DSRV); // 입력
+		SetShaderValue(e_ShaderValUAV     , "gAverageLum2"    , mHDRManager->mAvgLumUAV);      // 결과
+
+		// 쉐이더 정보 얻기 (어떤 쉐이더를 사용할지 결정하는 곳)
+		GetDesc(&TechDesc, e_Shadow);
+	}
+
 	// '기본' 쉐이더 변수 업데이트
 	void SetBasicShaderValueIns(TECH_TYPE _TechType)
 	{
-		// 기본 정보 세팅
-		XMMATRIX world = XMMatrixIdentity();
-		XMMATRIX worldInvTranspose = cMathHelper::InverseTranspose(world);
-
-		// 카메라 값 세팅
-		XMMATRIX view			  = gCam.View();
-		XMMATRIX proj			  = gCam.Proj();
-		XMMATRIX projInvTranspose = cMathHelper::InverseTranspose(gCam.Proj());
-
-		XMMATRIX viewProj		  = gCam.ViewProj();
-		XMMATRIX viewInvTranspose = cMathHelper::InverseTranspose(gCam.View());
-
-		//// 이런식으로 접근 가능함, 모델 매트릭스에 ----------
-		//XMFLOAT4X4 _world;
-		//XMMATRIX modelScale  = XMMatrixScaling(0.5f, 0.5f, 0.5f);
-		//XMMATRIX modelOffset = XMMatrixTranslation(0.0f, 1.0f, 0.0f);
-		//XMStoreFloat4x4(&_world, XMMatrixMultiply(modelScale, modelOffset));
-		////---------------------------------------------------
-
-		// 모델 매트릭스 업데이트
-		UpdateWorldMtxIns(world, worldInvTranspose, viewProj, view, viewInvTranspose, proj, projInvTranspose);
-
-		// 카메라 위치 업데이트
-		UpdateCamPos(gCam.GetPosition());
-
-		if (_TechType == e_Basic)
+		//-----------------------------------------------------------------------------------//
+		// 계산 쉐이더 전용
+		//-----------------------------------------------------------------------------------//
+		if (mShaderMode == e_ShaderHDR)
 		{
-			// 큐브맵 갱신
-			if (mShaderMode == e_ShaderSkyBox)
-				SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
+			SetShaderValue(e_ShaderVal, "gTDownScaleCB"   , mHDRManager->mTDownScaleCB);
+			SetShaderValue(e_ShaderVal, "gTFinalPassCB"   , mHDRManager->mTFinalPassCB);
+		}
+		//-----------------------------------------------------------------------------------//
+		// 일반 쉐이더 전용
+		//-----------------------------------------------------------------------------------//
+		else
+		{
+			// 기본 정보 세팅
+			XMMATRIX world = XMMatrixIdentity();
+			XMMATRIX worldInvTranspose = cMathHelper::InverseTranspose(world);
+
+			// 카메라 값 세팅
+			XMMATRIX view = gCam.View();
+			XMMATRIX proj = gCam.Proj();
+			XMMATRIX projInvTranspose = cMathHelper::InverseTranspose(gCam.Proj());
+
+			XMMATRIX viewProj = gCam.ViewProj();
+			XMMATRIX viewInvTranspose = cMathHelper::InverseTranspose(gCam.View());
+
+			//// 이런식으로 접근 가능함, 모델 매트릭스에 ----------
+			//XMFLOAT4X4 _world;
+			//XMMATRIX modelScale  = XMMatrixScaling(0.5f, 0.5f, 0.5f);
+			//XMMATRIX modelOffset = XMMatrixTranslation(0.0f, 1.0f, 0.0f);
+			//XMStoreFloat4x4(&_world, XMMatrixMultiply(modelScale, modelOffset));
+			////---------------------------------------------------
+
+			// 모델 매트릭스 업데이트
+			UpdateWorldMtxIns(world, worldInvTranspose, viewProj, view, viewInvTranspose, proj, projInvTranspose);
+
+			// 카메라 위치 업데이트
+			UpdateCamPos(gCam.GetPosition());
+
+			if (_TechType == e_Basic)
+			{
+				// 큐브맵 갱신
+				if (mShaderMode == e_ShaderSkyBox)
+					SetShaderValue(e_ShaderValResource, "gSkyBox", mMapManager->GetCubeMap());
+			}
 
 			// 쉐도우맵 갱신
-			//SetShaderValue(e_ShaderValResource, "gShadowMap", mShadowMap->mDepthMapSRV);
+			SetShaderValue(e_ShaderValResource, "gShadowMap"	  , mShadowMap->mDepthMapSRV);
+			SetShaderValue(e_ShaderValMtx     , "gShadowTransform", mShadowMap->mShadowTransform);
+			SetShaderValue(e_ShaderValMtx     , "gLightViewProj"  , mShadowMap->mLightViewProj); 
 		}
-		// 쉐도우맵 갱신
-		SetShaderValue(e_ShaderValResource, "gShadowMap", mShadowMap->mDepthMapSRV);
-		SetShaderValue(e_ShaderValMtx, "gShadowTransform", mShadowMap->mShadowTransform);
-		SetShaderValue(e_ShaderValMtx, "gLightViewProj", mShadowMap->mLightViewProj);
+
+		//-----------------------------------------------------------------------------------//
+		// 공통
+		//-----------------------------------------------------------------------------------//
+		// HDR 텍스처 갱신
+		SetShaderValue(e_ShaderValResource, "gHDRTex", mHDRManager->mHDRTexture);
+
+
 	}
 
 	// '개별' 쉐이더 변수 업데이트
 	void SetModelShaderValue(InitMetaData* mNowModel)
 	{
 		// 모델 매트릭스
-		SetShaderValue(e_ShaderValMtx,      "gTexTFMtx"   , mNowModel->mTexMtx);
-		SetShaderValue(e_ShaderValMtx,      "gLocTMMtx"   , mNowModel->mLocTMMtx);
-		SetShaderValue(e_ShaderValMtx,      "gWdTMMtx"    , mNowModel->mWdTMMtx);
+		SetShaderValue(e_ShaderValMtx, "gTexTFMtx", mNowModel->mTexMtx);
+		SetShaderValue(e_ShaderValMtx, "gLocTMMtx", mNowModel->mLocTMMtx);
+		SetShaderValue(e_ShaderValMtx, "gWdTMMtx" , mNowModel->mWdTMMtx);
 
 		// 모델 리소스
 		SetShaderValue(e_ShaderValResource, "gDiffuseTex" , mNowModel->mDiffuseSRV);
@@ -155,20 +204,20 @@ public:
 		if (mNowModel->mShaderMode == e_ShaderPongTexAni)
 		{
 			// 스킨 텍스처
-			SetShaderValue(e_ShaderValResource, "gIdleTex"		    , mNowModel->mSkinTex[e_Idle  ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gDamageTex"	    , mNowModel->mSkinTex[e_Damage]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gRunTex"		    , mNowModel->mSkinTex[e_Run   ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gWalkTex"		    , mNowModel->mSkinTex[e_Walk  ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gDeathTex"		    , mNowModel->mSkinTex[e_Death ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gAttackTex"	    , mNowModel->mSkinTex[e_Attack]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gIdleTex"  , mNowModel->mSkinTex[e_Idle  ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDamageTex", mNowModel->mSkinTex[e_Damage]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gRunTex"   , mNowModel->mSkinTex[e_Run   ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gWalkTex"  , mNowModel->mSkinTex[e_Walk  ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDeathTex" , mNowModel->mSkinTex[e_Death ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gAttackTex", mNowModel->mSkinTex[e_Attack]->mTexSRV);
 
 			// 모델 스킨 텍스처
-			SetShaderValue(e_ShaderValResource, "gIdleModelTex"		, mNowModel->mSkinModelTex[e_Idle  ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gDamageModelTex"	, mNowModel->mSkinModelTex[e_Damage]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gRunModelTex"		, mNowModel->mSkinModelTex[e_Run   ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gWalkModelTex"		, mNowModel->mSkinModelTex[e_Walk  ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gDeathModelTex"	, mNowModel->mSkinModelTex[e_Death ]->mTexSRV);
-			SetShaderValue(e_ShaderValResource, "gAttackModelTex"	, mNowModel->mSkinModelTex[e_Attack]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gIdleModelTex"  , mNowModel->mSkinModelTex[e_Idle  ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDamageModelTex", mNowModel->mSkinModelTex[e_Damage]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gRunModelTex"   , mNowModel->mSkinModelTex[e_Run   ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gWalkModelTex"  , mNowModel->mSkinModelTex[e_Walk  ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gDeathModelTex" , mNowModel->mSkinModelTex[e_Death ]->mTexSRV);
+			SetShaderValue(e_ShaderValResource, "gAttackModelTex", mNowModel->mSkinModelTex[e_Attack]->mTexSRV);
 
 
 			// 테스트 (스킨 잘 되나)
@@ -280,6 +329,9 @@ public:
 		SetShaderValue(e_ShaderValResource, "gGSpecularTex", mCoreStorage->mSpecularSRV);
 		SetShaderValue(e_ShaderValResource, "gGNormalTex"  , mCoreStorage->mNomalSRV);
 		SetShaderValue(e_ShaderValResource, "gGShadowTex"  , mCoreStorage->mShadowSRV);
+
+		// HDR 입력
+		SetShaderValue(e_ShaderValResource, "gAvgLum", mHDRManager->mAvgLumSRV);
 	}
 
 	// 공통 쉐이더
@@ -443,6 +495,9 @@ private:
 		// 스카이박스
 		BuildFX(e_ShaderSkyBox, L"SKY_BOX.fx", "SkyBoxTech", "SkyBoxTech");
 
+		// HDR 계산 쉐이더
+		BuildFX(e_ShaderHDR, L"HDR_CS.fx", "HDRDownScale", "CombineHDR");
+
 		// 디퍼드 렌더링
 		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred", "Deferred");
 	}
@@ -506,9 +561,17 @@ private:
 		GetShaderValue(tEffectStorage, "gMaterial"		   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gFar"			   , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gNear"             , e_ShaderVal);
+		GetShaderValue(tEffectStorage, "gTDownScaleCB"     , e_ShaderVal);
+		GetShaderValue(tEffectStorage, "gTFinalPassCB"     , e_ShaderVal);
 		GetShaderValue(tEffectStorage, "gDiffuseTex"	   , e_ShaderValResource); // 리소스
 		GetShaderValue(tEffectStorage, "gSpecularTex"	   , e_ShaderValResource);
 		GetShaderValue(tEffectStorage, "gNormalTex"		   , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gHDRTex"           , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gAvgLum"           , e_ShaderValResource);
+		GetShaderValue(tEffectStorage, "gAverageValues1D"  , e_ShaderValResource);
+
+		GetShaderValue(tEffectStorage, "gAverageLum1"       , e_ShaderValUAV);     // UAV
+		GetShaderValue(tEffectStorage, "gAverageLum2"       , e_ShaderValUAV);    
 
 		// 테스트
 		//GetShaderValue(tEffectStorage, "gBoneTransforms"   , e_ShaderValMtxArray);
@@ -743,6 +806,11 @@ private:
 			// 리소스
 		case e_ShaderValResource:
 			tEffectStorage->mfxResource[_Name] = tEffectStorage->mFX->GetVariableByName(_Name)->AsShaderResource();
+			break;
+
+			// UAV
+		case e_ShaderValUAV:
+			tEffectStorage->mfxUAV[_Name] = tEffectStorage->mFX->GetVariableByName(_Name)->AsUnorderedAccessView();
 			break;
 		}
 	}

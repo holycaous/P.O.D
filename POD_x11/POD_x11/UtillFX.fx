@@ -39,6 +39,29 @@ struct SpotLight
 	float  pad;
 };
 
+// HDR
+static const float4 LUM_FACTOR  = float4(0.299, 0.587, 0.114, 0);
+static const float3 LUM_FACTOR2 = float3(0.299, 0.587, 0.114);
+
+StructuredBuffer  <float> gAvgLum;
+StructuredBuffer  <float> gAverageValues1D;
+RWStructuredBuffer<float> gAverageLum1;
+RWStructuredBuffer<float> gAverageLum2;
+
+struct TDownScaleCB
+{
+	uint2 Res;
+	uint1 Domain;
+	uint1 GroupSize;
+};
+
+struct TFinalPassCB
+{
+	float MiddleGrey;
+	float LumWhiteSqr;
+	uint2 Ped;
+};
+
 // 재질
 struct Material
 {
@@ -216,6 +239,9 @@ DirectionalLight gDirLight;
 PointLight       gPointLight;
 SpotLight        gSpotLight;
 
+// HDR
+TDownScaleCB  gTDownScaleCB;
+TFinalPassCB  gTFinalPassCB;
 
 // 매태리얼
 Material gMaterial;
@@ -263,6 +289,9 @@ Texture2D gHeightMapTex;
 
 // 쉐도우 맵 텍스처
 Texture2D gShadowMap;
+
+// HDR 텍스처
+Texture2D gHDRTex;
 
 // G버퍼 텍스처
 Texture2D gGDepthTex;
@@ -427,6 +456,18 @@ float CalcShadowFactor(SamplerComparisonState samShadow,
 
 	return percentLit /= 9.0f;
 }
+
+float3 ToneMapping(float3 HDRColor)
+{
+	// 현재 픽셀의 휘도 스케일을 찾습니다.
+	float LScale = dot(HDRColor, LUM_FACTOR2);
+	LScale *= gTFinalPassCB.MiddleGrey  / gAvgLum[0];
+	LScale  = (LScale + LScale * LScale / gTFinalPassCB.LumWhiteSqr) / (1.0 + LScale);
+
+	// 휘도 스케일을 픽셀 색상에 적용합니다.
+	return HDRColor * LScale;
+}
+
 
 //// 테스트 전용
 //cbuffer cbSkinned
