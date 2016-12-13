@@ -18,6 +18,11 @@ public:
 	BufferType  * mScreenBuffer = nullptr;     // G버퍼 스크린
 	XMFLOAT4X4    mScreenMtx;                  // G버퍼 스크린
 
+	InitMetaData* mHDRScreen       = nullptr;	 // HDR버퍼 스크린
+	BufferType  * mHDRScreenBuffer = nullptr;    // HDR버퍼 스크린
+	XMFLOAT4X4    mHDRScreenMtx;                 // HDR버퍼 스크린
+
+
 	// 파서
 	cXMLParser mXMLParser;
 	
@@ -36,6 +41,9 @@ public:
 	{
 		// 스크린 만들기
 		CreateScreen();
+
+		// HDR 스크린 만들기
+		CreateHDRScreen();
 	
 		// 모델 등록 (다른 종류의 모델만 1개씩)
 		CreateBoxModel("BOX1", e_ShaderColor, 0.7f, D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
@@ -190,6 +198,23 @@ public:
 		}
 	}
 
+	// HDR 스크린 만들기
+	void CreateHDRScreen()
+	{
+		if (mHDRScreen == nullptr)
+		{
+			// 스크린 모델 생성하기
+			CreateHDRScreenModel();
+
+			// 스크린 모델 월드 매트릭스 초기화
+			// 매트릭스 초기화
+			XMMATRIX I = XMMatrixIdentity();
+
+			// 스크린 월드 매트릭스 초기화
+			XMStoreFloat4x4(&mHDRScreenMtx, I);
+		}
+	}
+
 	// 맵 만들기
 	void AddMap(int _key, string _name, float _x, float _y, float _z)
 	{
@@ -224,6 +249,12 @@ public:
 
 		SafeDelete(mScreenBuffer);
 		SafeDelete(mScreen);
+
+		mHDRScreen->ClearWdMtx();
+		mHDRScreenBuffer->ClearInsBuf();
+
+		SafeDelete(mHDRScreenBuffer);
+		SafeDelete(mHDRScreen);
 	}
 
 	// 모델 등록
@@ -573,6 +604,10 @@ public:
 			// 스크린 클리어
 			mScreen->ClearWdMtx();
 			mScreenBuffer->ClearInsBuf();
+
+			// HDR 클리어
+			mHDRScreen->ClearWdMtx();
+			mHDRScreenBuffer->ClearInsBuf();
 		}
 		else
 		{
@@ -928,6 +963,30 @@ public:
 		mScreenBuffer->Build_GScreen(mScreen);
 	}
 
+	// HDR 스크린 모델 생성하기
+	void CreateHDRScreenModel(SHADER_TYPE _ShaderMode = e_ShaderFinHDR, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	{
+		// 현재 모델 정보 얻기
+		mHDRScreen = new InitMetaData("GHDRSreen", _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
+
+		// 모델의 종류
+		mHDRScreen->mModelType  = e_BasicModel;
+		mHDRScreen->mCreateName = "GHDRSreen";
+		strcpy(mHDRScreen->mObjName, mHDRScreen->mCreateName.c_str());
+
+		// 파싱 시작 (풀 스크린 쿼드 만들기)
+		mXMLParser.LoadScreen(mHDRScreen, 1.0f, 1.0f); // 풀 스크린쿼드
+
+		// 변수 계산
+		mHDRScreen->CalValue();
+
+		// 버퍼 생성
+		mHDRScreenBuffer = new BufferType();
+
+		// 버퍼 빌드
+		mHDRScreenBuffer->Build_GScreen(mHDRScreen);
+	}
+
 	// 모델에 사용한 모든 쉐이더 추가
 	void UseAllShaderModel(SHADER_TYPE _ShaderMode)
 	{
@@ -1222,6 +1281,12 @@ public:
 		mScreen->AddModel(_x, _y, _z, e_StaticObj);
 	}
 
+	// 모델 추가하기
+	void AddHdrScreen(float _x, float _y, float _z)
+	{
+		mHDRScreen->AddModel(_x, _y, _z, e_StaticObj);
+	}
+
 	// HP 설정
 	void SetHP(int _key, string _Name, float _hp)
 	{
@@ -1353,6 +1418,9 @@ public:
 
 		// 스크린 인스턴스 버퍼 생성
 		mScreenBuffer->MakeScreenInsBuf(mScreen);
+
+		// HDR 인스턴스 버퍼 생성
+		mHDRScreenBuffer->MakeScreenInsBuf(mHDRScreen);
 	}
 
 
@@ -1413,6 +1481,9 @@ public:
 
 		// 스크린 인스턴스 버퍼 업데이트
 		mScreenBuffer->UpdateScreenIns(mScreen);
+
+		// HDR 인스턴스 버퍼 업데이트
+		mHDRScreenBuffer->UpdateScreenIns(mHDRScreen);
 	}
 
 	// FSM 변경

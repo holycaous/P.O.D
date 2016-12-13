@@ -9,12 +9,6 @@ class cHDRManager : public cSingleton<cHDRManager>
 
 	cCoreStorage*  mCoreStorage = cCoreStorage::GetInstance();
 public:
-	// HDR 
-	ID3D11Texture2D*		  mHDRTexture;
-	ID3D11RenderTargetView*   mHDRRTV;     // 이것도 넣어야함 ㅡ,.ㅡ..
-	ID3D11ShaderResourceView* mHDRSRV;
-
-
 	// 다운 스케일 연산을위한 1D 중간 저장 공간
 	ID3D11Buffer			 * mDownScale1DBuffer;
 	ID3D11UnorderedAccessView* mDownScale1DUAV;
@@ -37,46 +31,7 @@ public:
 		mHeight = _Height;
 
 		m_fMiddleGrey = 0.0025f;
-		m_fWhite = 1.5f;
-
-		//-----------------------------------------------------------------------------//
-		// HDR 렌더 대상을 만듭니다.
-		//-----------------------------------------------------------------------------//
-		// Texture
-		D3D11_TEXTURE2D_DESC texDesc = {
-			mWidth,													 //UINT Width;
-			mHeight,												 //UINT Height;
-			1,														 //UINT MipLevels;
-			1,														 //UINT ArraySize;
-			DXGI_FORMAT_R16G16B16A16_TYPELESS,						 //DXGI_FORMAT Format;
-			1,														 //DXGI_SAMPLE_DESC SampleDesc;
-			0,
-			D3D11_USAGE_DEFAULT,									 //D3D11_USAGE Usage;
-			D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,	 //UINT BindFlags;
-			0,														 //UINT CPUAccessFlags;
-			0														 //UINT MiscFlags;    
-		};
-		HR(mCoreStorage->md3dDevice->CreateTexture2D(&texDesc, 0, &mHDRTexture));
-
-		// RTV
-		D3D11_RENDER_TARGET_VIEW_DESC rtsvd =
-		{
-			DXGI_FORMAT_R16G16B16A16_FLOAT,
-			D3D11_RTV_DIMENSION_TEXTURE2D
-		};
-		HR(mCoreStorage->md3dDevice->CreateRenderTargetView(mHDRTexture, &rtsvd, &mHDRRTV));
-
-		// SRV
-		D3D11_SHADER_RESOURCE_VIEW_DESC dsrvd =
-		{
-			DXGI_FORMAT_R16G16B16A16_FLOAT,
-			D3D11_SRV_DIMENSION_TEXTURE2D,
-			0,
-			0
-		};
-		dsrvd.Texture2D.MipLevels = 1;
-		HR(mCoreStorage->md3dDevice->CreateShaderResourceView(mHDRTexture, &dsrvd, &mHDRSRV));
-
+		m_fWhite      = 1.5f;
 
 		//-----------------------------------------------------------------------------//
 		// HDR 셋팅 - 계산 쉐이더 
@@ -110,6 +65,7 @@ public:
 		//-----------------------------------------------------------------------------------//
 		// 평균 휘도 버퍼를 할당합니다.
 		//-----------------------------------------------------------------------------------//
+		D3D11_SHADER_RESOURCE_VIEW_DESC dsrvd;
 		ZeroMemory(&dsrvd, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
 
 		dsrvd.Format             = DXGI_FORMAT_UNKNOWN;
@@ -157,10 +113,6 @@ public:
 	void ClearClass()
 	{
 		ClearComputeShader();
-
-		ReleaseCOM(mHDRTexture);
-		ReleaseCOM(mHDRRTV);
-		ReleaseCOM(mHDRSRV);
 
 		ReleaseCOM(mDownScale1DBuffer);
 		ReleaseCOM(mDownScale1DUAV);

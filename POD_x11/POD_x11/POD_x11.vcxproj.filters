@@ -302,6 +302,9 @@
     <FxCompile Include="HDR_CS.fx">
       <Filter>FX</Filter>
     </FxCompile>
+    <FxCompile Include="HDR.fx">
+      <Filter>FX</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

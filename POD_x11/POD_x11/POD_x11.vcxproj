@@ -188,6 +188,7 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Deferred.fx" />
+    <FxCompile Include="HDR.fx" />
     <FxCompile Include="HDR_CS.fx" />
     <FxCompile Include="PNT.fx" />
     <FxCompile Include="PC.fx">

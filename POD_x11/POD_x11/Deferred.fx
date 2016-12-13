@@ -69,8 +69,6 @@ GVertexOut VS(GVertexIn vin)
 	// 어차피 변환결과는 같음.
 	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
 
-	
-
 	return vout;
 }
 
@@ -222,20 +220,6 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	// 이것저것 출력
 	//litColor = DotNomalMap * sData.DiffuseTex + sData.SpecularTex;
 	//return litColor; 
-
-	////---------------------------------------------------------//
-	//// 무슨 값이 나오는지 테스트 해봐야 함.
-	////
-	//// HDR 입히기 
-	////---------------------------------------------------------//
-	//// 색상 샘플 가져 오기
-	//float3 color = gHDRTex.Sample(samPoint, pin.Tex).xyz;
-
-	//// 톤 매핑
-	//color = ToneMapping(color);
-
-	//// LDR 값을 출력합니다.
-	//return float4(color, 1.0);
 
 	//---------------------------------------------------------//
 	// 완료 

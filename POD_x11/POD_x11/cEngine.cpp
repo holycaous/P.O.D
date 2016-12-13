@@ -92,7 +92,11 @@ void cEngine::UpdateScene(float dt)
 void cEngine::DrawScene()
 {
 	// 화면 클리어
-	md3dImmediateContext->ClearRenderTargetView(mSreenRTV, reinterpret_cast<const float*>(&Colors::Blue));
+#ifdef POSTEFFECT_ON
+	md3dImmediateContext->ClearRenderTargetView(mHDRRTV, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
+#else
+	md3dImmediateContext->ClearRenderTargetView(mSreenRTV, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
+#endif
 	md3dImmediateContext->ClearDepthStencilView(mMainDSV , D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// Get 현재 깊이 스텐실 저장

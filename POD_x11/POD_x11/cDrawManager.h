@@ -62,12 +62,18 @@ public:
 		onePessRender(_ForMat);
 
 #ifdef POSTEFFECT_ON
+		// 디퍼드 렌더링
+		twoHDRPessRender();
+
 		// HDR 계산
 		CalHDR();
-#endif
+
+		// 최종 렌더링
+		twoHDRRender();
+#else
 		// 두번째 패스 렌더링
 		twoPessRender();
-
+#endif
 		// 클리어
 		clearValue();
 	}
@@ -196,44 +202,42 @@ private:
 	{
 		D3DX11_TECHNIQUE_DESC TechDesc;
 
-		// HDR
-		//BuildFX(e_ShaderHDR, L"HDR_CS.fx", "HDRDownScale", "CombineHDR");
-
 		// 기본 쉐이더 업데이트
-		//mShaderManager->mShaderMode = e_ShaderHDR;
-		//mShaderManager->SetBasicShaderValueIns(e_Basic); 
+		mShaderManager->mShaderMode = e_ShaderHDR_CS;
+		mShaderManager->SetBasicShaderValueIns(e_Basic); 
 
 		//--------------------------------------------------------------------------//
 		// 1패스
 		//--------------------------------------------------------------------------//
-		//mShaderManager->HDR_1Set(TechDesc);
+		mShaderManager->HDR_1Set(TechDesc);
 
 		// 계산 쉐이더 실행
-		//for (UINT p = 0; p < TechDesc.Passes; ++p)
-		//{
-			//mShaderManager->GetPassByIndex(p, e_Basic);
-			//mCoreStorage->md3dImmediateContext->Dispatch(mHDRManager->mDownScaleGroups, 1, 1);
-		//}
+		for (UINT p = 0; p < TechDesc.Passes; ++p)
+		{
+			mShaderManager->GetPassByIndex(p, e_Basic);
+			mCoreStorage->md3dImmediateContext->Dispatch(mHDRManager->mDownScaleGroups, 1, 1);
+		}
+
 		// 컴퓨트 쉐이더 정리
-		//mHDRManager->ClearComputeShader();
+		mHDRManager->ClearComputeShader();
 
 		//--------------------------------------------------------------------------//
 		// 2패스
 		//--------------------------------------------------------------------------//
-		//mShaderManager->HDR_2Set(TechDesc);
+		mShaderManager->HDR_2Set(TechDesc);
 
 		// 계산 쉐이더 실행
-		//for (UINT p = 0; p < TechDesc.Passes; ++p)
-		//{
-			//mShaderManager->GetPassByIndex(p, e_Shadow);
-			//mCoreStorage->md3dImmediateContext->Dispatch(1, 1, 1);
-		//}
+		for (UINT p = 0; p < TechDesc.Passes; ++p)
+		{
+			mShaderManager->GetPassByIndex(p, e_Shadow);
+			mCoreStorage->md3dImmediateContext->Dispatch(1, 1, 1);
+		}
 
 		// 컴퓨트 쉐이더 정리
-		//mHDRManager->ClearComputeShader();
+		mHDRManager->ClearComputeShader();
 
-		//// 계산 쉐이더를 비활성화합니다.
-		//mCoreStorage->md3dImmediateContext->CSSetShader(0, 0, 0);
+		// 계산 쉐이더를 비활성화합니다.
+		mCoreStorage->md3dImmediateContext->CSSetShader(0, 0, 0);
 	}
 
 	// 디퍼드 렌더링 시작
@@ -258,8 +262,41 @@ private:
 #else
 		DrawScreen();
 #endif
-		//-------------------------------------------------------------------//
 	}
+
+	// 디퍼드 HDR 렌더링 시작
+	void twoHDRPessRender()
+	{
+		// 렌더 타겟 셋 
+		mCoreStorage->SetHDRRenderTaget();
+
+		DrawScreen();
+	}
+
+	// 최종 HDR 렌더링 시작
+	void twoHDRRender()
+	{
+		// 렌더 타겟 셋 
+		mCoreStorage->SetRenderTaget();
+
+#ifdef DEBUG_MODE
+		//-------------------------------------------------------------------//
+		// 스크린 그리기
+		if (mSolidDraw)
+		{
+			DrawScreen();
+		}
+		else
+		{
+			cCoreStorage::GetInstance()->md3dImmediateContext->RSSetState(mSolidframeRS);
+			DrawScreen();
+			cCoreStorage::GetInstance()->md3dImmediateContext->RSSetState(mWireframeRS);
+		}
+#else
+		DrawHDRScreen();
+#endif
+	}
+
 
 	// 쉐도우 맵 렌더링
 	void DrawShadowMap(DXGI_FORMAT& _ForMat)
@@ -319,6 +356,57 @@ private:
 				 mModelManager->mScreen->mObjData.size(),
 				 mModelManager->mScreen->mIndexOffset,
 				 mModelManager->mScreen->mVertexOffset,
+				 0);
+
+		}
+	}
+
+	// 스크린 그리기
+	void DrawHDRScreen()
+	{
+		static D3DX11_TECHNIQUE_DESC TechDesc;
+
+		// 기본 쉐이더 업데이트
+		mShaderManager->SetBasicShaderValueIns(e_Basic);
+
+		// 쉐이더 모드 갱신
+		// 사각형 그리기
+		SHADER_TYPE _ShaderMode = e_ShaderFinHDR;
+		mShaderManager->SetModelShaderMode(mModelManager->mScreen, _ShaderMode);
+
+		// 쉐이더 모드에 셋팅된 값 가져오기
+		UINT offset[2] = { 0, 0 };
+		UINT stride[2] = { mShaderManager->GetIAStride(), sizeof(XMFLOAT4X4) };
+
+		// 쉐이더 입력조립기 세팅 (Set)
+		mCoreStorage->md3dImmediateContext->IASetInputLayout(mShaderManager->GetInputLayout(e_Basic));
+		mCoreStorage->md3dImmediateContext->IASetPrimitiveTopology(mModelManager->mHDRScreen->_PRIMITIVE_TOPOLOGY);
+
+		// 버퍼 생성
+		ID3D11Buffer* VBs[2] = { mModelManager->mHDRScreenBuffer->mVB, mModelManager->mHDRScreenBuffer->mInstancedBuffer[mModelManager->mHDRScreen->mCreateName] };
+
+		// 입력조립기에 버퍼 할당 <-- 일단 밖으로 뺐는데.. 현재 패스가 0이라 밑에꺼와 차이점이 없음.. 패스를 늘려봐야 알 듯
+		mCoreStorage->md3dImmediateContext->IASetVertexBuffers(0, 2, VBs, stride, offset);
+		mCoreStorage->md3dImmediateContext->IASetIndexBuffer(mModelManager->mHDRScreenBuffer->mIB, DXGI_FORMAT_R32_UINT, 0);
+
+		// 쉐이더 정보 얻기
+		mShaderManager->GetDesc(&TechDesc, e_Basic);
+
+		// 모델 그리기
+		// 패스만큼, 반복
+		for (UINT p = 0; p < TechDesc.Passes; ++p)
+		{
+			// 드로우 콜마다 밑에 있는 모델구조 전체를 한번에 다 그림
+
+			// 쉐이더 패스 적용
+			mShaderManager->GetPassByIndex(p, e_Basic);
+
+			// 사진 그리기
+			mCoreStorage->md3dImmediateContext->DrawIndexedInstanced
+				(mModelManager->mHDRScreen->mIndexCount,
+				 mModelManager->mHDRScreen->mObjData.size(),
+				 mModelManager->mHDRScreen->mIndexOffset,
+				 mModelManager->mHDRScreen->mVertexOffset,
 				 0);
 
 		}

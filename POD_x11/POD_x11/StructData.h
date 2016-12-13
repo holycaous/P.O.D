@@ -32,7 +32,8 @@ typedef enum
 	e_ShaderPongTexAni = 5,
 	e_ShaderPongTexMap = 6,
 	e_ShaderSkyBox     = 7,
-	e_ShaderHDR        = 8
+	e_ShaderHDR_CS        = 8,
+	e_ShaderFinHDR     = 9
 }SHADER_TYPE;
 
 // 쉐이더 변수 초기화
@@ -1390,7 +1391,7 @@ public:
 			Build_SkyBox();
 			break;
 
-		case e_ShaderHDR:
+		case e_ShaderHDR_CS:
 			break;
 
 		default:
@@ -1417,7 +1418,7 @@ public:
 			vbd.StructureByteStride = 0;
 
 			if (_Screen->mObjData.size() != 1)
-				cout << "스크린 버퍼가 1개가 아닙니다!!" << endl;
+				cout << "HDR or 스크린 버퍼가 1개가 아닙니다!!" << endl;
 
 			// 공간할당
 			//mInstancedBuffer[itor->second->mCreateName] = NULL;

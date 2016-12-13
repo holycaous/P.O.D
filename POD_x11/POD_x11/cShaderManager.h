@@ -130,7 +130,7 @@ public:
 		//-----------------------------------------------------------------------------------//
 		// 계산 쉐이더 전용
 		//-----------------------------------------------------------------------------------//
-		if (mShaderMode == e_ShaderHDR)
+		if (mShaderMode == e_ShaderHDR_CS)
 		{
 			SetShaderValue(e_ShaderVal, "gTDownScaleCB"   , mHDRManager->mTDownScaleCB);
 			SetShaderValue(e_ShaderVal, "gTFinalPassCB"   , mHDRManager->mTFinalPassCB);
@@ -182,7 +182,7 @@ public:
 		// 공통
 		//-----------------------------------------------------------------------------------//
 		// HDR 텍스처 갱신
-		SetShaderValue(e_ShaderValResource, "gHDRTex", mHDRManager->mHDRTexture);
+		SetShaderValue(e_ShaderValResource, "gHDRTex", mCoreStorage->mHDRSRV);
 
 
 	}
@@ -258,6 +258,7 @@ public:
 		case e_ShaderLight:
 			return sizeof(VertexPN);
 
+		case e_ShaderFinHDR:
 		case e_ShaderDeferred:
 			return sizeof(VertexG);
 
@@ -313,6 +314,7 @@ public:
 	void SetGbuffer()
 	{
 		EffectStorage* tEffectStorage = mShader[e_ShaderDeferred];
+		mShaderMode = e_ShaderDeferred;
 
 		// G버퍼 Get
 		GetGBufferShaderValue(tEffectStorage, "gGDepthTex");
@@ -496,10 +498,13 @@ private:
 		BuildFX(e_ShaderSkyBox, L"SKY_BOX.fx", "SkyBoxTech", "SkyBoxTech");
 
 		// HDR 계산 쉐이더
-		BuildFX(e_ShaderHDR, L"HDR_CS.fx", "HDRDownScale", "CombineHDR");
+		BuildFX(e_ShaderHDR_CS, L"HDR_CS.fx", "HDRDownScale", "CombineHDR");
 
 		// 디퍼드 렌더링
 		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred", "Deferred");
+
+		// 디퍼드 렌더링
+		BuildFX(e_ShaderFinHDR, L"HDR.fx", "FinHDR", "FinHDR");
 	}
 
 	void BuildFX(SHADER_TYPE _ShaderMode, const wchar_t* _FxName, char* _TechniqueName, char* _ShadowTechniqueName)
@@ -661,7 +666,7 @@ private:
 			// Create the input layout
 			NEW_IA(tEffectStorage, _TechType, vertexDesc, _countof(vertexDesc));
 		}
-		else if (mShaderMode == e_ShaderDeferred)
+		else if (mShaderMode == e_ShaderDeferred && mShaderMode == e_ShaderFinHDR)
 		{
 			D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
 			{

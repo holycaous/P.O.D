@@ -82,6 +82,10 @@ void cInitD3D::ClearResourceView()
 	ReleaseCOM(mDepthStencilState);
 	ReleaseCOM(mDepthStencilTexture);
 
+	ReleaseCOM(mHDRTexture);
+	ReleaseCOM(mHDRRTV);
+	ReleaseCOM(mHDRSRV);
+
 	ReleaseCOM(mSreenRTV);
 	ReleaseCOM(mOnlyReadDSV);
 	ReleaseCOM(mMainDSV);
@@ -181,6 +185,7 @@ void cInitD3D::SetCoreStorage()
 	cCoreStorage::GetInstance()->md3dImmediateContext = md3dImmediateContext;
 	cCoreStorage::GetInstance()->mSwapChain		      = mSwapChain;
 	cCoreStorage::GetInstance()->mDepthStencilTexture = mDepthStencilTexture;
+	cCoreStorage::GetInstance()->mHDRTexture          = mHDRTexture;
 	
 	// SRV
 	cCoreStorage::GetInstance()->mNomalSRV    = mNomalSRV;
@@ -189,6 +194,7 @@ void cInitD3D::SetCoreStorage()
 	cCoreStorage::GetInstance()->mPositionSRV = mPositionSRV;
 	cCoreStorage::GetInstance()->mSpecularSRV = mSpecularSRV;
 	cCoreStorage::GetInstance()->mShadowSRV   = mShadowSRV;
+	cCoreStorage::GetInstance()->mHDRSRV      = mHDRSRV;
 
 	// RTV
 	cCoreStorage::GetInstance()->mNomalRTV    = mNomalRTV;
@@ -198,6 +204,7 @@ void cInitD3D::SetCoreStorage()
 	cCoreStorage::GetInstance()->mDepthRTV    = mDepthRTV;
 	cCoreStorage::GetInstance()->mShadowRTV   = mShadowRTV;
 	cCoreStorage::GetInstance()->mSreenRTV	  = mSreenRTV; // 화면과 연결된
+	cCoreStorage::GetInstance()->mHDRRTV      = mHDRRTV;   // 화면과 연결된
 
 	// DSV
 	cCoreStorage::GetInstance()->mMainDSV	  = mMainDSV;
@@ -426,9 +433,48 @@ void cInitD3D::OnResize()
 	cShadowMap::GetInstance()->ClearClass();
 	cShadowMap::GetInstance()->InitClass(mClientWidth, mClientHeight);
 
+	//-----------------------------------------------------------------------------//
+	// HDR 렌더 대상을 만듭니다.
+	//-----------------------------------------------------------------------------//
+	// Texture
+	D3D11_TEXTURE2D_DESC texDesc = {
+		mClientWidth,						  				     //UINT Width;
+		mClientHeight,											 //UINT Height;
+		1,														 //UINT MipLevels;
+		1,														 //UINT ArraySize;
+		DXGI_FORMAT_R16G16B16A16_TYPELESS,						 //DXGI_FORMAT Format;
+		1,														 //DXGI_SAMPLE_DESC SampleDesc;
+		0,
+		D3D11_USAGE_DEFAULT,									 //D3D11_USAGE Usage;
+		D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,	 //UINT BindFlags;
+		0,														 //UINT CPUAccessFlags;
+		0														 //UINT MiscFlags;    
+	};
+	HR(md3dDevice->CreateTexture2D(&texDesc, 0, &mHDRTexture));
+
+	// RTV
+	D3D11_RENDER_TARGET_VIEW_DESC rtsvd =
+	{
+		DXGI_FORMAT_R16G16B16A16_FLOAT,
+		D3D11_RTV_DIMENSION_TEXTURE2D
+	};
+	HR(md3dDevice->CreateRenderTargetView(mHDRTexture, &rtsvd, &mHDRRTV));
+
+	// SRV
+	D3D11_SHADER_RESOURCE_VIEW_DESC dsrvd =
+	{
+		DXGI_FORMAT_R16G16B16A16_FLOAT,
+		D3D11_SRV_DIMENSION_TEXTURE2D,
+		0,
+		0
+	};
+	dsrvd.Texture2D.MipLevels = 1;
+	HR(md3dDevice->CreateShaderResourceView(mHDRTexture, &dsrvd, &mHDRSRV));
+
 	// HDR 초기화
 	cHDRManager::GetInstance()->ClearClass();
 	cHDRManager::GetInstance()->InitClass(mClientWidth, mClientHeight);
+
 }
 
 // 메인 프로시져 (매세지 프로시져 실행)

@@ -52,6 +52,7 @@ protected:
 	ID3D11DeviceContext* md3dImmediateContext;
 	IDXGISwapChain* mSwapChain;
 	ID3D11Texture2D* mDepthStencilTexture;
+	ID3D11Texture2D* mHDRTexture;
 
 	// SRV
 	ID3D11ShaderResourceView* mNomalSRV;
@@ -60,6 +61,7 @@ protected:
 	ID3D11ShaderResourceView* mSpecularSRV;
 	ID3D11ShaderResourceView* mDepthSRV;
 	ID3D11ShaderResourceView* mShadowSRV;
+	ID3D11ShaderResourceView* mHDRSRV;
 
 	// RTV
 	ID3D11RenderTargetView* mNomalRTV;
@@ -67,6 +69,7 @@ protected:
 	ID3D11RenderTargetView* mPositionRTV;
 	ID3D11RenderTargetView* mSpecularRTV;
 	ID3D11RenderTargetView* mSreenRTV;
+	ID3D11RenderTargetView* mHDRRTV;
 	ID3D11RenderTargetView* mDepthRTV;
 	ID3D11RenderTargetView* mShadowRTV;
 

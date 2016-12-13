@@ -14,6 +14,7 @@ public:
 	ID3D11DeviceContext* md3dImmediateContext;
 	IDXGISwapChain* mSwapChain;
 	ID3D11Texture2D* mDepthStencilTexture;
+	ID3D11Texture2D* mHDRTexture;
 
 	// SRV
 	ID3D11ShaderResourceView* mNomalSRV;
@@ -22,6 +23,7 @@ public:
 	ID3D11ShaderResourceView* mSpecularSRV;
 	ID3D11ShaderResourceView* mDepthSRV;
 	ID3D11ShaderResourceView* mShadowSRV;
+	ID3D11ShaderResourceView* mHDRSRV;
 
 	// RTV
 	ID3D11RenderTargetView* mNomalRTV;
@@ -31,6 +33,7 @@ public:
 	ID3D11RenderTargetView* mSreenRTV;
 	ID3D11RenderTargetView* mDepthRTV;
 	ID3D11RenderTargetView* mShadowRTV;
+	ID3D11RenderTargetView* mHDRRTV;
 
 	// DSV
 	ID3D11DepthStencilView* mMainDSV;
@@ -81,19 +84,23 @@ public:
 
 		ID3D11RenderTargetView* rt[6] = { NULL, NULL, NULL, NULL, NULL, NULL };
 		md3dImmediateContext->OMSetRenderTargets(6, rt, NULL); //mOnlyReadDSV
-		//md3dImmediateContext->RSSetState(0);
-		//md3dImmediateContext->OMSetDepthStencilState(0, 0);
 	}
 
 	// ·»´õÅ¸°Ù ¼Â
 	void SetRenderTaget()
 	{
 		md3dImmediateContext->OMSetRenderTargets(1, &mSreenRTV, mMainDSV);
-		//md3dImmediateContext->ClearDepthStencilView(mOnlyReadDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	}
+
+	// HDR ·»´õÅ¸°Ù ¼Â
+	void SetHDRRenderTaget()
+	{
+		md3dImmediateContext->OMSetRenderTargets(1, &mHDRRTV, mMainDSV);
 	}
 
 	void ReleaseRenderTaget()
 	{
+		md3dImmediateContext->ClearRenderTargetView(mHDRRTV  , reinterpret_cast<const float*>(&Colors::LightSteelBlue));
 		md3dImmediateContext->ClearRenderTargetView(mSreenRTV, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
 	}
 
