@@ -35,7 +35,7 @@ mPositionSRV(0),
 mColorSRV(0),
 mSpecularSRV(0),
 mShadowSRV(0),
-mSreenRTV(0),
+mScreenRTV(0),
 mNomalRTV(0),
 mSpecularRTV(0),
 mPositionRTV(0),
@@ -86,7 +86,7 @@ void cInitD3D::ClearResourceView()
 	ReleaseCOM(mHDRRTV);
 	ReleaseCOM(mHDRSRV);
 
-	ReleaseCOM(mSreenRTV);
+	ReleaseCOM(mScreenRTV);
 	ReleaseCOM(mOnlyReadDSV);
 	ReleaseCOM(mMainDSV);
 }
@@ -203,8 +203,8 @@ void cInitD3D::SetCoreStorage()
 	cCoreStorage::GetInstance()->mColorRTV    = mColorRTV;
 	cCoreStorage::GetInstance()->mDepthRTV    = mDepthRTV;
 	cCoreStorage::GetInstance()->mShadowRTV   = mShadowRTV;
-	cCoreStorage::GetInstance()->mSreenRTV	  = mSreenRTV; // 화면과 연결된
-	cCoreStorage::GetInstance()->mHDRRTV      = mHDRRTV;   // 화면과 연결된
+	cCoreStorage::GetInstance()->mScreenRTV	  = mScreenRTV; // 화면과 연결된
+	cCoreStorage::GetInstance()->mHDRRTV      = mHDRRTV;    // 화면과 연결된
 
 	// DSV
 	cCoreStorage::GetInstance()->mMainDSV	  = mMainDSV;
@@ -234,7 +234,7 @@ void cInitD3D::OnResize()
 	// 벡버퍼라는 텍스처를 만들고, 렌더 타겟뷰로 설정한다. 렌더 타겟뷰를 만들었으면 제거한다.
 	ID3D11Texture2D* backBuffer = nullptr;
 	HR(mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer)));
-	HR(md3dDevice->CreateRenderTargetView(backBuffer, 0, &mSreenRTV));
+	HR(md3dDevice->CreateRenderTargetView(backBuffer, 0, &mScreenRTV));
 	ReleaseCOM(backBuffer);
 
 	// 코어에 저장
@@ -396,7 +396,7 @@ void cInitD3D::OnResize()
 
 	// 파이프 라인에 뷰와 깊이, 스탠실버퍼를 바인딩 한다. (1개를 묶고 있음)
 	// CreateDepthStencilView에서는 렌더타겟 뷰와 함께 깊이/스텐실 버퍼도 동시에 같이 설정합니다
-	md3dImmediateContext->OMSetRenderTargets(1, &mSreenRTV, mMainDSV);
+	md3dImmediateContext->OMSetRenderTargets(1, &mScreenRTV, mMainDSV);
 
 	// 뷰포트 변환을 한다.
 	mScreenViewport.TopLeftX = 0;

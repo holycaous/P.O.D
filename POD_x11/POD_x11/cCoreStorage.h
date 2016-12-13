@@ -30,7 +30,7 @@ public:
 	ID3D11RenderTargetView* mColorRTV;
 	ID3D11RenderTargetView* mPositionRTV;
 	ID3D11RenderTargetView* mSpecularRTV;
-	ID3D11RenderTargetView* mSreenRTV;
+	ID3D11RenderTargetView* mScreenRTV;
 	ID3D11RenderTargetView* mDepthRTV;
 	ID3D11RenderTargetView* mShadowRTV;
 	ID3D11RenderTargetView* mHDRRTV;
@@ -89,7 +89,7 @@ public:
 	// ·»´õÅ¸°Ù ¼Â
 	void SetRenderTaget()
 	{
-		md3dImmediateContext->OMSetRenderTargets(1, &mSreenRTV, mMainDSV);
+		md3dImmediateContext->OMSetRenderTargets(1, &mScreenRTV, mMainDSV);
 	}
 
 	// HDR ·»´õÅ¸°Ù ¼Â
@@ -100,8 +100,11 @@ public:
 
 	void ReleaseRenderTaget()
 	{
-		md3dImmediateContext->ClearRenderTargetView(mHDRRTV  , reinterpret_cast<const float*>(&Colors::LightSteelBlue));
-		md3dImmediateContext->ClearRenderTargetView(mSreenRTV, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
+		#ifdef POSTEFFECT_ON
+			md3dImmediateContext->ClearRenderTargetView(mHDRRTV  , reinterpret_cast<const float*>(&Colors::LightSteelBlue));
+		#else
+			md3dImmediateContext->ClearRenderTargetView(mScreenRTV, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
+		#endif
 	}
 
 	void ClearClass()

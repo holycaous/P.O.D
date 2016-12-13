@@ -12,7 +12,7 @@
 #define SHADOW_ON
 
 // 포스트 이펙트 활성
-#define POSTEFFECT_ON
+//#define POSTEFFECT_ON
 
 
 // 프로그램을 벗어나면 렌더링 중지

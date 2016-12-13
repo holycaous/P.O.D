@@ -15,8 +15,10 @@ public:
 		// 스크린 추가 (풀 스크린쿼드)
 		mModelManager->AddScreen(0.0f, 0.0f, 0.0f);
 
+#ifdef POSTEFFECT_ON
 		// HDR 스크린 추가 (풀 스크린쿼드)
 		mModelManager->AddHdrScreen(0.0f, 0.0f, 0.0f);
+#endif
 
 		// 맵 테스트용
 		mModelManager->AddMap(0, "Map1", 0.0f, 0.0f, 0.0f);

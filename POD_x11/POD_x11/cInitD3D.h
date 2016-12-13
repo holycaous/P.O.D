@@ -68,7 +68,7 @@ protected:
 	ID3D11RenderTargetView* mColorRTV;
 	ID3D11RenderTargetView* mPositionRTV;
 	ID3D11RenderTargetView* mSpecularRTV;
-	ID3D11RenderTargetView* mSreenRTV;
+	ID3D11RenderTargetView* mScreenRTV;
 	ID3D11RenderTargetView* mHDRRTV;
 	ID3D11RenderTargetView* mDepthRTV;
 	ID3D11RenderTargetView* mShadowRTV;

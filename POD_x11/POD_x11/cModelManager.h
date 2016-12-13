@@ -41,9 +41,10 @@ public:
 	{
 		// 스크린 만들기
 		CreateScreen();
-
+#ifdef POSTEFFECT_ON
 		// HDR 스크린 만들기
 		CreateHDRScreen();
+#endif
 	
 		// 모델 등록 (다른 종류의 모델만 1개씩)
 		CreateBoxModel("BOX1", e_ShaderColor, 0.7f, D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
@@ -250,11 +251,13 @@ public:
 		SafeDelete(mScreenBuffer);
 		SafeDelete(mScreen);
 
+#ifdef POSTEFFECT_ON
 		mHDRScreen->ClearWdMtx();
 		mHDRScreenBuffer->ClearInsBuf();
 
 		SafeDelete(mHDRScreenBuffer);
 		SafeDelete(mHDRScreen);
+#endif
 	}
 
 	// 모델 등록
@@ -605,9 +608,11 @@ public:
 			mScreen->ClearWdMtx();
 			mScreenBuffer->ClearInsBuf();
 
+#ifdef POSTEFFECT_ON
 			// HDR 클리어
 			mHDRScreen->ClearWdMtx();
 			mHDRScreenBuffer->ClearInsBuf();
+#endif
 		}
 		else
 		{
@@ -943,11 +948,11 @@ public:
 	void CreateScreenModel(SHADER_TYPE _ShaderMode = e_ShaderDeferred, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
 	{
 		// 현재 모델 정보 얻기
-		mScreen = new InitMetaData("GSreen", _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
+		mScreen = new InitMetaData("GScreen", _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
 
 		// 모델의 종류
 		mScreen->mModelType  = e_BasicModel;
-		mScreen->mCreateName = "GSreen";
+		mScreen->mCreateName = "GScreen";
 		strcpy(mScreen->mObjName, mScreen->mCreateName.c_str());
 
 		// 파싱 시작 (풀 스크린 쿼드 만들기)
@@ -967,11 +972,11 @@ public:
 	void CreateHDRScreenModel(SHADER_TYPE _ShaderMode = e_ShaderFinHDR, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
 	{
 		// 현재 모델 정보 얻기
-		mHDRScreen = new InitMetaData("GHDRSreen", _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
+		mHDRScreen = new InitMetaData("GHDRScreen", _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
 
 		// 모델의 종류
 		mHDRScreen->mModelType  = e_BasicModel;
-		mHDRScreen->mCreateName = "GHDRSreen";
+		mHDRScreen->mCreateName = "GHDRScreen";
 		strcpy(mHDRScreen->mObjName, mHDRScreen->mCreateName.c_str());
 
 		// 파싱 시작 (풀 스크린 쿼드 만들기)
@@ -1419,8 +1424,10 @@ public:
 		// 스크린 인스턴스 버퍼 생성
 		mScreenBuffer->MakeScreenInsBuf(mScreen);
 
+#ifdef POSTEFFECT_ON
 		// HDR 인스턴스 버퍼 생성
 		mHDRScreenBuffer->MakeScreenInsBuf(mHDRScreen);
+#endif
 	}
 
 
@@ -1482,8 +1489,10 @@ public:
 		// 스크린 인스턴스 버퍼 업데이트
 		mScreenBuffer->UpdateScreenIns(mScreen);
 
+#ifdef POSTEFFECT_ON
 		// HDR 인스턴스 버퍼 업데이트
 		mHDRScreenBuffer->UpdateScreenIns(mHDRScreen);
+#endif
 	}
 
 	// FSM 변경

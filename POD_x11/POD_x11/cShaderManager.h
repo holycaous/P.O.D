@@ -181,10 +181,10 @@ public:
 		//-----------------------------------------------------------------------------------//
 		// 공통
 		//-----------------------------------------------------------------------------------//
+#ifdef POSTEFFECT_ON
 		// HDR 텍스처 갱신
 		SetShaderValue(e_ShaderValResource, "gHDRTex", mCoreStorage->mHDRSRV);
-
-
+#endif
 	}
 
 	// '개별' 쉐이더 변수 업데이트
@@ -314,7 +314,6 @@ public:
 	void SetGbuffer()
 	{
 		EffectStorage* tEffectStorage = mShader[e_ShaderDeferred];
-		mShaderMode = e_ShaderDeferred;
 
 		// G버퍼 Get
 		GetGBufferShaderValue(tEffectStorage, "gGDepthTex");
@@ -332,8 +331,10 @@ public:
 		SetShaderValue(e_ShaderValResource, "gGNormalTex"  , mCoreStorage->mNomalSRV);
 		SetShaderValue(e_ShaderValResource, "gGShadowTex"  , mCoreStorage->mShadowSRV);
 
+#ifdef POSTEFFECT_ON
 		// HDR 입력
 		SetShaderValue(e_ShaderValResource, "gAvgLum", mHDRManager->mAvgLumSRV);
+#endif
 	}
 
 	// 공통 쉐이더
@@ -497,14 +498,15 @@ private:
 		// 스카이박스
 		BuildFX(e_ShaderSkyBox, L"SKY_BOX.fx", "SkyBoxTech", "SkyBoxTech");
 
+#ifdef POSTEFFECT_ON
 		// HDR 계산 쉐이더
 		BuildFX(e_ShaderHDR_CS, L"HDR_CS.fx", "HDRDownScale", "CombineHDR");
 
 		// 디퍼드 렌더링
-		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred", "Deferred");
-
-		// 디퍼드 렌더링
 		BuildFX(e_ShaderFinHDR, L"HDR.fx", "FinHDR", "FinHDR");
+#endif
+		// 디퍼드 렌더링
+		BuildFX(e_ShaderDeferred, L"Deferred.fx", "Deferred", "Deferred");
 	}
 
 	void BuildFX(SHADER_TYPE _ShaderMode, const wchar_t* _FxName, char* _TechniqueName, char* _ShadowTechniqueName)
@@ -666,7 +668,7 @@ private:
 			// Create the input layout
 			NEW_IA(tEffectStorage, _TechType, vertexDesc, _countof(vertexDesc));
 		}
-		else if (mShaderMode == e_ShaderDeferred && mShaderMode == e_ShaderFinHDR)
+		else if (mShaderMode == e_ShaderDeferred || mShaderMode == e_ShaderFinHDR)
 		{
 			D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
 			{

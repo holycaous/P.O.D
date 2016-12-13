@@ -372,7 +372,7 @@ private:
 		// 쉐이더 모드 갱신
 		// 사각형 그리기
 		SHADER_TYPE _ShaderMode = e_ShaderFinHDR;
-		mShaderManager->SetModelShaderMode(mModelManager->mScreen, _ShaderMode);
+		mShaderManager->SetModelShaderMode(mModelManager->mHDRScreen, _ShaderMode);
 
 		// 쉐이더 모드에 셋팅된 값 가져오기
 		UINT offset[2] = { 0, 0 };
