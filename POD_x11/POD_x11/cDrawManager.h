@@ -176,6 +176,7 @@ private:
 	// 클리어
 	void clearValue()
 	{
+		mCoreStorage->ClearRTV();
 		mShaderManager->ClearGbuffer();
 		mShaderManager->GetPassByIndex(0, e_Basic);
 		mShaderManager->GetPassByIndex(0, e_Shadow);
@@ -197,19 +198,20 @@ private:
 		mCoreStorage->PostRender();
 	}
 
-	// 포스트 이펙트
+	// 포스트 이펙트 (계산 쉐이더)
 	void CalHDR()
 	{
+		//-----------------------------------------------------------------------------------------------------------------------------//
+
 		D3DX11_TECHNIQUE_DESC TechDesc;
-
-		// 기본 쉐이더 업데이트
-		mShaderManager->mShaderMode = e_ShaderHDR_CS;
-		mShaderManager->SetBasicShaderValueIns(e_Basic); 
-
 		//--------------------------------------------------------------------------//
 		// 1패스
 		//--------------------------------------------------------------------------//
 		mShaderManager->HDR_1Set(TechDesc);
+
+		// 기본 쉐이더 업데이트
+		mShaderManager->mShaderMode = e_ShaderHDR_CS;
+		mShaderManager->SetBasicShaderValueIns(e_Basic);
 
 		// 계산 쉐이더 실행
 		for (UINT p = 0; p < TechDesc.Passes; ++p)
@@ -225,6 +227,10 @@ private:
 		// 2패스
 		//--------------------------------------------------------------------------//
 		mShaderManager->HDR_2Set(TechDesc);
+
+		// 기본 쉐이더 업데이트
+		mShaderManager->mShaderMode = e_ShaderHDR_CS;
+		mShaderManager->SetBasicShaderValueIns(e_Basic);
 
 		// 계산 쉐이더 실행
 		for (UINT p = 0; p < TechDesc.Passes; ++p)
@@ -271,6 +277,8 @@ private:
 		mCoreStorage->SetHDRRenderTaget();
 
 		DrawScreen();
+
+		mCoreStorage->ClearRTV();
 	}
 
 	// 최종 HDR 렌더링 시작
@@ -314,14 +322,13 @@ private:
 	{
 		static D3DX11_TECHNIQUE_DESC TechDesc;
 
-		// 기본 쉐이더 업데이트
-		mShaderManager->SetBasicShaderValueIns(e_Basic);
-
 		// 쉐이더 모드 갱신
 		// 사각형 그리기
 		SHADER_TYPE _ShaderMode = e_ShaderDeferred;
-
 		mShaderManager->SetModelShaderMode(mModelManager->mScreen, _ShaderMode);
+
+		// 기본 쉐이더 업데이트
+		mShaderManager->SetBasicShaderValueIns(e_Basic);
 
 		// 쉐이더 모드에 셋팅된 값 가져오기
 		UINT offset[2] = { 0, 0 };
@@ -366,13 +373,13 @@ private:
 	{
 		static D3DX11_TECHNIQUE_DESC TechDesc;
 
-		// 기본 쉐이더 업데이트
-		mShaderManager->SetBasicShaderValueIns(e_Basic);
-
 		// 쉐이더 모드 갱신
 		// 사각형 그리기
 		SHADER_TYPE _ShaderMode = e_ShaderFinHDR;
 		mShaderManager->SetModelShaderMode(mModelManager->mHDRScreen, _ShaderMode);
+
+		// 기본 쉐이더 업데이트
+		mShaderManager->SetBasicShaderValueIns(e_Basic);
 
 		// 쉐이더 모드에 셋팅된 값 가져오기
 		UINT offset[2] = { 0, 0 };

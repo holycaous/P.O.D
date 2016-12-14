@@ -314,6 +314,7 @@ public:
 	void SetGbuffer()
 	{
 		EffectStorage* tEffectStorage = mShader[e_ShaderDeferred];
+		mShaderMode = e_ShaderDeferred;
 
 		// G버퍼 Get
 		GetGBufferShaderValue(tEffectStorage, "gGDepthTex");
@@ -353,6 +354,7 @@ public:
 	void ClearGbuffer()
 	{
 		EffectStorage* tEffectStorage = mShader[e_ShaderDeferred];
+		mShaderMode = e_ShaderDeferred;
 
 		// G버퍼
 		ClearGBufferShaderValue(tEffectStorage, "gGDepthTex"   );

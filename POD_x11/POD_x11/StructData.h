@@ -32,7 +32,7 @@ typedef enum
 	e_ShaderPongTexAni = 5,
 	e_ShaderPongTexMap = 6,
 	e_ShaderSkyBox     = 7,
-	e_ShaderHDR_CS        = 8,
+	e_ShaderHDR_CS     = 8,
 	e_ShaderFinHDR     = 9
 }SHADER_TYPE;
 

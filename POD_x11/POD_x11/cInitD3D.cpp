@@ -475,6 +475,8 @@ void cInitD3D::OnResize()
 	cHDRManager::GetInstance()->ClearClass();
 	cHDRManager::GetInstance()->InitClass(mClientWidth, mClientHeight);
 
+	// 코어에 저장
+	SetCoreStorage();
 }
 
 // 메인 프로시져 (매세지 프로시져 실행)

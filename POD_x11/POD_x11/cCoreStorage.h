@@ -100,11 +100,21 @@ public:
 
 	void ReleaseRenderTaget()
 	{
-		#ifdef POSTEFFECT_ON
-			md3dImmediateContext->ClearRenderTargetView(mHDRRTV  , reinterpret_cast<const float*>(&Colors::LightSteelBlue));
-		#else
-			md3dImmediateContext->ClearRenderTargetView(mScreenRTV, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
-		#endif
+		md3dImmediateContext->ClearRenderTargetView(mHDRRTV, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
+		md3dImmediateContext->ClearRenderTargetView(mScreenRTV, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
+		
+	}
+
+	// ·»´õ Å¸°Ù Å¬¸®¾î
+	void ClearRTV()
+	{
+		//-----------------------------------------------------------------------------------------------------------------------------//
+		// ·»´õ Å¸°Ù Å¬¸®¾î
+		//-----------------------------------------------------------------------------------------------------------------------------//
+		md3dImmediateContext->ClearDepthStencilView(mMainDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+		ID3D11RenderTargetView* rt[1] = { NULL };
+		md3dImmediateContext->OMSetRenderTargets(1, rt, NULL);
 	}
 
 	void ClearClass()
