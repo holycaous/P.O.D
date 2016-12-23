@@ -178,14 +178,12 @@ public:
 
 		// 익스포트 파일 로케이션
 		strcpy(mFinExportModelLoc, mExportFileLoc);
-		strcat(mFinExportModelLoc, "Fin");
 		strcat(mFinExportModelLoc, mFileName);
 		strcat(mFinExportModelLoc, "Loc");
 		strcat(mFinExportModelLoc, mExportFileFormat);
 
 		// 익스포트 파일 본
 		strcpy(mFinExportBoneData, mExportFileLoc);
-		strcat(mFinExportBoneData, "Fin");
 		strcat(mFinExportBoneData, mFileName);
 		strcat(mFinExportBoneData, "Bone");
 		strcat(mFinExportBoneData, mExportFileFormat);
@@ -220,7 +218,6 @@ public:
 
 		// 익스포트 파일 로케이션
 		strcpy(mFinExportModelLoc, mExportFileLoc);
-		strcat(mFinExportModelLoc, "Fin");
 		strcat(mFinExportModelLoc, mFileName);
 		strcat(mFinExportModelLoc, mAnyType);
 		strcat(mFinExportModelLoc, "Loc");
@@ -228,7 +225,6 @@ public:
 
 		// 익스포트 파일 본
 		strcpy(mFinExportBoneData, mExportFileLoc);
-		strcat(mFinExportBoneData, "Fin");
 		strcat(mFinExportBoneData, mFileName);
 		strcat(mFinExportBoneData, mAnyType);
 		strcat(mFinExportBoneData, "Bone");
@@ -265,14 +261,12 @@ public:
 
 		// 익스포트 파일 로케이션
 		strcpy(mFinExportModelLoc, mExportFileLoc);
-		strcat(mFinExportModelLoc, "Fin");
 		strcat(mFinExportModelLoc, mFileName);
 		strcat(mFinExportModelLoc, "Loc");
 		strcat(mFinExportModelLoc, mExportFileFormat);
 
 		// 익스포트 파일 본
 		strcpy(mFinExportBoneData, mExportFileLoc);
-		strcat(mFinExportBoneData, "Fin");
 		strcat(mFinExportBoneData, mFileName);
 		strcat(mFinExportBoneData, "Bone");
 		strcat(mFinExportBoneData, mMyBoneData.mAniName);
@@ -887,7 +881,6 @@ private:
 			char _ModelNumBuf[512];
 			itoa10(i, _ModelNumBuf);
 			strcpy(mNewModleLoc[i].Data, mExportFileLoc);
-			strcat(mNewModleLoc[i].Data, "Fin");
 			strcat(mNewModleLoc[i].Data, mFileName);
 			strcat(mNewModleLoc[i].Data, "Data");
 			strcat(mNewModleLoc[i].Data, _ModelNumBuf);
@@ -925,7 +918,6 @@ private:
 			char _ModelNumBuf[512];
 			itoa10(i, _ModelNumBuf);
 			strcpy(mNewModleLoc[i].Data, mExportFileLoc);
-			strcat(mNewModleLoc[i].Data, "Fin");
 			strcat(mNewModleLoc[i].Data, mFileName);
 			strcat(mNewModleLoc[i].Data, mAnyType);
 			strcat(mNewModleLoc[i].Data, "Data");
@@ -987,7 +979,6 @@ private:
 		char _ModelNumBuf[512];
 		itoa10(_ModelNum, _ModelNumBuf);
 		strcpy(mFinExportModelData, mExportFileLoc);
-		strcat(mFinExportModelData, "Fin");
 		strcat(mFinExportModelData, mFileName);
 		strcat(mFinExportModelData, "Data");
 		strcat(mFinExportModelData, _ModelNumBuf);
@@ -1137,7 +1128,6 @@ private:
 		char _ModelNumBuf[512];
 		itoa10(_ModelNum, _ModelNumBuf);
 		strcpy(mFinExportModelData, mExportFileLoc);
-		strcat(mFinExportModelData, "Fin");
 		strcat(mFinExportModelData, mFileName);
 		strcat(mFinExportModelData, mAnyType);
 		strcat(mFinExportModelData, "Data");

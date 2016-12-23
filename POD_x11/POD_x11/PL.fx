@@ -31,6 +31,7 @@ PS_GBUFFER_OUT PS(PLVertexOut pin) /*: SV_Target*/
 	Out.Normal       = float4(pin.NormalW, 0.0f);
 	Out.Position     = float4(pin.PosW, 1.0);
 	Out.Specular     = gMaterial.Specular;
+	Out.Shadow       = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	return Out;
 
@@ -43,8 +44,12 @@ technique11 LightTech
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS()));
+
+		SetRasterizerState(0);
+		SetDepthStencilState(LessDSS, 0);
 	}
 }
+
 
 
 

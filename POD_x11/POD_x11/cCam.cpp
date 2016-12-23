@@ -301,9 +301,20 @@ XMFLOAT3 cCam::GetThirdPosition() const
 	return tPos;
 }
 
+void cCam::SetCamY(float _y)
+{
+	mPosition.y = _y - mLook.y * m3PersonLength;
+}
+
 void cCam::SetPosition(float x, float y, float z)
 {
 	mPosition = XMFLOAT3(x, y, z);
+}
+
+void cCam::SetPositionXZ(float x, float z)
+{
+	mPosition.x = x - mLook.x * m3PersonLength;
+	mPosition.z = z - mLook.z * m3PersonLength;
 }
 
 void cCam::SetPosition(const XMFLOAT3& v)
@@ -325,7 +336,6 @@ void cCam::SetPositionZ(float z)
 {
 	mPosition.z = z;
 }
-
 
 XMVECTOR cCam::GetRightXM()const
 {
@@ -422,4 +432,16 @@ XMMATRIX cCam::Proj()const
 XMMATRIX cCam::ViewProj()const
 {
 	return XMMatrixMultiply(View(), Proj());
+}
+
+void cCam::Setm3PersonLength(float _amount)
+{
+	XMVECTOR l = { 0.0f, 0.0f, 0.0f, 0.0f };
+	XMVECTOR s = XMVectorReplicate(_amount);
+	XMVECTOR p = XMLoadFloat3(&mPosition);
+
+	l = XMLoadFloat3(&mLook);
+
+	m3PersonLength -= _amount;
+	XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, l, p));
 }

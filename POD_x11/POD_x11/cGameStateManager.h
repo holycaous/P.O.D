@@ -34,7 +34,7 @@ public:
 	void KeyEvent(WPARAM& wParam);
 
 	// 마우스 이벤트
-	void MouseEvent(UINT& msg, int _Xpos, int _Ypos);
+	void MouseEvent(UINT& msg, int _Xpos, int _Ypos, WPARAM& wParam);
 
 	// 마우스 이동 이벤트
 	void MouseMoveEvent(int _Xpos, int _Ypos);

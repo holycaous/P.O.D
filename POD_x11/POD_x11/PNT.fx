@@ -71,6 +71,14 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexOut pin)
 	Out.Depth = Depth;
 	Out.Color = DiffuseTex;
 
+	// 안개
+	float3 toEye    = gEyePosW - pin.PosW;
+	float distToEye = length(toEye);
+	float fogLerp   = saturate((distToEye - 180.0f) / 4800.0f);
+	Out.Color = lerp(Out.Color, float4(0.15f, 0.15f, 0.2f, 0.0f), fogLerp);
+
+
+
 	//--------------------------------------------------------------//
 	// 포지션 맵 저장
 	//--------------------------------------------------------------//
@@ -91,6 +99,7 @@ PS_GBUFFER_OUT PackGBuffer(PNTVertexOut pin)
 	//Out.Normal   = float4(pin.NormalW, 1.0f)  * 0.5 + 0.5;
 	Out.Specular = SpecularTex;
 
+	Out.Shadow = pin.ShadowPosH;
 	return Out;
 }
 
@@ -114,6 +123,9 @@ PNTVertexOut VS(PNTVertexIn vin)
 	vout.WT = mul(vin.Tangent , (float3x3)vin.World);
 	vout.WB = mul(vin.BiNormal, (float3x3)vin.World);
 
+	// 쉐도우
+	vout.ShadowPosH = mul(float4(vout.PosW, 1.0f), gShadowTransform);
+
 	return vout;
 }
 
@@ -124,6 +136,21 @@ PS_GBUFFER_OUT PS(PNTVertexOut pin)/* : SV_Target*/
 	return PackGBuffer(pin);
 }
 
+
+// 버텍스
+ShadowVertexOut SDVS(PNTVertexIn vin)
+{
+	ShadowVertexOut vout;
+
+	// Transform to world space space.
+	float3 PosW = mul(float4(vin.PosL, 1.0f), vin.World).xyz;
+
+	// Transform to homogeneous clip space.
+	vout.PosH = mul(float4(PosW, 1.0f), gLightViewProj);
+	vout.Tex  = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
+
+	return vout;
+}
 
 // 여러개의 라이트를 만든다.
 // 매개변수를 직접적으로 설정함으로써, 골라 쓸 수 있게 만듬.
@@ -136,6 +163,10 @@ technique11 PongTex
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS()));
+
+		//SetRasterizerState(0);
+		SetRasterizerState(NoCull);
+		SetDepthStencilState(LessDSS, 0);
 	}
 }
 
@@ -147,5 +178,35 @@ technique11 CartoonTex
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS()));
+
+		SetRasterizerState(NoCull);
+		SetDepthStencilState(LessDSS, 0);
+	}
+}
+
+
+technique11 SDPongTex
+{
+	pass P0
+	{
+		SetVertexShader(CompileShader(vs_5_0, SDVS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(NULL);
+
+		SetRasterizerState(Depth);
+		SetDepthStencilState(LessDSS, 0);
+	}
+}
+
+// 라이트 + 텍스처 버전
+technique11 SDCartoonTex
+{
+	pass P0
+	{
+		SetVertexShader(CompileShader(vs_5_0, SDVS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(NULL);
+
+		SetRasterizerState(Depth);
 	}
 }

@@ -24,9 +24,15 @@ public:
 		//mSunDirLight.Direction    = XMFLOAT3(1.0f ,-1.0f ,-1.0f);
 
 		// 라이트 초기화
+		////// Directional light.
+		//mSunDirLight.Ambient   = XMFLOAT4(0.30f, 0.30f, 0.30f, 1.0f);
+		//mSunDirLight.Diffuse   = XMFLOAT4(0.40f, 0.40f, 0.40f, 1.0f);
+		//mSunDirLight.Specular  = XMFLOAT4(0.10f, 0.10f, 0.10f, 1.0f);
+		//mSunDirLight.Direction = XMFLOAT3(1.0f, -1.0f, -1.0f);
+
 		// Directional light.
-		mSunDirLight.Ambient   = XMFLOAT4(0.30f, 0.30f, 0.30f, 1.0f);
-		mSunDirLight.Diffuse   = XMFLOAT4(0.40f, 0.40f, 0.40f, 1.0f);
+		mSunDirLight.Ambient   = XMFLOAT4(0.49f, 0.38f, 0.38f, 1.0f);
+		mSunDirLight.Diffuse   = XMFLOAT4(0.49f, 0.48f, 0.48f, 1.0f);
 		mSunDirLight.Specular  = XMFLOAT4(0.10f, 0.10f, 0.10f, 1.0f);
 		mSunDirLight.Direction = XMFLOAT3(1.0f, -1.0f, -1.0f);
 		
@@ -42,7 +48,7 @@ public:
 
 		mPointLight.Position      = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		mPointLight.Att           = XMFLOAT3(0.7f, 0.7f, 0.7f);
-		mPointLight.Range         = 55.0f;
+		mPointLight.Range         = 120.0f;
 
 		// Spot light--position and direction changed every frame to animate in UpdateScene function.
 		mPlayerSpotLight.Ambient  = XMFLOAT4(0.50f, 0.55f, 0.50f, 1.0f);

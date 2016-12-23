@@ -13,11 +13,13 @@ SURFACE_DATA UnpackGBuffer(float4 PosL, float2 Tex)
 	SURFACE_DATA Out;
 	
 	// 각 텍스처 뽑기
+	//Out.DepthTex     = pow(gGDepthTex.Sample(samLinear, Tex), 2.2f);
 	Out.DepthTex     = gGDepthTex   .Sample(samLinear, Tex);
 	Out.DiffuseTex   = gGDiffuseTex .Sample(samLinear, Tex);
 	Out.PositionTex  = gGPositionTex.Sample(samPoint , Tex);
 	Out.SpecularTex  = gGSpecularTex.Sample(samLinear, Tex);
 	Out.TanNormalTex = gGNormalTex  .Sample(samLinear, Tex);
+	Out.ShadowTex    = gGShadowTex  .Sample(samLinear, Tex);
 
 	// 타젠트 노멀
 	// 좌표 -1 ~ 1사이로 바꾸기 (혹은 복구)
@@ -37,8 +39,6 @@ SURFACE_DATA UnpackGBuffer(float4 PosL, float2 Tex)
 	//pos.xyz /= pos.w;
 	//Out.PositionTex = pos;
 	////--------------------------------------------------------------//
-
-
 	//
 	//// 최종 위치 구하기
 	//float4 Position = float4(Out.PositionTex.xy, PositionTexZ, 1.0f);
@@ -68,8 +68,6 @@ GVertexOut VS(GVertexIn vin)
 	// Output vertex attributes for interpolation across triangle.
 	// 어차피 변환결과는 같음.
 	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
-
-	
 
 	return vout;
 }
@@ -108,25 +106,31 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	//
 	// 포지션맵
 	//return sData.PositionTex;
+	//
+	// 쉐도우맵
+	//return sData.ShadowTex;
+	//return gShadowMap.Sample(samPoint, pin.Tex);
 
-	// 화면에 빛을 안비추는 방법..
 	// 디렉셔널 라이트
 	float3 gDirectionLight_Dir = normalize(-gDirLight.Direction);
 	DotDirectLightNomalMap     = saturate(dot(sData.TanNormalTex.xyz, gDirectionLight_Dir)) * 2.0f;
 	
 	// 테스트 1
 	// 포인트 라이트
-	float gPointLight_Length = length(gPointLight.Position.xyz - sData.PositionTex.xyz);
-	
-	// 거리 확인
-	[flatten]
-	if (gPointLight_Length < gPointLight.Range)
-	{
-		// 라이트 영역내에 있다면,
-		float3 gPointLight_Dir = normalize(gPointLight.Position.xyz - sData.PositionTex.xyz);
-	   		   DotPointLightNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir));		  // +=
-	}
-		
+	//float gPointLight_Length = length(gPointLight.Position.xyz - sData.PositionTex.xyz);
+	//
+	//// 거리 확인
+	//[flatten]
+	//if (gPointLight_Length < gPointLight.Range)
+	//{
+	//	// 거리 마다 % 를 구한다.
+	//	float gFinPointLength = gPointLight.Range / gPointLight_Length;
+	//
+	//	// 라이트 영역내에 있다면,
+	//	float3 gPointLight_Dir = normalize(gPointLight.Position.xyz - sData.PositionTex.xyz);
+	//		DotPointLightNomalMap += saturate(dot(sData.TanNormalTex.xyz, gPointLight_Dir)) * pow(gFinPointLength, 2.f) * 0.01f;		  // +=
+	//}
+	//	
 	////// 스팟 라이트
 	//float gSpotLight_Length = length(sData.PositionTex.xyz - gSpotLight.Position.xyz);
 	//
@@ -141,6 +145,7 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	// Lighting.
 	//
 
+	
 	// Start with a sum of zero.
 	float4 A, D, S;
 
@@ -148,26 +153,33 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 spec    = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
+	// Only the first light casts a shadow.
+	float shadow = CalcShadowFactor(samShadow, gShadowMap, sData.ShadowTex);
+	//float shadow = sData.ShadowTex.x;
+
+	// 쉐도우 맵
+	//return shadow;
+
 	// 디렉셔널 라이트 
 	ComputeDirectionalLight(gMaterial, gDirLight, sData.TanNormalTex.xyz, toEye, A, D, S);
-	ambient += A;
-	diffuse += D;
-	spec    += S;
-	
-	// 포인트 라이트
-	[flatten]
-	if (gPointLight_Length < gPointLight.Range)
-	{
-		// 거리 마다 % 를 구한다.
-		float gFinPointLength = gPointLight.Range / gPointLight_Length;
+	ambient += A;    
+	diffuse += shadow * D;
+	spec    += shadow * S;
 
-		ComputePointLight(gMaterial, gPointLight, sData.PositionTex.xyz, sData.TanNormalTex.xyz, toEye, A, D, S);
-		ambient += A * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
-		diffuse += D * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
-		spec    += S * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
-	}
-
-
+	//// 포인트 라이트
+	//[flatten]
+	//if (gPointLight_Length < gPointLight.Range)
+	//{
+	//	// 거리 마다 % 를 구한다.
+	//	float gFinPointLength = gPointLight.Range / gPointLight_Length;
+	//
+	//	ComputePointLight(gMaterial, gPointLight, sData.PositionTex.xyz, sData.TanNormalTex.xyz, toEye, A, D, S);
+	//	ambient += A * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
+	//	diffuse += D * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
+	//	spec    += S * gFinPointLength * 0.2f; //(gPointLight_Length < 0.0 ? 0.0 : gFinPointLength);
+	//}
+	//
+	//
 	//// 스폿 라이트
 	//if (gSpotLight_Length < gSpotLight.Range)
 	//{
@@ -176,6 +188,8 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	//	diffuse += D;
 	//	spec    += S;
 	//}
+
+
 
 	// 렌더링 모드
 	switch (gShaderMode)
@@ -212,10 +226,11 @@ float4 PS(GVertexOut pin, uniform int gShaderMode) : SV_Target
 	// 법선 매핑 곱하기
 	litColor.xyz *= (DotDirectLightNomalMap + DotPointLightNomalMap);
 	//litColor.xyz *= (length(DotDirectLightNomalMap + DotPointLightNomalMap) < 1.5f ? DotDirectLightNomalMap + DotPointLightNomalMap : 1.5f );
-	return litColor; 
+
+	return litColor;
+	//return pow(litColor, 1/2.2f); 
 	//---------------------------------------------------------//
 }
-
 
 // 여러개의 라이트를 만든다.
 // 매개변수를 직접적으로 설정함으로써, 골라 쓸 수 있게 만듬.
@@ -228,5 +243,9 @@ technique11 Deferred
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS(0)));
+
+		SetRasterizerState(0);
+		SetDepthStencilState(LessDSS, 0);
 	}
 }
+

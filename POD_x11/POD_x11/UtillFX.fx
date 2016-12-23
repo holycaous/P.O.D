@@ -1,4 +1,5 @@
 
+
 // 라이트
 struct DirectionalLight
 {
@@ -36,6 +37,29 @@ struct SpotLight
 
 	float3 Att;
 	float  pad;
+};
+
+// HDR
+static const float4 LUM_FACTOR  = float4(0.299, 0.587, 0.114, 0);
+static const float3 LUM_FACTOR2 = float3(0.299, 0.587, 0.114);
+
+StructuredBuffer  <float> gAvgLum;
+StructuredBuffer  <float> gAverageValues1D;
+RWStructuredBuffer<float> gAverageLum1;
+RWStructuredBuffer<float> gAverageLum2;
+
+struct TDownScaleCB
+{
+	uint2 Res;
+	uint1 Domain;
+	uint1 GroupSize;
+};
+
+struct TFinalPassCB
+{
+	float MiddleGrey;
+	float LumWhiteSqr;
+	uint2 Ped;
 };
 
 // 재질
@@ -80,16 +104,38 @@ struct PNTVertexAniOut
 	float3 WT           : POSITION1;   // 매트릭스 만들기 용도
 	float3 WB           : POSITION2;   // 매트릭스 만들기 용도
 	float2 AniData      : ANIDATA;
+	float4 ShadowPosH   : SHADOW;
+};
+
+struct PNTVertexMapIn
+{
+	float2 Tex				  : TEXCOORD;
+	float2 VtxInfo            : VTXINFO;		 // 버택스 번호, 버택스 갯수
+	row_major float4x4 World  : WORLD;
+	float3 TexData            : TEXDATA;		 // 맵 텍스처 번호, 텍스처 너비, 텍스처 높이
+	uint InstanceId		      : SV_InstanceID;
+};
+
+struct PNTVertexMapOut
+{
+	float4 PosH         : SV_POSITION;
+	float3 PosW         : POSITION0;
+	float3 NormalW      : NORMAL;
+	float2 Tex          : TEXCOORD0;   // 보정 용도
+	float3 WT           : POSITION1;   // 매트릭스 만들기 용도
+	float3 WB           : POSITION2;   // 매트릭스 만들기 용도
+	float4 ShadowPosH   : SHADOW;
 };
 
 struct PNTVertexOut
 {
-	float4 PosH    : SV_POSITION;
-	float3 PosW    : POSITION0;
-	float3 NormalW : NORMAL;
-	float2 Tex     : TEXCOORD0; // 보정 용도
-	float3 WT      : POSITION1; // 매트릭스 만들기 용도
-	float3 WB      : POSITION2; // 매트릭스 만들기 용도
+	float4 PosH         : SV_POSITION;
+	float3 PosW         : POSITION0;
+	float3 NormalW      : NORMAL;
+	float2 Tex          : TEXCOORD0; // 보정 용도
+	float3 WT           : POSITION1; // 매트릭스 만들기 용도
+	float3 WB           : POSITION2; // 매트릭스 만들기 용도
+	float4 ShadowPosH   : SHADOW;
 };
 
 struct PCVertexIn
@@ -123,6 +169,35 @@ struct PLVertexOut
 	float3 NormalW : NORMAL;
 };
 
+struct SkyBoxIn
+{
+	float3 PosL               : POSITION;
+	float1 Pedding            : PEDDING;
+	row_major float4x4 World  : WORLD;
+	uint InstanceId		      : SV_InstanceID;
+};
+
+struct ShadowVertexIn
+{
+	float3 PosL				  : POSITION;
+	float3 NormalL			  : NORMAL;
+	float2 Tex				  : TEXCOORD;
+	row_major float4x4 World  : WORLD;
+	uint InstanceId		      : SV_InstanceID;
+};
+
+struct ShadowVertexOut
+{
+	float4 PosH : SV_POSITION;
+	float2 Tex  : TEXCOORD;
+};
+
+struct SkyBoxOut
+{
+	float4 PosH : SV_POSITION;
+	float3 PosL : POSITION;
+};
+
 struct GVertexIn
 {
 	float3 PosL	              : POSITION;
@@ -146,6 +221,7 @@ struct PS_GBUFFER_OUT
 	float4 Normal       : SV_TARGET2;
 	float4 Position     : SV_TARGET3;
 	float4 Specular     : SV_TARGET4;
+	float4 Shadow       : SV_TARGET5;
 };
 
 struct SURFACE_DATA
@@ -155,12 +231,17 @@ struct SURFACE_DATA
 	float4 SpecularTex;
 	float4 TanNormalTex;
 	float4 PositionTex;
+	float4 ShadowTex;
 };
 
 // 라이트
 DirectionalLight gDirLight;
 PointLight       gPointLight;
 SpotLight        gSpotLight;
+
+// HDR
+TDownScaleCB  gTDownScaleCB;
+TFinalPassCB  gTFinalPassCB;
 
 // 매태리얼
 Material gMaterial;
@@ -169,6 +250,9 @@ Material gMaterial;
 float gNearFarlength;
 float gNear;
 float gFar;
+
+// 윈도우 너비
+float gWinWidth;
 
 // 카메라
 float3 gEyePosW;
@@ -189,11 +273,7 @@ Texture2D gDamageTex;
 Texture2D gRunTex;
 Texture2D gWalkTex;
 Texture2D gDeathTex;
-Texture2D gDeathWaitTex;
-Texture2D gAttack1Tex;
-Texture2D gAttack2Tex;
-Texture2D gAttack3Tex;
-Texture2D gStunTex;
+Texture2D gAttackTex;
 
 // 모델 스킨 텍스처
 Texture2D gIdleModelTex;
@@ -201,11 +281,17 @@ Texture2D gDamageModelTex;
 Texture2D gRunModelTex;
 Texture2D gWalkModelTex;
 Texture2D gDeathModelTex;
-Texture2D gDeathWaitModelTex;
-Texture2D gAttack1ModelTex;
-Texture2D gAttack2ModelTex;
-Texture2D gAttack3ModelTex;
-Texture2D gStunModelTex;
+Texture2D gAttackModelTex;
+
+// 맵 스킨 텍스처
+Texture2D gMapTex;
+Texture2D gHeightMapTex;
+
+// 쉐도우 맵 텍스처
+Texture2D gShadowMap;
+
+// HDR 텍스처
+Texture2D gHDRTex;
 
 // G버퍼 텍스처
 Texture2D gGDepthTex;
@@ -213,6 +299,10 @@ Texture2D gGDiffuseTex;
 Texture2D gGPositionTex;
 Texture2D gGSpecularTex;
 Texture2D gGNormalTex;
+Texture2D gGShadowTex;
+
+// 큐브맵
+TextureCube gSkyBox;
 
 //-----------------------------------//
 // 매트릭스
@@ -238,6 +328,9 @@ float4x4 gTexTFMtx;
 float4x4 gLocTMMtx;
 float4x4 gWdTMMtx;
 
+// 쉐도우맵 변환
+float4x4 gShadowTransform;
+float4x4 gLightViewProj;
 
 //------------------------------------------------------------------------------------//
 // Mip Filter 는 '밉맵8을 처리할 때의 필터링 옵션' 이고,
@@ -277,9 +370,104 @@ SamplerState samPoint
 	AddressU = Wrap;
 	AddressV = Wrap;
 	AddressW = Wrap;
-	MaxLOD   = 0;
-	MinLOD   = 0;
+	MaxLOD = 0;
+	MinLOD = 0;
 };
+
+SamplerComparisonState samShadow
+{
+	Filter   = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+	AddressU = BORDER;
+	AddressV = BORDER;
+	AddressW = BORDER;
+	BorderColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    ComparisonFunc = LESS_EQUAL;
+};
+
+RasterizerState Depth
+{
+	// [MSDN에서 보낸]
+	// 현재 출력 합병 단계에 바인딩 된 깊이 버퍼가 UNORM 형식이거나
+	// 깊이 버퍼가 없다. 바이어스 값은 다음과 같이 계산된다.
+	//
+	// Bias = (float) DepthBias * r + SlopeScaledDepthBias * MaxDepthSlope;
+	//
+	// 여기서 r은 깊이 버퍼 형식에서 최소 표현 가능 값> 0이고 float32로 변환됩니다.
+	// [/ MSDN 끝내기]
+	//
+	// 24 비트 깊이 버퍼의 경우 r = 1 / 2 ^ 24입니다.
+	//
+	// 예 : DepthBias = 100000 ==> 실제 DepthBias = 100000 / 2 ^ 24 = .006
+
+	// 당신은 당신의 씬에 이 값들을 실험 할 필요가 있다.
+	DepthBias = 9500;
+	DepthBiasClamp = 0.0f;
+	SlopeScaledDepthBias = 1.0f;
+};
+
+RasterizerState NoCull
+{
+	CullMode = None;
+};
+
+DepthStencilState LessEqualDSS
+{
+	// 깊이 함수가 LESS_EQUAL이고 LESS가 아닌지 확인하십시오.
+	// 그렇지 않으면 z = 1 (NDC)에서 정규화 된 깊이 값이
+	// 깊이 버퍼가 1로 클리어되면 깊이 테스트에 실패합니다.
+	DepthFunc = LESS_EQUAL;
+};
+
+DepthStencilState LessDSS
+{
+	DepthFunc = LESS;
+};
+
+
+
+float CalcShadowFactor(SamplerComparisonState samShadow, 
+                       Texture2D shadowMap, 
+					   float4 shadowPosH)
+{
+	// Complete projection by doing division by w.
+	shadowPosH.xyz /= shadowPosH.w;
+	
+	// Depth in NDC space.
+	float depth = shadowPosH.z;
+
+	// Texel size.
+	const float dx = 1.0f / gWinWidth;
+
+	float percentLit = 0.0f;
+	const float2 offsets[9] = 
+	{
+		float2(-dx,  -dx), float2(0.0f,  -dx), float2(dx,  -dx),
+		float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
+		float2(-dx,  +dx), float2(0.0f,  +dx), float2(dx,  +dx)
+	};
+
+	[unroll]
+	for(int i = 0; i < 9; ++i)
+	{
+		percentLit += shadowMap.SampleCmpLevelZero(samShadow, 
+		shadowPosH.xy + offsets[i], depth).r;
+	}
+
+	return percentLit /= 9.0f;
+}
+
+float3 ToneMapping(float3 HDRColor)
+{
+	// 현재 픽셀의 휘도 스케일을 찾습니다.
+	float LScale = dot(HDRColor, LUM_FACTOR2);
+
+	LScale *= gTFinalPassCB.MiddleGrey  / gAvgLum[0];
+	LScale  = (LScale + LScale * LScale / gTFinalPassCB.LumWhiteSqr) / (1.0 + LScale);
+
+	// 휘도 스케일을 픽셀 색상에 적용합니다.
+	return HDRColor * LScale;
+}
 
 
 //// 테스트 전용

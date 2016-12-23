@@ -29,7 +29,11 @@ typedef enum
 	e_ShaderPongTex	   = 2,
 	e_ShaderCartoonTex = 3,
 	e_ShaderDeferred   = 4,
-	e_ShaderPongTexAni = 5
+	e_ShaderPongTexAni = 5,
+	e_ShaderPongTexMap = 6,
+	e_ShaderSkyBox     = 7,
+	e_ShaderHDR_CS     = 8,
+	e_ShaderFinHDR     = 9
 }SHADER_TYPE;
 
 // 쉐이더 변수 초기화
@@ -39,8 +43,15 @@ typedef enum
 	e_ShaderValVtx      = 1,
 	e_ShaderVal         = 2,
 	e_ShaderValResource = 3,
-	e_ShaderValMtxArray = 4
+	e_ShaderValMtxArray = 4,
+	e_ShaderValUAV      = 5
 }SHADER_VAL_TYPE;
+
+typedef enum
+{
+	e_Basic  = 0,
+	e_Shadow = 1
+}TECH_TYPE;
 
 // 모델 FSM
 typedef enum
@@ -50,11 +61,7 @@ typedef enum
 	e_Run       = 2,
 	e_Walk      = 3,
 	e_Death     = 4,
-	e_DeathWait = 5,
-	e_Attack1   = 6,
-	e_Attack2   = 7,
-	e_Attack3   = 8,
-	e_Stun      = 9
+	e_Attack    = 5
 }FSM_TYPE;
 
 // 어떤 텍스처를 로드할 것인가
@@ -125,8 +132,20 @@ struct VertexPNTAni
 {
 	XMFLOAT2 Tex;
 	XMFLOAT3 Weights;
-	XMFLOAT3 VtxInfo; // 패딩 값
+	XMFLOAT3 VtxInfo; // 버텍스 정보 넣었음
 	UINT     BoneIndices[4];
+};
+
+struct VertexPNTMap
+{
+	XMFLOAT2 Tex;
+	XMFLOAT2 VtxInfo; // 버텍스 정보 넣었음
+};
+
+struct VertexSkyBox
+{
+	XMFLOAT3 Pos;
+	float    Pedding; // 패딩 값
 };
 
 struct VertexG
@@ -140,7 +159,14 @@ struct VertexG
 struct InsAni
 {
 	XMFLOAT4X4 mMtx;
-	XMFLOAT4   mInsAni; // 실행될 애니의 텍스처번호, 프레임 정보
+	XMFLOAT4   mInsAni; // 실행될 애니의 텍스처번호, 프레임 정보, 테스처 너비, 높이
+};
+
+// 인스턴스 정보
+struct InsMap
+{
+	XMFLOAT4X4 mMtx;
+	XMFLOAT3   mInsTex; // 실행될 텍스처번호,  테스처 너비, 높이
 };
 
 // 구조체 정의
@@ -171,6 +197,23 @@ struct Vertex
 	XMFLOAT3 BiNormal;
 	XMFLOAT2 TexUV;
 };
+
+// HDR 변수1
+typedef struct
+{
+	UINT nWidth;
+	UINT nHeight;
+	UINT nTotalPixels;
+	UINT nGroupSize;
+} TDownScaleCB;
+
+// HDR 변수2
+typedef struct
+{
+	float fMiddleGrey;
+	float fLumWhiteSqr;
+	UINT pad[2];
+} TFinalPassCB;
 
 // 바운딩 박스
 class BoundBox
@@ -368,8 +411,11 @@ public:
 
 	float mAniSpeed; // 애니 스피드
 
-	// 임시 
-	float mFrameCouunt;
+private:
+	// 힘 (중력)
+	float mForce;
+
+	float mGround;
 public:
 	ObjData()
 	{
@@ -389,12 +435,22 @@ public:
 		// 애니메이션 기본 스피드
 		mAniSpeed = 25.0f;
 
-		// 임시
-		mFrameCouunt = 0.0f;
+		// 중력
+		mForce = 0.0f;
+		mGround = 0.0f;
 	}
 	~ObjData()
 	{
 
+	}
+
+	// 점프
+	void Jump()
+	{
+		if (mWdMtx._42 == mGround)
+		{
+			mForce += 350.0f;
+		}
 	}
 
 	// 체력 설정
@@ -458,7 +514,7 @@ public:
 	}
 
 	// 애니 시간 업데이트
-	void Update(float& dt)
+	void Update(float& dt, float _y)
 	{
 		// 시간 흘르기
 		mFrame += (dt * mAniSpeed);
@@ -466,6 +522,20 @@ public:
 		// 마지막보다 크다면, 초기화
 		if (mEdPoint <= mFrame)
 			mFrame = mStPoint;
+
+		// 바닥 위치 설정
+		mGround = _y;
+
+		// 중력 적용
+		mForce -= GRAVITY * dt;
+		mWdMtx._42 += mForce * dt;
+
+		// 땅바닥 충돌체크
+		mWdMtx._42 = max(mGround, mWdMtx._42);
+
+		// 바닥에 닿으면 힘 제로
+		if (mWdMtx._42 <= mGround)
+			mForce = 0.0f;
 	}
 	
 	// 위치 반환
@@ -486,6 +556,19 @@ public:
 		mWdMtx._41 = _x;
 		mWdMtx._42 = _y;
 		mWdMtx._43 = _z;
+	}
+
+	// 위치 설정
+	void setPosXZ(float _x, float _z)
+	{
+		mWdMtx._41 = _x;
+		mWdMtx._43 = _z;
+	}
+
+	// 위치 설정
+	void setPosY(float _y)
+	{
+		mWdMtx._42 = _y;
 	}
 
 	// 스케일 설정
@@ -576,6 +659,14 @@ public:
 class InitMetaData
 {
 public:
+	//--------------------------------------------------//
+	// 맵 전용
+	//--------------------------------------------------//
+	vector<float> mHeightmap;
+
+	//--------------------------------------------------//
+	// 일반 오브젝트
+	//--------------------------------------------------//
 	// 버텍스, 인덱스
 	vector<Vertex>   Vertices;
 	vector<UINT>     Indices;
@@ -758,6 +849,7 @@ public:
 		mObjData   .clear();
 		mCreateName.clear();
 		mSkinTex   .clear();
+		mHeightmap .clear();
 	}
 
 	// 텍스처 로드
@@ -891,6 +983,13 @@ public:
 		mObjData[_uniqueCode].setPos(_x, _y, _z);
 	}
 
+	// 오브젝트 이동
+	void SetPosXZ(int _uniqueCode, float _x, float _z)
+	{
+		// 오브젝트 이동
+		mObjData[_uniqueCode].setPosXZ(_x, _z);
+	}
+
 	// 해당 위치로 가는 벡터를 얻는다
 	XMVECTOR GetPointDir(int _uniqueCode, float _x, float _y, float _z)
 	{
@@ -1005,45 +1104,15 @@ public:
 		mObjData[_unicode].SetMp(_Mp);
 	}
 
+	// 점프
+	void Jump(int _unicode)
+	{
+		mObjData[_unicode].Jump();
+	}
+
 	// 오브젝트 FSM 설정
 	void SetFSM(int _unicode, FSM_TYPE _modelFsm)
 	{
-		//switch (_modelFsm)
-		//{
-		//default:
-		//case e_Idle:
-		//
-		//	break;
-		//case e_Damage:   
-		//
-		//	break;
-		//case e_Run:
-		//
-		//	break;
-		//case e_Walk:
-		//
-		//	break;
-		//case e_Death:
-		//
-		//	break;
-		//case e_DeathWait:
-		//
-		//	break;
-		//case e_Attack1:
-		//
-		//	break;
-		//case e_Attack2:
-		//
-		//	break;
-		//case e_Attack3:
-		//
-		//	break;
-		//case e_Stun:
-		//
-		//	break;
-		//}
-
-
 		float _newType   = mSkinTex[_modelFsm]->mAniType;
 		float _StPoint   = mSkinTex[_modelFsm]->mStPoint;
 		float _EdPoint   = mSkinTex[_modelFsm]->mEdPoint;
@@ -1057,42 +1126,6 @@ public:
 	// 오브젝트 FSM 설정
 	void SetFSM(int _unicode, FSM_TYPE _modelFsm, float _Frame)
 	{
-		//switch (_modelFsm)
-		//{
-		//default:
-		//case e_Idle:
-		//
-		//	break;
-		//case e_Damage:   
-		//
-		//	break;
-		//case e_Run:
-		//
-		//	break;
-		//case e_Walk:
-		//
-		//	break;
-		//case e_Death:
-		//
-		//	break;
-		//case e_DeathWait:
-		//
-		//	break;
-		//case e_Attack1:
-		//
-		//	break;
-		//case e_Attack2:
-		//
-		//	break;
-		//case e_Attack3:
-		//
-		//	break;
-		//case e_Stun:
-		//
-		//	break;
-		//}
-
-
 		float _newType   = mSkinTex[_modelFsm]->mAniType;
 		float _StPoint   = mSkinTex[_modelFsm]->mStPoint;
 		float _EdPoint   = mSkinTex[_modelFsm]->mEdPoint;
@@ -1104,25 +1137,94 @@ public:
 	}
 };
 
+// 맵 정보
+class MapINFO
+{
+public:
+	InitMetaData* mModel;
+	float mXwidth;
+	float mZdepth;
+	float mCellSize;
+	float mHeightScale;
+
+	MapINFO()
+	{
+		mModel = nullptr;
+		mXwidth = mZdepth = mCellSize = mHeightScale = 0.0f;
+	}
+
+	float GetWidth()
+	{
+		// 총 지형 폭.
+		return (mXwidth - 1) * mCellSize;
+	}
+	float GetDepth()
+	{
+		// 총 지형 깊이.
+		return (mZdepth - 1) * mCellSize;
+	}
+
+	// 높이 얻기 (임시로 처리)
+	float GetHeight(float& x, float& z)
+	{
+		// 셀 좌표계로 옮기기
+		float c = (x + 0.5f * GetWidth()) /  mCellSize;
+		float d = (z - 0.5f * GetDepth()) / -mCellSize;
+
+		// 소숫점 버리기
+		int row = (int)floorf(d);
+		int col = (int)floorf(c);
+
+		// 셀에서 하이트맵 추출
+		// A*--*B
+		//  | /|
+		//  |/ |
+		// C*--*D
+		vector<float>& _heightMap = mModel->mHeightmap;
+
+		float A = _heightMap[row * (int)mXwidth + col];
+		float B = _heightMap[row * (int)mXwidth + col + 1];
+		float C = _heightMap[(row + 1) * (int)mXwidth + col];
+		float D = _heightMap[(row + 1) * (int)mXwidth + col + 1];
+
+		// 셀과 관련된 상대적인 위치.
+		float s = c - (float)col;
+		float t = d - (float)row;
+
+		// 위쪽 삼각형 ABC 인 경우.
+		if (s + t <= 1.0f)
+		{
+			float uy = B - A;
+			float vy = C - A;
+			return A + s*uy + t*vy;
+		}
+		else // 아래쪽 삼각형 DCB
+		{
+			float uy = C - D;
+			float vy = B - D;
+			return D + (1.0f - s)*uy + (1.0f - t)*vy;
+		}
+	}
+};
+
 // 이펙트 변수
 class EffectStorage
 {
 public:
 	ID3DX11Effect* mFX;			   // 이펙트
-	ID3DX11EffectTechnique* mTech; // 테크닉
+	map<int, ID3DX11EffectTechnique*> mTech; // 테크닉
 	map<string, ID3DX11EffectMatrixVariable*> mfxMtx; // 행렬
 	map<string, ID3DX11EffectVectorVariable*> mfxVtx; // 벡터
 	map<string, ID3DX11EffectVariable*>     mfxValue; // 변수
 
 	map<string, ID3DX11EffectShaderResourceVariable*>  mfxResource; // 리소스
-	
-	ID3D11InputLayout* mInputLayout;
+	map<string, ID3DX11EffectUnorderedAccessViewVariable*>  mfxUAV; // UAV
+
+	map<int, ID3D11InputLayout*> mInputLayout;
 public:
 	EffectStorage()
 	{
-		mFX = 0;
-		mTech = 0;
-		mInputLayout = 0;
+		mFX = nullptr;
 	}
 
 	~EffectStorage()
@@ -1138,15 +1240,25 @@ public:
 
 		for (auto itor = mfxResource.begin(); itor != mfxResource.end(); ++itor)
 			ReleaseCOM(itor->second);
-		
+
+		for (auto itor = mfxUAV.begin(); itor != mfxUAV.end(); ++itor)
+			ReleaseCOM(itor->second);
+
+		for (auto itor = mTech.begin(); itor != mTech.end(); ++itor)
+			ReleaseCOM(itor->second);
+
+		for (auto itor = mInputLayout.begin(); itor != mInputLayout.end(); ++itor)
+			ReleaseCOM(itor->second);
+
 		mfxMtx.clear();
 		mfxVtx.clear();
 		mfxValue.clear();
 		mfxResource.clear();
+		mfxUAV.clear();
+		mTech.clear();
+		mInputLayout.clear();
 
-		ReleaseCOM(mTech);
 		ReleaseCOM(mFX);
-		ReleaseCOM(mInputLayout);
 	}
 };
 
@@ -1271,6 +1383,17 @@ public:
 			Build_PNT_Ani();
 			break;
 
+		case e_ShaderPongTexMap:
+			Build_PNT_Map();
+			break;
+
+		case e_ShaderSkyBox:
+			Build_SkyBox();
+			break;
+
+		case e_ShaderHDR_CS:
+			break;
+
 		default:
 			break;
 		}
@@ -1295,7 +1418,7 @@ public:
 			vbd.StructureByteStride = 0;
 
 			if (_Screen->mObjData.size() != 1)
-				cout << "스크린 버퍼가 1개가 아닙니다!!" << endl;
+				cout << "HDR or 스크린 버퍼가 1개가 아닙니다!!" << endl;
 
 			// 공간할당
 			//mInstancedBuffer[itor->second->mCreateName] = NULL;
@@ -1354,6 +1477,16 @@ public:
 					vbd.MiscFlags           = 0;
 					vbd.StructureByteStride = 0;
 				}
+				// 맵 모델 버퍼
+				else if (itor->second->mShaderMode == e_ShaderPongTexMap)
+				{
+					vbd.Usage               = D3D11_USAGE_DYNAMIC;
+					vbd.ByteWidth           = sizeof(InsMap) * itor->second->mObjData.size();
+					vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+					vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+					vbd.MiscFlags           = 0;
+					vbd.StructureByteStride = 0;
+				}
 				// 일반 모델 버퍼
 				else
 				{
@@ -1392,6 +1525,16 @@ public:
 				vbd.MiscFlags           = 0;
 				vbd.StructureByteStride = 0;
 			}
+			// 맵 모델 버퍼
+			else if (_selectModel->mShaderMode == e_ShaderPongTexMap)
+			{
+				vbd.Usage               = D3D11_USAGE_DYNAMIC;
+				vbd.ByteWidth           = sizeof(InsMap) * _selectModel->mObjData.size();
+				vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+				vbd.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+				vbd.MiscFlags           = 0;
+				vbd.StructureByteStride = 0;
+			}
 			// 일반 모델 버퍼
 			else
 			{
@@ -1424,7 +1567,7 @@ public:
 				mCoreStorage->md3dImmediateContext->Map(mInstancedBuffer[itor->second->mCreateName], 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
 
 				// 모델 데이터 가져오기
-				auto tModelData = itor->second->mObjData;
+				map<int, ObjData>& tModelData = itor->second->mObjData;
 				UINT i = -1;
 
 				// 애니 모델 쓰기
@@ -1444,6 +1587,24 @@ public:
 						dataView[i].mInsAni.y = itor2->second.mFrame;      // 프레임 정보
 						dataView[i].mInsAni.z = itor2->second.mTexWidth;   // 텍스처 너비
 						dataView[i].mInsAni.w = itor2->second.mTexHeight;  // 텍스처 높이
+					}
+				}
+				// 맵 버퍼 쓰기
+				else if (itor->second->mShaderMode == e_ShaderPongTexMap)
+				{
+					// << 인스턴스 버퍼 >> 의 "인터페이스"를 얻어온다.
+					InsMap* dataView = reinterpret_cast<InsMap*>(mappedData.pData);
+
+					// 등록된 모델 수만큼 등록 (컬링 안함)
+					for (auto itor2 = tModelData.begin(); itor2 != tModelData.end(); ++itor2)
+					{
+						// 모델 매트릭스
+						dataView[++i].mMtx = itor2->second.mWdMtx;
+
+						// 모델 애니정보
+						dataView[i].mInsTex.x = 0;						   // 실행될 맵의 텍스처번호
+						dataView[i].mInsTex.y = itor2->second.mTexWidth;   // 프레임 너비
+						dataView[i].mInsTex.z = itor2->second.mTexHeight;  // 텍스처 높이
 					}
 				}
 				// 일반 모델 쓰기
@@ -1825,7 +1986,7 @@ private:
 			if (itor->second->mModelType == e_ParsingModel)
 				continue;
 
-			// 탄젠트 공간 계싼
+			// 탄젠트 공간 계산
 			CalTangentSpace(itor->second);
 		}
 
@@ -2106,7 +2267,263 @@ private:
 		iinitData.pSysMem = &indices[0];
 		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
+	void Build_PNT_Map()
+	{
+		//-----------------------------------------------------------------------------------------------------------//
+		// 직전 버텍스 저장용
 
+		int AfterVtxOffset = 0;
+
+		// 개별 버텍스 오프셋 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 처음이라면
+			if (AfterVtxOffset == 0)
+			{
+				// 현재 버텍스 저장
+				AfterVtxOffset = itor->second->mVertexOffset;
+				itor->second->mVertexOffset = 0;
+			}
+			else
+			{
+				// 내것과, 내 직전 걸 더한다.
+				itor->second->mVertexOffset = AfterVtxOffset;
+				AfterVtxOffset = itor->second->mVertexOffset + itor->second->Vertices.size();
+			}
+		}
+		// 직전 인덱스 저장용
+		int AfterIdxOffset = 0;
+
+		// 개별 인덱스 오프셋 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 처음이라면
+			if (AfterIdxOffset == 0)
+			{
+				// 현재 인덱스 저장
+				AfterIdxOffset = itor->second->mIndexCount;
+				itor->second->mIndexOffset = 0;
+			}
+			else
+			{
+				// 내것과, 내 직전 걸 더한다.
+				itor->second->mIndexOffset = AfterIdxOffset;
+				AfterIdxOffset = itor->second->mIndexOffset + itor->second->mIndexCount;
+			}
+		}
+
+		// 법선벡터 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// itor이 파싱된 모델이라면 넘어간다.
+			if (itor->second->mModelType == e_ParsingModel)
+				continue;
+
+			// 법선벡터 계산
+			CalNormalVtx(itor->second);
+		}
+
+		// 정점 늘리기 & 버텍스 버퍼로 송신
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// itor이 파싱된 모델이라면 넘어간다.
+			if (itor->second->mModelType == e_ParsingModel)
+				continue;
+
+			// 정점 늘리기
+			CalVtxINCAndSet(itor->second);
+		}
+
+		// 탄젠트 공간 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// itor이 파싱된 모델이라면 넘어간다.
+			if (itor->second->mModelType == e_ParsingModel)
+				continue;
+
+			// 탄젠트 공간 계산
+			CalTangentSpace(itor->second);
+		}
+
+
+		// 총 버텍스 사이즈 계산
+		vector<VertexPNTMap> vertices; // 한곳으로 옮기는 작업 ( 가장 큰 버퍼 )
+		UINT totalVertexCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			totalVertexCount += itor->second->Vertices.size();
+		}
+
+		// 전체버퍼 사이즈 늘리기
+		vertices.resize(totalVertexCount);
+
+		// 가장 큰 버퍼로 복사
+		UINT k = 0;
+		int  count = 0;
+		int  vtxCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다. (버텍스 별로 계산 되는 중)
+			for (unsigned int i = 0; i < itor->second->Vertices.size(); ++i, ++k)
+			{
+				vertices[k].Tex     = itor->second->Vertices[i].TexUV;
+				vertices[k].VtxInfo = XMFLOAT2((float)i, (float)itor->second->Vertices.size()); // 버텍스 정보
+			}
+		}
+
+		// 버텍스 버퍼 만들기
+		D3D11_BUFFER_DESC vbd;
+		vbd.Usage          = D3D11_USAGE_IMMUTABLE;
+		vbd.ByteWidth      = sizeof(VertexPNTMap)* totalVertexCount;
+		vbd.BindFlags      = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+		vbd.CPUAccessFlags = 0;
+		vbd.MiscFlags      = 0;
+
+		D3D11_SUBRESOURCE_DATA vinitData;
+		vinitData.pSysMem = &vertices[0];
+		HR(cCoreStorage::GetInstance()->md3dDevice->CreateBuffer(&vbd, &vinitData, &mVB));
+
+
+		// 총 인덱스 사이즈 계산
+		UINT totalIndexCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			totalIndexCount += itor->second->Indices.size();
+		}
+
+		// 인덱스 버퍼 만들기
+		std::vector<UINT> indices;
+
+		// 가장 큰 버퍼로 복사
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 이터레이터가 돌면서, 인덱스 크기만큼 더한다.
+			for (unsigned int i = 0; i < itor->second->Indices.size(); ++i)
+			{
+				indices.push_back(itor->second->Indices[i]);
+			}
+		}
+
+		// 인덱스 버퍼 만들기
+		D3D11_BUFFER_DESC ibd;
+		ibd.Usage          = D3D11_USAGE_IMMUTABLE;
+		ibd.ByteWidth      = sizeof(UINT) * totalIndexCount;
+		ibd.BindFlags      = D3D11_BIND_INDEX_BUFFER; // 인덱스
+		ibd.CPUAccessFlags = 0;
+		ibd.MiscFlags      = 0;
+
+		D3D11_SUBRESOURCE_DATA iinitData;
+		iinitData.pSysMem = &indices[0];
+		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
+	}
+	// 모델의 메타데이터( 정보를 가지고 있는) , 저장할 모델 
+	void Build_SkyBox()
+	{
+		// 한곳으로 옮기는 작업 ( 가장 큰 버퍼 )
+		vector<VertexSkyBox> vertices;
+
+		// 총 버텍스 사이즈 계산
+		UINT totalVertexCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			totalVertexCount += itor->second->Vertices.size();
+		}
+
+		// 총 인덱스 사이즈 계산
+		UINT totalIndexCount = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			totalIndexCount += itor->second->Indices.size();
+		}
+
+		// 개별 버텍스 오프셋 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 직전 버텍스 저장
+			int AfterVtxOffset = 0;
+
+			// 처음이라면
+			if (itor == mModelList.begin())
+				itor->second->mVertexOffset = 0;
+			else
+				// 내것과, 내 직전 걸 더한다.
+				itor->second->mVertexOffset = (itor->second->mVertexOffset + AfterVtxOffset);
+
+			// 직전 버텍스 저장
+			AfterVtxOffset = itor->second->mVertexOffset;
+		}
+
+		// 개별 인덱스 오프셋 계산
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 직전 인덱스 저장
+			int AfterIdxOffset = 0;
+
+			// 처음이라면
+			if (itor == mModelList.begin())
+				itor->second->mIndexOffset = 0;
+			else
+				// 내것과, 내 직전 걸 더한다.
+				itor->second->mIndexOffset = (itor->second->mIndexOffset + AfterIdxOffset);
+
+			// 직전 인덱스 저장
+			AfterIdxOffset = itor->second->mIndexOffset;
+		}
+
+		// 전체버퍼 사이즈 늘리기
+		vertices.resize(totalVertexCount);
+
+		// 가장 큰 버퍼로 복사
+		UINT k = 0;
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 이터레이터가 돌면서, 버텍스 크기만큼 더한다.
+			for (unsigned int i = 0; i < itor->second->Vertices.size(); ++i, ++k)
+			{
+				vertices[k].Pos = itor->second->Vertices[i].Position;
+				vertices[k].Pedding = 0.0f;			// 패딩 값
+			}
+		}
+
+		// 버텍스 버퍼 만들기
+		D3D11_BUFFER_DESC vbd;
+		vbd.Usage = D3D11_USAGE_IMMUTABLE;
+		vbd.ByteWidth = sizeof(VertexSkyBox) * totalVertexCount;
+		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER; // 버텍스
+		vbd.CPUAccessFlags = 0;
+		vbd.MiscFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA vinitData;
+		vinitData.pSysMem = &vertices[0];
+		HR(cCoreStorage::GetInstance()->md3dDevice->CreateBuffer(&vbd, &vinitData, &mVB));
+
+		// 인덱스 버퍼 만들기
+		std::vector<UINT> indices;
+
+		// 가장 큰 버퍼로 복사
+		for (map<string, InitMetaData*>::iterator itor = mModelList.begin(); itor != mModelList.end(); ++itor)
+		{
+			// 이터레이터가 돌면서, 인덱스 크기만큼 더한다.
+			for (unsigned int i = 0; i < itor->second->Indices.size(); ++i)
+			{
+				indices.push_back(itor->second->Indices[i]);
+			}
+		}
+
+		// 인덱스 버퍼 만들기
+		D3D11_BUFFER_DESC ibd;
+		ibd.Usage = D3D11_USAGE_IMMUTABLE;
+		ibd.ByteWidth = sizeof(UINT) * totalIndexCount;
+		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER; // 인덱스
+		ibd.CPUAccessFlags = 0;
+		ibd.MiscFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA iinitData;
+		iinitData.pSysMem = &indices[0];
+		HR(mCoreStorage->md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
+	}
+
+	
 	// 탄젠트 공간 계산
 	void CalTangentSpace(InitMetaData* _MetaData)
 	{
@@ -2328,7 +2745,7 @@ private:
 		{
 			// 현재 인덱스 번호를 검색한다.
 			UINT _ModelIdx = _MetaData->Indices[i];    //  모델의 현재 인덱스
-			UINT _TexIdx = _MetaData->TexIndices[i]; // 텍스처의 현재 인덱스
+			UINT _TexIdx   = _MetaData->TexIndices[i]; // 텍스처의 현재 인덱스
 
 			// 각각의 인덱스 번호에 해당하는 uv값을 꺼낸다.
 			XMFLOAT2& ModelTexUV = _MetaData->Vertices[_ModelIdx].TexUV; //   모델 인덱스의 UV 값

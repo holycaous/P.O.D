@@ -13,53 +13,94 @@ public:
 		mModelManager->ClearModel();
 
 		// 스크린 추가 (풀 스크린쿼드)
-		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);
+		mModelManager->AddScreen(0.0f, 0.0f, 0.0f);
+
+#ifdef POSTEFFECT_ON
+		// HDR 스크린 추가 (풀 스크린쿼드)
+		mModelManager->AddHdrScreen(0.0f, 0.0f, 0.0f);
+#endif
 
 		// 맵 테스트용
-		mModelManager->AddMap(0, "Map1", 200, 100, 200, 5.0f);
+		mModelManager->AddMap(0, "Map1", 0.0f, 0.0f, 0.0f);
 
-		//// 모델 추가
-		//int size = 1250;
-		//int Count = 2500;
-		//
-		//float Offset = 100.0f;
-		//for (int x = 0; x < Count; ++x)
-		//{
-		//	switch (rand() % 5)
-		//	{
-		//	case 0:
-		//		mModelManager->AddModel("BOX1", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	case 1:
-		//		mModelManager->AddModel("BOX2", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	case 2:
-		//		mModelManager->AddModel("BOX3", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	case 3:
-		//		mModelManager->AddModel("Model2", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	case 4:
-		//		mModelManager->AddModel("Model3", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	case 5:
-		//		//mModelManager->AddModel("Model5", float(rand() % size) + Offset, float(rand() % size) + Offset, float(rand() % size) + Offset);
-		//		break;
-		//	}
-		//}
+		// 쉐도우맵 경계구 반지름 추가
+		mShadowMap->SetmSceneBoundsRadius(mMapManager->mData["Map1"].GetWidth() / 1.8f);
+
+		// 큐브맵 적용
+		mModelManager->AddCubeMap(0, "CubeMap1", 0.0f, 0.0f, 0.0f);
+
+		mModelManager->AddModel(0, "MapObj1" ,200.0f, 5.0f,  1900.0f); // 풍차
+		mModelManager->SetScale(0, "MapObj1", 1.2f, 1.2f, 1.2f);
+
+		mModelManager->AddModel(1, "MapObj1", -500.0f, 5.0f, 2100.0f); // 풍차
+
+		mModelManager->AddModel(0, "MapObj3" , 1550.0f, 0.0f, 1700.0f); // 작은 건물2
+		mModelManager->AddModel(1, "MapObj3" , 1400.0f, 0.0f, 1700.0f); 
+		mModelManager->AddModel(2, "MapObj3" , 1250.0f, 0.0f, 1700.0f); 
+		mModelManager->AddModel(3, "MapObj3" , 1100.0f, 0.0f, 1700.0f);
+		mModelManager->SetScale(0, "MapObj3", 1.0f, 1.5f, 1.0f);
+		mModelManager->SetScale(1, "MapObj3", 1.0f, 1.5f, 1.0f);
+		mModelManager->SetScale(2, "MapObj3", 1.0f, 1.5f, 1.0f);
+		mModelManager->SetScale(3, "MapObj3", 1.0f, 1.5f, 1.0f);
+
+		mModelManager->AddModel(0, "MapObj2" , 1000.0f, 0.0f, 1700.0f); // 작은 건물1
+		mModelManager->AddModel(1, "MapObj2" ,  900.0f, 0.0f, 1700.0f);
+
+		mModelManager->AddModel(0, "MapObj4" , -500.0f, 0.0f,  -900.0f); // 풀밭
+		mModelManager->AddModel(1, "MapObj4",  -100.0f, 0.0f,  -900.0f);
+		mModelManager->AddModel(2, "MapObj4",  -500.0f, 0.0f,  -600.0f);
+		mModelManager->AddModel(3, "MapObj4",  -100.0f, 0.0f,  -600.0f);
+		mModelManager->SetScale(0, "MapObj4", 2.0f, 1.f, 2.0f);
+		mModelManager->SetScale(1, "MapObj4", 2.0f, 1.f, 2.0f);
+		mModelManager->SetScale(2, "MapObj4", 2.0f, 1.f, 2.0f);
+		mModelManager->SetScale(3, "MapObj4", 2.0f, 1.f, 2.0f);
+
+		mModelManager->AddModel(0, "MapObj6" , -1650.0f, 0.0f, -1400.0f); // 땅에 밖힌 지붕
+
+		mModelManager->AddModel(0, "MapObj7" , -1250.0f, 0.0f, -1550.0f);  // 위로 큰 건물
+		mModelManager->SetScale(0, "MapObj7",  2.5f, 2.5f, 2.5f);
+
+		mModelManager->AddModel(1, "MapObj7", 2200.0f, 0.0f, -1750.0f);  // 위로 큰 건물
+		mModelManager->SetScale(1, "MapObj7", 2.5f, 2.5f, 2.5f);
+
+		mModelManager->AddModel(2, "MapObj7", 2200.0f, 0.0f, -1300.0f);  // 위로 큰 건물
+		mModelManager->SetScale(2, "MapObj7", 2.5f, 2.5f, 2.5f);
+
+		mModelManager->AddModel(0, "MapObj9" , -1650.0f,-50.0f,  1500.0f); // 뚫린 조그만 건물
+		mModelManager->AddModel(0, "MapObj10", -1650.0f,-50.0f,  1500.0f); // 지붕
+		mModelManager->SetScale(0, "MapObj9" ,  2.5f, 3.2f, 5.f);
+		mModelManager->SetScale(0, "MapObj10",  2.5f, 3.2f, 5.f);
+
+		mModelManager->AddModel(0, "MapObj5" ,  -430.0f,  20.0f, -1900.0f); // 길쭉한 건물
+		mModelManager->AddModel(0, "MapObj15",  -430.0f, 170.0f, -1900.0f); // 지붕
+		mModelManager->SetScale(0, "MapObj5",  2.5f, 3.2f, 1.f);
+		mModelManager->SetScale(0, "MapObj15", 2.5f, 3.2f, 1.f);
+
+		mModelManager->AddModel(1, "MapObj5" ,  -950.0f,  20.0f, -1900.0f); // 길쭉한 건물
+		mModelManager->AddModel(1, "MapObj15",  -950.0f, 170.0f, -1900.0f); // 지붕
+		mModelManager->SetScale(1, "MapObj5" ,  2.5f, 3.2f, 1.f);
+		mModelManager->SetScale(1, "MapObj15",  2.5f, 3.2f, 1.f);
+
+		mModelManager->AddModel(0, "MapObj11",  620.0f, 0.0f,  1750.0f); // 큰 건물
+		mModelManager->AddModel(0, "MapObj12",  620.0f, 0.0f,  1750.0f); // 지붕 
+		mModelManager->SetScale(0, "MapObj1" ,  1.2f, 1.2f, 1.f);
+		mModelManager->SetScale(0, "MapObj12",  1.2f, 1.2f, 1.f);
 		
+		mModelManager->AddModel(0, "MapObj13",  1700.0f, 0.0f, 150.0f); // 마을 회관 급
+		mModelManager->SetScale(0, "MapObj13", 2.0f, 2.0f, 2.2f);
+
+		mModelManager->AddModel(0, "MapObj14",  1600.0f, 0.0f,  1800.0f); // 나무 단상
+		mModelManager->AddModel(0, "MapObj18",  1350.0f ,80.0f, -400.0f); // 계단1
+		mModelManager->AddModel(0, "MapObj19",  1570.0f, 80.0f, -400.0f); // 계단2
+		mModelManager->AddModel(0, "MapObj22",   380.0f, 0.0f,  1800.0f); // 우물
+		mModelManager->AddModel(0, "MapObj23",    50.0f, 0.0f, -1950.0f); // 지붕있는 풍차
+		mModelManager->SetScale(0, "MapObj23",  1.5f, 1.5f, 1.5f);
 
 		//--------------------------------------------------------------------------------------------------------------------//
 		// 본 테스트
 		//--------------------------------------------------------------------------------------------------------------------//
-		mModelManager->AddModel(1, "Model1", 100.0f, 100.0f, 600.0f, e_Run);
-		//mModelManager->DrawBone(   "Model2", "Run" , 100.0f, 100.0f, 600.0f, 10);  // 애니키 번호
-
-		//mModelManager->AddModel(0, "Model4", 100.0f, 100.0f, 500.0f, e_Idle);
-		//mModelManager->DrawBone("Model4", "Idle", 100.0f, 100.0f, 500.0f, 0);  // 애니키 번호
-
-		//mModelManager->AddModel(0, "Model5", 100.0f, 100.0f, 700.0f, e_Idle);
-		//mModelManager->DrawBone("Model5", "Idle", 100.0f, 100.0f, 700.0f, 0);  // 애니키 번호
+		mModelManager->AddModel(1, "Model2", 100.0f, 0.0f, 100.0f, e_Idle);
+		//mModelManager->DrawBone( "Model2", "Run" , 100.0f, 100.0f, 600.0f, 10);  // 애니키 번호
 		
 		// 본 일렬로 세우기
 		//for (int i = 0; i < 17; ++i)
@@ -69,13 +110,11 @@ public:
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
 
+
+
 		// 플레이어 및 카메라 세팅
-		mModelManager->IniPlayer(0, "Model2", 200.0f, 100.0f, 600.0f, e_Run);
+		mModelManager->IniPlayer(0, "Model1", 0.0f, 0.0f, 0.0f, e_Run);
 	
-
-		// FSM 상태바꾸기
-		//mModelManager->SetFSM(0, "Model3", e_Idle);
-
 		// 체력 제어
 		//mModelManager->SetHP(0, "Mode1", 100.0f);
 	}	
@@ -122,7 +161,7 @@ public:
 
 
 
-		////// 포인트 라이트
+		//// 포인트 라이트
 		//XMFLOAT3 _PlayerPos     = gCam.GetThirdPosition();
 		//XMFLOAT3 _PlayerLookDir = mModelManager->PlayerLookDir();
 		//_PlayerPos.x = _PlayerPos.x + _PlayerLookDir.x * 15.0f;
@@ -151,6 +190,7 @@ public:
 			//----------------------------------//
 			// 클라에서 계산한 플레이어 위치
 			XMFLOAT3 mPos = mModelManager->PlayerWalk(100.0f * dt);
+			//cout << "위치: " << mPos.x << ", " << mPos.y << ", " << mPos.z << endl;
 		}
 
 		if (GetAsyncKeyState('S') & 0x8000)
@@ -191,6 +231,12 @@ public:
 
 			//----------------------------------//
 			XMFLOAT3 mPos = mModelManager->PlayerStrafe(100.0f * dt);
+		}
+
+		// 점프
+		if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+		{
+			mModelManager->Jump(0, "Model1");
 		}
 
 		//-------------------------------------------------------------------//
@@ -278,97 +324,72 @@ public:
 			break;
 
 		case 'Q':
-			
+			{
+				static int i = 0;
+				if (i <= 0)
+					i = 5;
+				else
+					--i;
+				mModelManager->SetPlayerFSM(FSM_TYPE(i));			
+			}
 			break;
 
 		case 'E':
-
+			{
+				static int i = 0;
+				if (i >= 5)
+					i = 0;
+				else
+					++i;
+				mModelManager->SetPlayerFSM(FSM_TYPE(i));			
+			}
 			break;
 
 			// 그냥 모델 추가하기
 		case 'G':
 			{
-				static int i = 1;
-				switch (rand() % 2)
+				static int i1 = 1;
+				static int i2 = 1;
+				switch (/*rand() % 2*/1)
 				{
 				case 0:
-					mModelManager->AddUpdateModel(++i, "Model1", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Run);
-					mModelManager->SetFSM        (  i, "Model1", FSM_TYPE(/*rand() % 10*/   e_Run));
+					mModelManager->AddUpdateModel(++i1, "Model1", float(rand() % 4000) - 2000.0f, 200.0f + float(rand() % 500), float(rand() % 4000) - 2000.0f, e_Idle);
+					mModelManager->SetFSM        (  i1, "Model1", FSM_TYPE(rand() % 6));
 					break;
 				default:
 				case 1:
-					mModelManager->AddUpdateModel(++i, "Model2", float(rand() % 1000) + 100.0f, 100.0f, float(rand() % 1000) + 100.0f, e_Run);
-					mModelManager->SetFSM        (  i, "Model2", FSM_TYPE(/*rand() % 10*/   e_Run));
+					mModelManager->AddUpdateModel(++i2, "Model2", float(rand() % 4000) - 2000.0f, 200.0f + float(rand() % 500), float(rand() % 4000) - 2000.0f, e_Idle);
+					mModelManager->SetFSM        (  i2, "Model2", FSM_TYPE(rand() % 6));
 					break;
 				}
 
-				cout << "생성: " << i << endl;
+				cout << "생성: " << i1 + i2 << endl;
 			}
 			break;
 
 		// 지우기 테스트
 		case 'H':
 			{
-				static int i = 1;
-				mModelManager->EraseUpdateModel(++i, "Model2");
-				cout << "삭제: " << i << endl;
-			}
-			break;
-
-			// 번호 선택, 추가하기
-		case 'O':
-			mModelManager->AddUpdateModel(500,"Model5", 100.0f, 100.0f, 500.0f, e_Idle);
-			break;
-		
-		// 기타 테스트
-		case 'I':
-			{
-				//--------------------------------------------------------//
-				// 테스트 1
-				//--------------------------------------------------------//
-			    // 해당 위치로 가는 방향벡터 얻기 (0번 모델3이 해당 위치로 가는 방향벡터 얻기)
-				XMFLOAT3 dir = mModelManager->GetPointDir(0, "Model3", 100.0f, 100.0f, 300.0f);
-
-
-				//--------------------------------------------------------//
-				// 테스트 2
-				//--------------------------------------------------------//
-				// 데이터를 임시로 저장할 공간
-				vector<ObjData> _testOut;
-
-				//--------------------------------------------------------//
-				// <1> 0번 모델3의 정보를 빼낸다.
-				//--------------------------------------------------------//
-				mModelManager->getModelData(0, "Model3", _testOut);
-
-				for (unsigned int i = 0; i < _testOut.size(); ++i)
+				static int i1 = 1;
+				static int i2 = 1;
+				switch (/*rand() % 2*/1)
 				{
-					// 원하는 정보를 뺴낸다.
-					_testOut[i].getLookDir(); // 룩 벡터
-					_testOut[i].getWdMtx();   // 요건 월드 매트릭스
+				case 0:
+					mModelManager->EraseUpdateModel(++i1, "Model1");
+					break;
+				default:
+				case 1:
+					mModelManager->EraseUpdateModel(++i2, "Model2");
+					break;
 				}
-				_testOut.clear(); // 사용후에는 반드시 클리어
-
-				//--------------------------------------------------------//
-				// <2> Model3에 속한, 모든 정보를 빼낸다.
-				//--------------------------------------------------------//
-				mModelManager->getAllModelData("Model3", _testOut);
-
-				for (unsigned int i = 0; i < _testOut.size(); ++i)
-				{
-					// 원하는 정보를 뺴낸다.
-					_testOut[i].getLookDir(); // 룩 벡터
-					_testOut[i].getWdMtx();   // 요건 월드 매트릭스
-				}
-				_testOut.clear(); // 사용후에는 반드시 클리어
-				//--------------------------------------------------------//
+				cout << "삭제: " << i1 + i2 << endl;
 			}
 			break;
 		}
 	}
 
 	// 마우스 이벤트
-	void MouseEvent(UINT& msg, int& _Xpos, int& _Ypos)
+	void MouseEvent(UINT& msg, int& _Xpos, int& _Ypos, WPARAM& wParam)
 	{
 		switch (msg)
 		{
@@ -387,6 +408,18 @@ public:
 			ReleaseCapture();
 			break;
 
+		case WM_MOUSEWHEEL:
+		{
+			  if (((short)HIWORD(wParam)) > 0)
+			  {
+				  gCam.Setm3PersonLength(10.0f);
+			  }
+			  else
+			  {
+				  gCam.Setm3PersonLength(-10.0f);
+			  }
+			  break;
+		}
 		}
 	}
 

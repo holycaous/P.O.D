@@ -6,7 +6,14 @@
 #pragma warning(disable:4996)
 
 // 디버그 모드 활성
-#define DEBUG_MODE
+//#define DEBUG_MODE
+
+// 그림자 활성
+#define SHADOW_ON
+
+// 포스트 이펙트 활성
+#define POSTEFFECT_ON
+
 
 // 프로그램을 벗어나면 렌더링 중지
 //#define WINDOW_DISABLE_NO_RENDER
@@ -26,8 +33,18 @@ using namespace std;
 #define WIN_Y 600
 
 #define CAM_NEAR 1
-#define CAM_FAR 1500
+#define CAM_FAR 5100
 #define CAM_3PERSON_LENGTH 375
+
+#define GRAVITY 800
+
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
 
 // 거의 사용되지 않는 내용은 Windows 헤더에서 제외합니다.
 #define WIN32_LEAN_AND_MEAN           
@@ -49,7 +66,10 @@ using namespace std;
 // << 일반 클래스 >>
 #include "cCam.h"
 #include "cLightManager.h"
+#include "cShadowMap.h"
+#include "cHDRManager.h"
 #include "cAniManager.h"
+#include "cMapManager.h"
 #include "cModelManager.h"
 #include "cShaderManager.h"
 #include "cMaterialManager.h"

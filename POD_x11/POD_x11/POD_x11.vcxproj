@@ -122,14 +122,17 @@
     <ClInclude Include="cGameState.h" />
     <ClInclude Include="cGameStateManager.h" />
     <ClInclude Include="cGameStateSave.h" />
+    <ClInclude Include="cHDRManager.h" />
     <ClInclude Include="cLightManager.h" />
     <ClInclude Include="cMainState.h" />
+    <ClInclude Include="cMapManager.h" />
     <ClInclude Include="cMapTool.h" />
     <ClInclude Include="cMaterialManager.h" />
     <ClInclude Include="cMathHelper.h" />
     <ClInclude Include="cModelManager.h" />
     <ClInclude Include="cPlayState.h" />
     <ClInclude Include="cShaderManager.h" />
+    <ClInclude Include="cShadowMap.h" />
     <ClInclude Include="cSingleton.h" />
     <ClInclude Include="cGameTimer.h" />
     <ClInclude Include="cInitD3D.h" />
@@ -152,9 +155,11 @@
     <ClCompile Include="cGameStateManager.cpp" />
     <ClCompile Include="cGameStateSave.cpp" />
     <ClCompile Include="cGameTimer.cpp" />
+    <ClCompile Include="cHDRManager.cpp" />
     <ClCompile Include="cInitD3D.cpp" />
     <ClCompile Include="cLightManager.cpp" />
     <ClCompile Include="cMainState.cpp" />
+    <ClCompile Include="cMapManager.cpp" />
     <ClCompile Include="cMapTool.cpp" />
     <ClCompile Include="cMaterialManager.cpp" />
     <ClCompile Include="cMathHelper.cpp" />
@@ -162,6 +167,7 @@
     <ClCompile Include="cPlayState.cpp" />
     <ClCompile Include="cShaderManager.cpp" />
     <ClCompile Include="cEngine.cpp" />
+    <ClCompile Include="cShadowMap.cpp" />
     <ClCompile Include="cXMLParser.cpp" />
     <ClCompile Include="cXnaHelper.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -182,6 +188,8 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Deferred.fx" />
+    <FxCompile Include="HDR.fx" />
+    <FxCompile Include="HDR_CS.fx" />
     <FxCompile Include="PNT.fx" />
     <FxCompile Include="PC.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -195,6 +203,8 @@
     <FxCompile Include="PNT_ANI.fx">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="PNT_MAP.fx" />
+    <FxCompile Include="SKY_BOX.fx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

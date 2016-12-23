@@ -29,7 +29,7 @@ public:
 		}
 
 		// 스크린 추가 (풀 스크린쿼드)
-		mModelManager->AddScreen(0.0f, 0.0f, 140.0f);
+		mModelManager->AddScreen(0.0f, 0.0f, 0.0f);
 
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
@@ -140,7 +140,7 @@ public:
 	}
 
 	// 마우스 이벤트
-	void MouseEvent(UINT& msg, int& _Xpos, int& _Ypos)
+	void MouseEvent(UINT& msg, int& _Xpos, int& _Ypos, WPARAM& wParam)
 	{
 		switch (msg)
 		{

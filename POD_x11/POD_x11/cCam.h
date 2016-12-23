@@ -20,6 +20,9 @@ public:
 	void SetPositionX(float x);
 	void SetPositionY(float y);
 	void SetPositionZ(float z);
+	void SetPositionXZ(float x, float z);
+	void SetCamY(float _y);
+
 
 	// Get camera basis vectors.
 	XMVECTOR GetRightXM()const;
@@ -73,6 +76,8 @@ public:
 
 	void Change1PersonCam();
 	void Change3PersonCam();
+
+	void Setm3PersonLength(float _size);
 
 private:
 	// 카메라 모드 (1인칭, 3인칭)

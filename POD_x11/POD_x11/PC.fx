@@ -32,14 +32,9 @@ PS_GBUFFER_OUT PS(PCVertexOut pin)/* : SV_Target*/
 	Out.Normal       = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	Out.Position     = pin.PosH;
 	Out.Specular     = float4(0.0f, 0.0f, 0.0f, 0.0f);
-
+	Out.Shadow       = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	return Out;
 }
-
-//float4 PS(PCVertexOut pin) : SV_Target
-//{
-//    return pin.Color;
-//}
 
 technique11 ColorTech
 {
@@ -48,5 +43,8 @@ technique11 ColorTech
         SetVertexShader( CompileShader( vs_5_0, VS() ) );
 		SetGeometryShader( NULL );
         SetPixelShader( CompileShader( ps_5_0, PS() ) );
+
+		SetRasterizerState(0);
+		SetDepthStencilState(LessDSS, 0);
     }
 }

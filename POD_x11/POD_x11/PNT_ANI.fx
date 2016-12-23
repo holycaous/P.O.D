@@ -72,7 +72,7 @@ PS_GBUFFER_OUT PackGBuffer(inout PNTVertexAniOut pin)
 	// 림라이트
 	float  rimWidth      = 0.82f;
 	float  RimLightColor = smoothstep(1.0f - rimWidth, 1.2f, 1 - max(0, dot(TangentNormal, vCameraDir)));
-	float4 FinRimLight = float4(RimLightColor * 0.6f, RimLightColor * 0.45f, RimLightColor * 0.42f, 1.0f);
+	float4 FinRimLight = float4(RimLightColor * 0.6f, RimLightColor * 0.45f, RimLightColor * 0.42f, 0.0f);
 
 	// 데미지 받았을때만 별도 처리
 	if (pin.AniData.x == 1.0f)
@@ -86,6 +86,13 @@ PS_GBUFFER_OUT PackGBuffer(inout PNTVertexAniOut pin)
 	}
 
 	Out.Color = DiffuseTex + FinRimLight;
+
+	// 안개
+	float3 toEye    = gEyePosW - pin.PosW;
+	float distToEye = length(toEye);
+	float fogLerp   = saturate((distToEye - 180.0f) / 4800.0f);
+	Out.Color = lerp(Out.Color, float4(0.15f, 0.15f, 0.2f, 0.0f), fogLerp);
+
 
 	// 출력	
 	Out.Depth = Depth;
@@ -112,6 +119,7 @@ PS_GBUFFER_OUT PackGBuffer(inout PNTVertexAniOut pin)
 	//Out.Normal   = float4(pin.NormalW, 1.0f)  * 0.5 + 0.5;
 	Out.Specular = SpecularTex;
 
+	Out.Shadow = pin.ShadowPosH;
 	return Out;
 }
 
@@ -166,29 +174,9 @@ void SelectMtx(float _Anikey, float2 _TexSelect, float _TexWidth, inout float4x4
 			GetTexMtx(gDeathTex, _TexSelect, _TexWidth, _Mtx);
 			break;
 
-		// e_DeathWait = 5,
+		// e_Attack = 5,
 		case 5:
-			GetTexMtx(gDeathWaitTex, _TexSelect, _TexWidth, _Mtx);
-			break;
-
-		// e_Attack1 = 6,
-		case 6:
-			GetTexMtx(gAttack1Tex, _TexSelect, _TexWidth, _Mtx);
-			break;
-
-		// e_Attack2 = 7,
-		case 7:
-			GetTexMtx(gAttack2Tex, _TexSelect, _TexWidth, _Mtx);
-			break;
-
-		// e_Attack3 = 8,
-		case 8:
-			GetTexMtx(gAttack3Tex, _TexSelect, _TexWidth, _Mtx);
-			break;
-
-		// e_Stun = 9
-		case 9:
-			GetTexMtx(gStunTex, _TexSelect, _TexWidth, _Mtx);
+			GetTexMtx(gAttackTex, _TexSelect, _TexWidth, _Mtx);
 			break;
 	}
 }
@@ -226,29 +214,9 @@ void SelectSkinModel(float _Anikey, float2 _TexSelect, float _TexWidth, inout fl
 		GetTexMtx(gDeathModelTex, _TexSelect, _TexWidth, _Mtx);
 		break;
 
-	// e_DeathWait = 5,
+	// e_Attack = 5,
 	case 5:
-		GetTexMtx(gDeathWaitModelTex, _TexSelect, _TexWidth, _Mtx);
-		break;
-
-	// e_Attack1 = 6,
-	case 6:
-		GetTexMtx(gAttack1ModelTex, _TexSelect, _TexWidth, _Mtx);
-		break;
-
-	// e_Attack2 = 7,
-	case 7:
-		GetTexMtx(gAttack2ModelTex, _TexSelect, _TexWidth, _Mtx);
-		break;
-
-	// e_Attack3 = 8,
-	case 8:
-		GetTexMtx(gAttack3ModelTex, _TexSelect, _TexWidth, _Mtx);
-		break;
-
-	// e_Stun = 9
-	case 9:
-		GetTexMtx(gStunModelTex, _TexSelect, _TexWidth, _Mtx);
+		GetTexMtx(gAttackModelTex, _TexSelect, _TexWidth, _Mtx);
 		break;
 	}
 }
@@ -295,7 +263,7 @@ PNTVertexAniOut CalSkin(inout PNTVertexAniIn vin)
 	_TexModelSelect.y = vin.VtxInfo.x / (vin.VtxInfo.y - 1.0f);	// 버택스 번호, 버택스 갯수	
 
 	// 스킨 모델 선택
-	SelectSkinModel(vin.AniData.x, _TexModelSelect, 4.001f, _MadeSkinMtx);
+	SelectSkinModel(vin.AniData.x, _TexModelSelect, 4.1f, _MadeSkinMtx);
 
 
 	//-------------------------------------------------------------------------------//
@@ -368,9 +336,98 @@ PNTVertexAniOut CalSkin(inout PNTVertexAniIn vin)
 
 	// 애니 데이터
 	vout.AniData = vin.AniData.xy;
+
+	// 쉐도우
+	vout.ShadowPosH = mul(float4(vout.PosW, 1.0f), gShadowTransform);
 	
 	// 원래는 이렇게 하라고 되어있었지만...
 	//vout.NormalW = mul(_NormalL, (float3x3)gWorldInvTranspose);    // W  // 역전치월드를 로컬에 곱해주면, 오로지 회전 부분만 로컬 노멀에 적용, (회전유지, 이동X, 스케일 1로 초기화)
+	return vout;
+}
+
+
+// 스키닝 계산
+ShadowVertexOut SDCalSkin(inout PNTVertexAniIn vin)
+{
+	// 출력할 버텍스 정보
+	ShadowVertexOut vout;
+	
+	// 계산할 공간
+	float3 _PosL      = { 0.0f, 0.0f, 0.0f };
+	float3 _NormalL   = { 0.0f, 0.0f, 0.0f };
+	float3 _TanL      = { 0.0f, 0.0f, 0.0f };
+	float3 _BiNormalL = { 0.0f, 0.0f, 0.0f };
+
+
+	// 현재 프레임이 애니 키 
+	float4x4 _MadeMtx = { 1.0f, 0.0f, 0.0f, 0.0f, 
+		                  0.0f, 1.0f, 0.0f, 0.0f,
+					      0.0f, 0.0f, 1.0f, 0.0f,
+						  0.0f, 0.0f, 0.0f, 1.0f };
+
+	// 현재 프레임이 스킨 모델 
+	float4x4 _MadeSkinMtx = { 1.0f, 0.0f, 0.0f, 0.0f, 
+		                      0.0f, 1.0f, 0.0f, 0.0f,
+					          0.0f, 0.0f, 1.0f, 0.0f,
+					 	      0.0f, 0.0f, 0.0f, 1.0f };
+
+	// 가중치 계산
+	float _weight[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	      _weight[0] = vin.Weights.x;
+	      _weight[1] = vin.Weights.y;
+	      _weight[2] = vin.Weights.z;
+	      _weight[3] = 1.0f - _weight[0] - _weight[1] - _weight[2];
+
+
+	//-------------------------------------------------------------------------------//
+	// 스키닝 모델 데이터 추출
+	//-------------------------------------------------------------------------------//		
+	// 스키닝 모델 선택
+	float2 _TexModelSelect;
+	_TexModelSelect.x = 0.0f;
+	_TexModelSelect.y = vin.VtxInfo.x / (vin.VtxInfo.y - 1.0f);	// 버택스 번호, 버택스 갯수	
+
+	// 스킨 모델 선택
+	SelectSkinModel(vin.AniData.x, _TexModelSelect, 4.1f, _MadeSkinMtx);
+
+	//-------------------------------------------------------------------------------//
+	// 스키닝 애니 데이터 추출
+	//-------------------------------------------------------------------------------//								  					                      
+	// 애니 키 선택
+	float2 _TexSelect;
+	_TexSelect.y = (float)((int)vin.AniData.y) / (vin.AniData.w - 1.0f);   // 일단, 소수부 버리기 나중에 보간 해줘야함
+
+	// 최대 4개 까지
+	for (int i = 0; i < 4; ++i)
+	{
+		//-------------------------------------------------------------------------------//
+		// 스키닝 텍스처 추출
+		//-------------------------------------------------------------------------------//
+		// 본 선택							                             
+		_TexSelect.x = ((float)vin.BoneIndices[i] * 4.0f) / (vin.AniData.z - 1.0f);        
+
+		// 매트릭스 선택
+		SelectMtx(vin.AniData.x, _TexSelect, vin.AniData.z, _MadeMtx);
+		
+		//-------------------------------------------------------------------------------//
+		// 스키닝 계산
+		//-------------------------------------------------------------------------------//
+		_PosL      += (_weight[i] * mul(float4(_MadeSkinMtx[0].xyz, 1.0f), _MadeMtx).xyz);
+
+	}
+
+	//--------------------------------------------------------------------------------//
+	// 원래 하던거
+	//--------------------------------------------------------------------------------//
+
+	float3 PosW = mul(float4(_PosL, 1.0f), vin.World).xyz;      // W
+	
+	// 동차절단공간으로 변환
+	vout.PosH = mul(float4(PosW, 1.0f), gLightViewProj); // WVP
+
+	// 어차피 변환결과는 같음. ( 거의 로컬 TM 행렬임 )
+	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTFMtx).xy;
+
 	return vout;
 }
 
@@ -388,6 +445,12 @@ PS_GBUFFER_OUT PS(PNTVertexAniOut pin)/* : SV_Target*/
 	return PackGBuffer(pin);
 }
 
+// 버텍스
+ShadowVertexOut SDVS(PNTVertexAniIn vin)
+{
+	return SDCalSkin(vin);
+}
+
 // 셰이더 본문
 technique11 PongTexAni
 {
@@ -396,6 +459,22 @@ technique11 PongTexAni
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS()));
+
+		SetRasterizerState(0);
+		SetDepthStencilState(LessDSS, 0);
+	}
+}
+
+// 셰이더 본문
+technique11 SDPongTexAni
+{
+	pass P0
+	{
+		SetVertexShader(CompileShader(vs_5_0, SDVS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(NULL);
+
+		SetRasterizerState(Depth);
 	}
 }
 

@@ -59,14 +59,14 @@ void cGameStateManager::KeyEvent(WPARAM& wParam)
 }
 
 // 마우스 이벤트
-void cGameStateManager::MouseEvent(UINT& msg, int _Xpos, int _Ypos)
+void cGameStateManager::MouseEvent(UINT& msg, int _Xpos, int _Ypos, WPARAM& wParam)
 {
 	m_Xpos = _Xpos;
 	m_Ypos = _Ypos;
 
 	//스테이지가 존재하는지
 	if (m_GameState)
-		m_GameState->MouseEvent(msg, _Xpos, _Ypos);
+		m_GameState->MouseEvent(msg, _Xpos, _Ypos, wParam);
 }
 
 // 마우스 이동 이벤트

@@ -18,93 +18,141 @@ public:
 	BufferType  * mScreenBuffer = nullptr;     // G버퍼 스크린
 	XMFLOAT4X4    mScreenMtx;                  // G버퍼 스크린
 
+	InitMetaData* mHDRScreen       = nullptr;	 // HDR버퍼 스크린
+	BufferType  * mHDRScreenBuffer = nullptr;    // HDR버퍼 스크린
+	XMFLOAT4X4    mHDRScreenMtx;                 // HDR버퍼 스크린
+
+
 	// 파서
 	cXMLParser mXMLParser;
 	
-	// 애니 매니저
-	cAniManager* mAniManager = cAniManager::GetInstance();
+	// 매니저
+	cAniManager * mAniManager = cAniManager::GetInstance();
+	cMapManager * mMapManager = cMapManager::GetInstance();
+	cShadowMap  * mShadowMap  = cShadowMap ::GetInstance();
+	cHDRManager * mHDRManager = cHDRManager::GetInstance();
 
 	// 플레이어
 	PlayerInfo mPlayer;
-
+	
 	bool _modelUpdate = false;
 public:
 	void Init()
 	{
 		// 스크린 만들기
 		CreateScreen();
-
+#ifdef POSTEFFECT_ON
+		// HDR 스크린 만들기
+		CreateHDRScreen();
+#endif
+	
 		// 모델 등록 (다른 종류의 모델만 1개씩)
 		CreateBoxModel("BOX1", e_ShaderColor, 0.7f, D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
 		
 		CreateBoxModel("BOX2", e_ShaderLight);
 		
 		CreateBoxModel("BOX3", e_ShaderPongTex);
-		AddTex("BOX3", "Export/WoodCrate01_diff.dds", e_DiffuseMap);
-		AddTex("BOX3", "Export/WoodCrate01_norm.dds", e_NomalMap);
-		AddTex("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
+		AddTex        ("BOX3", "Export/WoodCrate01_diff.dds", e_DiffuseMap);
+		AddTex        ("BOX3", "Export/WoodCrate01_norm.dds", e_NomalMap);
+		AddTex        ("BOX3", "Export/WoodCrate01_spec.dds", e_SpecularMap);
 
 		// 맵 추가
-		CreateModel("Map1", "Export/FinTestMapLoc.pod", e_ShaderPongTex);
+		CreateMap     ("Map1", "Export/HeightMap/Map1.raw"  , 100.0f, 100.0f, 50.0f, 1000.0f, 50.0f, e_ShaderPongTexMap);
+		AddTex        ("Map1", "Export/ground_diff.dds"     , e_DiffuseMap);
+		AddTex        ("Map1", "Export/ground_norm.dds"     , e_NomalMap);
+		AddTex        ("Map1", "Export/ground_spec.dds"     , e_SpecularMap);
+		
+		// 맵 추가
+		CreateMap     ("Map2", "Export/HeightMap/Map1.raw"  , 100.0f, 100.0f, 500.0f, 1000.0f, 50.0f, e_ShaderPongTexMap);
+		AddTex        ("Map2", "Export/ground_diff.dds"     , e_DiffuseMap);
+		AddTex        ("Map2", "Export/ground_norm.dds"     , e_NomalMap);
+		AddTex        ("Map2", "Export/ground_spec.dds"     , e_SpecularMap);
 
-		// 모델 추가
-		//CreateModel("Model1", "Export/Finmob1Loc.pod"         , e_ShaderPongTexAni);
-		//CreateModel("Model2", "Export/FinCat1Loc.pod"         , e_ShaderPongTexAni);
-		//CreateModel("Model3", "Export/FinAnonSoldierLoc.pod"  , e_ShaderPongTexAni);
-		//CreateModel("Model4", "Export/FinCyclopsLoc.pod"      , e_ShaderPongTexAni);
-		//CreateModel("Model5", "Export/FinTestSkinLoc.pod"     , e_ShaderPongTexAni);
+		// 큐브맵 추가
+		CreateSkyBox("CubeMap1", "Export/CubeMap/snowcube1024.dds", 0.5f, 20, 20, e_ShaderSkyBox);
+
+		// 모델 오브젝트 추가
+		CreateObjModel();
+
+		
+
+		//-------------------------------------------------------------------------------//
 		//
-		//// 애니 추가
-		//CreateBoneAni("Model2", "Export/FinCat1BoneIdle.pod"          , e_Idle);
-		//CreateBoneAni("Model3", "Export/FinAnonSoldierBoneIdle.pod"   , e_Idle);
-		//CreateBoneAni("Model4", "Export/FinCyclopsBoneIdle.pod"       , e_Idle);
-		//CreateBoneAni("Model5", "Export/FinTestSkinBoneIdle.pod"      , e_Idle);
-
+		//  ★★ 생성 모델명과 경로이름 반드시 바꿔줄것 ★★
+		//
 		//-------------------------------------------------------------------------------//
-		// 모델 추가
+		// 모델 한세트 추가
 		//-------------------------------------------------------------------------------//
-		CreateModel  ("Model1", "Export/Finmob1Loc.pod"    , e_ShaderPongTexAni);
-		AddModelChain("Model1", "Export/Finmob1RunLoc.pod" , e_ShaderPongTexAni, e_Run);     // 앞으로, 모델을 파싱할때는 아무런 애니메이션 데이터 없는 것을 기준으로 파싱하겠음
-
-		//-------------------------------------------------------------------------------//
-		// 애니 한세트 추가
-		//-------------------------------------------------------------------------------//
-		CreateBoneAni("Model1", "Export/Finmob1BoneIdle.pod"       , e_Idle);
-		CreateBoneAni("Model1", "Export/Finmob1BoneDamage.pod"     , e_Damage);
-		CreateBoneAni("Model1", "Export/Finmob1BoneRun.pod"        , e_Run);
-		CreateBoneAni("Model1", "Export/Finmob1BoneWalk.pod"       , e_Walk);
-		CreateBoneAni("Model1", "Export/Finmob1BoneDeath.pod"	   , e_Death);
-		CreateBoneAni("Model1", "Export/Finmob1BoneDeathWait.pod"  , e_DeathWait);
-		CreateBoneAni("Model1", "Export/Finmob1BoneAttack1.pod"    , e_Attack1);
-		CreateBoneAni("Model1", "Export/Finmob1BoneAttack2.pod"    , e_Attack2);
-		CreateBoneAni("Model1", "Export/Finmob1BoneAttack3.pod"    , e_Attack3);
-		CreateBoneAni("Model1", "Export/Finmob1BoneStun.pod"       , e_Stun);
-		//-------------------------------------------------------------------------------//
-
-		//-------------------------------------------------------------------------------//
-		// 모델 추가
-		//-------------------------------------------------------------------------------//
-		CreateModel  ("Model2", "Export/Finmob2Loc.pod"    , e_ShaderPongTexAni);
-		AddModelChain("Model2", "Export/Finmob2RunLoc.pod" , e_ShaderPongTexAni, e_Run);
-
+		CreateModel  ("Model1", "Export/mob1Loc.pod"		    , e_ShaderPongTexAni);
+		AddModelChain("Model1", "Export/mob1IdleLoc.pod"        , e_ShaderPongTexAni, e_Idle);    
+		AddModelChain("Model1", "Export/mob1DamageLoc.pod"      , e_ShaderPongTexAni, e_Damage);
+		AddModelChain("Model1", "Export/mob1RunLoc.pod"         , e_ShaderPongTexAni, e_Run);
+		AddModelChain("Model1", "Export/mob1WalkLoc.pod"        , e_ShaderPongTexAni, e_Walk);
+		AddModelChain("Model1", "Export/mob1DeathLoc.pod"       , e_ShaderPongTexAni, e_Death);
+		AddModelChain("Model1", "Export/mob1AttackLoc.pod"      , e_ShaderPongTexAni, e_Attack);
 		//-------------------------------------------------------------------------------//
 		// 애니 한세트 추가
 		//-------------------------------------------------------------------------------//
-		CreateBoneAni("Model2", "Export/Finmob2BoneIdle.pod"       , e_Idle);
-		CreateBoneAni("Model2", "Export/Finmob2BoneDamage.pod"     , e_Damage);
-		CreateBoneAni("Model2", "Export/Finmob2BoneRun.pod"        , e_Run);
-		CreateBoneAni("Model2", "Export/Finmob2BoneWalk.pod"       , e_Walk);
-		CreateBoneAni("Model2", "Export/Finmob2BoneDeath.pod"	   , e_Death);
-		CreateBoneAni("Model2", "Export/Finmob2BoneDeathWait.pod"  , e_DeathWait);
-		CreateBoneAni("Model2", "Export/Finmob2BoneAttack1.pod"    , e_Attack1);
-		CreateBoneAni("Model2", "Export/Finmob2BoneAttack2.pod"    , e_Attack2);
-		CreateBoneAni("Model2", "Export/Finmob2BoneAttack3.pod"    , e_Attack3);
-		CreateBoneAni("Model2", "Export/Finmob2BoneStun.pod"       , e_Stun);
+		CreateBoneAni("Model1", "Export/mob1BoneIdle.pod"       , e_Idle);
+		CreateBoneAni("Model1", "Export/mob1BoneDamage.pod"     , e_Damage);
+		CreateBoneAni("Model1", "Export/mob1BoneRun.pod"        , e_Run);
+		CreateBoneAni("Model1", "Export/mob1BoneWalk.pod"       , e_Walk);
+		CreateBoneAni("Model1", "Export/mob1BoneDeath.pod"	    , e_Death);
+		CreateBoneAni("Model1", "Export/mob1BoneAttack.pod"     , e_Attack);
 		//-------------------------------------------------------------------------------//
 
+		//-------------------------------------------------------------------------------//
+		// 모델 한세트 추가
+		//-------------------------------------------------------------------------------//
+		CreateModel  ("Model2", "Export/mob2Loc.pod"		    , e_ShaderPongTexAni);
+		AddModelChain("Model2", "Export/mob2IdleLoc.pod"        , e_ShaderPongTexAni, e_Idle);    
+		AddModelChain("Model2", "Export/mob2DamageLoc.pod"      , e_ShaderPongTexAni, e_Damage);
+		AddModelChain("Model2", "Export/mob2RunLoc.pod"         , e_ShaderPongTexAni, e_Run);
+		AddModelChain("Model2", "Export/mob2WalkLoc.pod"        , e_ShaderPongTexAni, e_Walk);
+		AddModelChain("Model2", "Export/mob2DeathLoc.pod"       , e_ShaderPongTexAni, e_Death);
+		AddModelChain("Model2", "Export/mob2AttackLoc.pod"      , e_ShaderPongTexAni, e_Attack);
+		//-------------------------------------------------------------------------------//
+		// 애니 한세트 추가
+		//-------------------------------------------------------------------------------//
+		CreateBoneAni("Model2", "Export/mob2BoneIdle.pod"       , e_Idle);
+		CreateBoneAni("Model2", "Export/mob2BoneDamage.pod"     , e_Damage);
+		CreateBoneAni("Model2", "Export/mob2BoneRun.pod"        , e_Run);
+		CreateBoneAni("Model2", "Export/mob2BoneWalk.pod"       , e_Walk);
+		CreateBoneAni("Model2", "Export/mob2BoneDeath.pod"	    , e_Death);
+		CreateBoneAni("Model2", "Export/mob2BoneAttack.pod"     , e_Attack);
+		//-------------------------------------------------------------------------------//
 
 		// 만들어진 모델 등록
 		ModelRegistration();
+	}
+
+	// 모델 오브젝트 추가
+	void CreateObjModel()
+	{
+		CreateModel("MapObj1" , "Export/MapObj1Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj2" , "Export/MapObj2Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj3" , "Export/MapObj3Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj4" , "Export/MapObj4Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj5" , "Export/MapObj5Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj6" , "Export/MapObj6Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj7" , "Export/MapObj7Loc.pod" , e_ShaderPongTex);
+		//CreateModel("MapObj8" , "Export/MapObj8Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj9" , "Export/MapObj9Loc.pod" , e_ShaderPongTex);
+		CreateModel("MapObj10", "Export/MapObj10Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj11", "Export/MapObj11Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj12", "Export/MapObj12Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj13", "Export/MapObj13Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj14", "Export/MapObj14Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj15", "Export/MapObj15Loc.pod", e_ShaderPongTex);
+		//CreateModel("MapObj16", "Export/MapObj16Loc.pod", e_ShaderPongTex);
+		//CreateModel("MapObj17", "Export/MapObj17Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj18", "Export/MapObj18Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj19", "Export/MapObj19Loc.pod", e_ShaderPongTex);
+		//CreateModel("MapObj20", "Export/MapObj20Loc.pod", e_ShaderPongTex);
+		//CreateModel("MapObj21", "Export/MapObj21Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj22", "Export/MapObj22Loc.pod", e_ShaderPongTex);
+		CreateModel("MapObj23", "Export/MapObj23Loc.pod", e_ShaderPongTex);
+
 	}
 
 	// 특정 모델의 본 그리기
@@ -151,11 +199,47 @@ public:
 		}
 	}
 
+	// HDR 스크린 만들기
+	void CreateHDRScreen()
+	{
+		if (mHDRScreen == nullptr)
+		{
+			// 스크린 모델 생성하기
+			CreateHDRScreenModel();
+
+			// 스크린 모델 월드 매트릭스 초기화
+			// 매트릭스 초기화
+			XMMATRIX I = XMMatrixIdentity();
+
+			// 스크린 월드 매트릭스 초기화
+			XMStoreFloat4x4(&mHDRScreenMtx, I);
+		}
+	}
+
 	// 맵 만들기
-	void AddMap(int _key, string _name, float _x, float _y, float _z, float _scale)
+	void AddMap(int _key, string _name, float _x, float _y, float _z)
 	{
 		AddModel(_key, _name, _x , _y, _z);
-		SetScale(_key, _name, _scale, 1.0f, _scale);
+
+		// 기본 맵
+		getModelData(_key, _name).mAniType = 0;
+
+		// 텍스처 크기 갱신
+		getModelData(_key, _name).mTexWidth  = mAllModelData[_name]->mSkinModelTex[0]->mTexWidth;
+		getModelData(_key, _name).mTexHeight = mAllModelData[_name]->mSkinModelTex[0]->mTexHeight;
+
+		// 현재 맵 이름
+		cMapManager::GetInstance()->SetMapStage(_name);
+	}
+
+	// 큐브맵 만들기
+	void AddCubeMap(int _key, string _name, float _x, float _y, float _z)
+	{
+		AddModel(_key, _name, _x, _y, _z);
+
+		// 현재 맵 이름
+		cMapManager::GetInstance()->SetCubeMapStage(_name);
+
 	}
 
 	// 스크린 삭제
@@ -166,6 +250,14 @@ public:
 
 		SafeDelete(mScreenBuffer);
 		SafeDelete(mScreen);
+
+#ifdef POSTEFFECT_ON
+		mHDRScreen->ClearWdMtx();
+		mHDRScreenBuffer->ClearInsBuf();
+
+		SafeDelete(mHDRScreenBuffer);
+		SafeDelete(mHDRScreen);
+#endif
 	}
 
 	// 모델 등록
@@ -234,6 +326,40 @@ public:
 
 			// 체인에 있는 모델 모두 이동
 			mAllModelData[_SlectModel]->SetPos(_uniqueCode, _pos.x, _pos.y, _pos.z);
+			_SlectModel.clear();
+		}
+	}
+
+	// 모델 이동하기
+	void SetPosXZ(int _uniqueCode, string _Name, float _x, float _z)
+	{
+		string _SlectModel;
+
+		// 모델의 체인만큼 (서브 모델)
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델을 순차적으로 선택
+			_SlectModel = mModelChain[_Name][i];
+
+			// 체인에 있는 모델 모두 이동
+			mAllModelData[_SlectModel]->SetPosXZ(_uniqueCode, _x, _z);
+			_SlectModel.clear();
+		}
+	}
+
+	// 모델 이동하기
+	void SetPosXZ(int _uniqueCode, string _Name, XMFLOAT3 _pos)
+	{
+		string _SlectModel;
+
+		// 모델의 체인만큼 (서브 모델)
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델을 순차적으로 선택
+			_SlectModel = mModelChain[_Name][i];
+
+			// 체인에 있는 모델 모두 이동
+			mAllModelData[_SlectModel]->SetPosXZ(_uniqueCode, _pos.x, _pos.z);
 			_SlectModel.clear();
 		}
 	}
@@ -387,7 +513,6 @@ public:
 		return mAllModelData[mModelChain[_Name][0]]->getPos(_uniqueCode);
 	}
 
-
 	// 모델 크기 키우기
 	void SetScale(int _uniqueCode, string _Name, float _x, float _y, float _z)
 	{
@@ -482,6 +607,12 @@ public:
 			// 스크린 클리어
 			mScreen->ClearWdMtx();
 			mScreenBuffer->ClearInsBuf();
+
+#ifdef POSTEFFECT_ON
+			// HDR 클리어
+			mHDRScreen->ClearWdMtx();
+			mHDRScreenBuffer->ClearInsBuf();
+#endif
 		}
 		else
 		{
@@ -713,9 +844,10 @@ public:
 		// 모델의 종류
 		_nowModel->mModelType  = e_BasicModel;
 		_nowModel->mCreateName = _Name;
+		strcpy(_nowModel->mObjName, _Name.c_str());
 
 		// 파싱 시작
-		mXMLParser.LoadBox(*_nowModel, 10.0f, 10.0f, 10.0f);
+		mXMLParser.LoadBox(_nowModel, 10.0f, 10.0f, 10.0f);
 
 		// 쉐이더, 모델 등록 (필터링 용)
 		UseAllShaderModel(_ShaderMode);
@@ -736,27 +868,95 @@ public:
 		// 모델의 종류
 		_nowModel->mModelType  = e_BasicModel;
 		_nowModel->mCreateName = _Name;
+		strcpy(_nowModel->mObjName, _Name.c_str());
 
 		// 파싱 시작
-		mXMLParser.LoadBox(*_nowModel, _Size, _Size, _Size);
+		mXMLParser.LoadBox(_nowModel, _Size, _Size, _Size);
 
 		// 쉐이더, 모델 등록 (필터링 용)
 		UseAllShaderModel(_ShaderMode);
 		UsingModel(_Name);
 	}
 
+	// 맵 생성
+	void CreateMap(string _Name, string _FileName, float _Xwidth, float _Zdepth, float _CellSize, float _HeightScale, float _uvDeived, SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	{
+		// 모델 체인에 이름 등록
+		mModelChain[_Name].push_back(_Name);
+
+		// 모델 생성
+		mAllModelData[_Name] = new InitMetaData(_Name.c_str(), _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
+
+		// 현재 모델 정보 얻기
+		InitMetaData* _nowModel = mAllModelData[_Name];
+
+		// 모델의 종류
+		_nowModel->mModelType  = e_ParsingModel;
+		_nowModel->mCreateName = _Name;
+		strcpy(_nowModel->mObjName, _Name.c_str());
+
+		// 파싱 시작 
+		mXMLParser.LoadMap(_nowModel, _FileName, _Xwidth, _Zdepth, _CellSize, _HeightScale, _uvDeived);
+
+		// 변수 계산
+		_nowModel->CalValue();
+
+		// 쉐이더, 모델 등록 (필터링 용)
+		UseAllShaderModel(_ShaderMode);
+		UsingModel(_Name);
+
+		// 맵 매니저 초기화
+		cMapManager::GetInstance()->mData[_Name].mModel       = mAllModelData[_Name];
+		cMapManager::GetInstance()->mData[_Name].mCellSize    = _CellSize;
+		cMapManager::GetInstance()->mData[_Name].mHeightScale = _HeightScale;
+		cMapManager::GetInstance()->mData[_Name].mXwidth      = _Xwidth;
+		cMapManager::GetInstance()->mData[_Name].mZdepth      = _Zdepth;
+	}
+
+	// 맵 생성
+	void CreateSkyBox(string _Name, string _FileName, float _radius, UINT _sliceCount, UINT _stackCount, SHADER_TYPE _ShaderMode, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	{
+		// 모델 체인에 이름 등록
+		mModelChain[_Name].push_back(_Name);
+
+		// 모델 생성
+		mAllModelData[_Name] = new InitMetaData(_Name.c_str(), _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
+
+		// 현재 모델 정보 얻기
+		InitMetaData* _nowModel = mAllModelData[_Name];
+
+		// 모델의 종류
+		_nowModel->mModelType  = e_ParsingModel;
+		_nowModel->mCreateName = _Name;
+		strcpy(_nowModel->mObjName, _Name.c_str());
+
+		// 파싱 시작
+		mXMLParser.LoadSphere(_nowModel, _radius, _sliceCount, _stackCount);
+
+		// 쉐이더, 모델 등록 (필터링 용)
+		UseAllShaderModel(_ShaderMode);
+		UsingModel(_Name);
+
+		// 계산
+		_nowModel->CalValue();
+
+		// 큐브맵 리소스 뷰 생성하기
+		mMapManager->CreateRSV(_Name, _FileName);
+	}
+
 	// 스크린 모델 생성하기
 	void CreateScreenModel(SHADER_TYPE _ShaderMode = e_ShaderDeferred, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
 	{
 		// 현재 모델 정보 얻기
-		mScreen = new InitMetaData("GSreen", _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
+		mScreen = new InitMetaData("GScreen", _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
 
 		// 모델의 종류
 		mScreen->mModelType  = e_BasicModel;
-		mScreen->mCreateName = "GSreen";
+		mScreen->mCreateName = "GScreen";
+		strcpy(mScreen->mObjName, mScreen->mCreateName.c_str());
 
-		// 파싱 시작
-		mXMLParser.LoadScreen(*mScreen, 1.0f, 1.0f); // 풀 스크린쿼드
+		// 파싱 시작 (풀 스크린 쿼드 만들기)
+		mXMLParser.LoadScreen(mScreen, 1.0f, 1.0f); // 풀 스크린쿼드
 
 		// 변수 계산
 		mScreen->CalValue();
@@ -766,6 +966,30 @@ public:
 
 		// 버퍼 빌드
 		mScreenBuffer->Build_GScreen(mScreen);
+	}
+
+	// HDR 스크린 모델 생성하기
+	void CreateHDRScreenModel(SHADER_TYPE _ShaderMode = e_ShaderFinHDR, D3D_PRIMITIVE_TOPOLOGY _D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+	{
+		// 현재 모델 정보 얻기
+		mHDRScreen = new InitMetaData("GHDRScreen", _ShaderMode, _D3D_PRIMITIVE_TOPOLOGY);
+
+		// 모델의 종류
+		mHDRScreen->mModelType  = e_BasicModel;
+		mHDRScreen->mCreateName = "GHDRScreen";
+		strcpy(mHDRScreen->mObjName, mHDRScreen->mCreateName.c_str());
+
+		// 파싱 시작 (풀 스크린 쿼드 만들기)
+		mXMLParser.LoadScreen(mHDRScreen, 1.0f, 1.0f); // 풀 스크린쿼드
+
+		// 변수 계산
+		mHDRScreen->CalValue();
+
+		// 버퍼 생성
+		mHDRScreenBuffer = new BufferType();
+
+		// 버퍼 빌드
+		mHDRScreenBuffer->Build_GScreen(mHDRScreen);
 	}
 
 	// 모델에 사용한 모든 쉐이더 추가
@@ -815,6 +1039,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _x, _y, _z, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -830,6 +1055,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _Mtx, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -845,6 +1071,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -860,6 +1087,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -876,6 +1104,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 일반 모델 인스턴스 버퍼 생성
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -891,6 +1120,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -906,6 +1136,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _frame, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -921,6 +1152,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _frame, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 
 			// 다시 만들기
 			MakeModelInsBuf(mModelChain[_Name][i]);
@@ -952,6 +1184,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _x, _y, _z, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -964,6 +1197,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(mModelChain[_Name][i], _Mtx, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -976,6 +1210,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -988,6 +1223,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1000,6 +1236,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1012,6 +1249,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1024,6 +1262,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _fsmType, _frame, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1036,6 +1275,7 @@ public:
 		{
 			// 서브 모델 추가
 			addSubModel(_key, mModelChain[_Name][i], _Mtx, _fsmType, _frame, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
 		}
 		_Name.clear();
 	}
@@ -1044,6 +1284,12 @@ public:
 	void AddScreen(float _x, float _y, float _z)
 	{
 		mScreen->AddModel(_x, _y, _z, e_StaticObj);
+	}
+
+	// 모델 추가하기
+	void AddHdrScreen(float _x, float _y, float _z)
+	{
+		mHDRScreen->AddModel(_x, _y, _z, e_StaticObj);
 	}
 
 	// HP 설정
@@ -1068,6 +1314,17 @@ public:
 		}
 	}
 
+	// 점프
+	void Jump(int _key, string _Name)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			string _SlectModel = mModelChain[_Name][i];
+			mAllModelData[_SlectModel]->Jump(_key);
+		}
+	}
+
 	// 플레이어 전진, 후진
 	XMFLOAT3 PlayerWalk(float _speed)
 	{
@@ -1076,7 +1333,11 @@ public:
 
 		mPlayer.mPos = gCam.GetThirdPosition();
 		SetRotate(mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
-		SetPos   (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+		SetPosXZ (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+
+		// y좌표 업데이트
+		float tYpos = mMapManager->GetHeightMap(mPlayer.mPos.x, mPlayer.mPos.z);
+		gCam.SetCamY(tYpos);
 
 		return mPlayer.mPos;
 	}
@@ -1095,7 +1356,11 @@ public:
 
 		mPlayer.mPos = gCam.GetThirdPosition();
 		SetRotate(mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
-		SetPos   (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+		SetPosXZ (mPlayer.mkey, mPlayer.mModelName, mPlayer.mPos);
+
+		// y좌표 업데이트
+		float tYpos = mMapManager->GetHeightMap(mPlayer.mPos.x, mPlayer.mPos.z);
+		gCam.SetCamY(tYpos);
 
 		return mPlayer.mPos;
 	}
@@ -1158,6 +1423,11 @@ public:
 
 		// 스크린 인스턴스 버퍼 생성
 		mScreenBuffer->MakeScreenInsBuf(mScreen);
+
+#ifdef POSTEFFECT_ON
+		// HDR 인스턴스 버퍼 생성
+		mHDRScreenBuffer->MakeScreenInsBuf(mHDRScreen);
+#endif
 	}
 
 
@@ -1177,10 +1447,10 @@ public:
 	void Update(float& dt)
 	{
 		// 모든 모델들에게 일괄적인 명령을 내린다.
-		for (map<string, InitMetaData*>::iterator itor = mAllModelData.begin(); itor != mAllModelData.end(); ++itor)
+		for (unsigned int i = 0; i < mUseModel.size(); ++i)
 		{
 			// 애니메이션 업데이트
-			UpdateAni(itor->second, dt);
+			UpdateAni(mAllModelData[mUseModel[i]], dt);
 		}
 	}
 
@@ -1191,7 +1461,14 @@ public:
 		if (_itor->mObjData.size() && _itor->mShaderMode == e_ShaderPongTexAni)
 		{
 			for (auto itor = _itor->mObjData.begin(); itor != _itor->mObjData.end(); ++itor)
-				itor->second.Update(_dt);
+			{
+				// y좌표 업데이트
+				XMFLOAT3 mPos = itor->second.getPos();
+				float tYpos = mMapManager->GetHeightMap(mPos.x, mPos.z);
+
+				// 애니 업데이트
+				itor->second.Update(_dt, tYpos);
+			}
 		}
 	}
 
@@ -1203,8 +1480,19 @@ public:
 			mBufferType[mUseShader[i]]->UpdateIns();
 		}
 
+		// HDR 변수 업데이트
+		mHDRManager->Update();
+
+		// 쉐두우맵 변수 업데이트
+		mShadowMap->BuildShadowTransform();
+
 		// 스크린 인스턴스 버퍼 업데이트
 		mScreenBuffer->UpdateScreenIns(mScreen);
+
+#ifdef POSTEFFECT_ON
+		// HDR 인스턴스 버퍼 업데이트
+		mHDRScreenBuffer->UpdateScreenIns(mHDRScreen);
+#endif
 	}
 
 	// FSM 변경
@@ -1241,7 +1529,48 @@ public:
 		}
 	}
 
+	// FSM 변경
+	void SetPlayerFSM(FSM_TYPE _modelFsm)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[mPlayer.mModelName].size(); ++i)
+		{
+			// 체인에 있는 모델 모두 FSM 변화
+			string _SlectModel = mModelChain[mPlayer.mModelName][i];
+
+			// 애니가 있는 모델이라면,
+			if (mAllModelData[_SlectModel]->mShaderMode == e_ShaderPongTexAni)
+			{
+				mAllModelData[_SlectModel]->SetFSM(mPlayer.mkey, _modelFsm);
+			}
+		}
+	}
+
+	// FSM 변경
+	void SetPlayerFSM(FSM_TYPE _modelFsm, float _Frame)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[mPlayer.mModelName].size(); ++i)
+		{
+			// 체인에 있는 모델 모두 FSM 변화
+			string _SlectModel = mModelChain[mPlayer.mModelName][i];
+
+			// 애니가 있는 모델이라면,
+			if (mAllModelData[_SlectModel]->mShaderMode == e_ShaderPongTexAni)
+			{
+				mAllModelData[_SlectModel]->SetFSM(mPlayer.mkey, _modelFsm, _Frame);
+			}
+		}
+	}
+
+
 private:
+	// 플레이어 와이값 가져오기
+	float GetPlayerY()
+	{
+		return getModelData(mPlayer.mkey, mPlayer.mModelName).getPos().y;
+	}
+
 	// 서브 모델들 모두 추가
 	void addSubModel(string& _SlectModel, float& _x, float& _y, float& _z, OBJ_MOVEABLE& _moveAble)
 	{
@@ -1473,4 +1802,3 @@ private:
 		*buf = '\0';                  // eof 문자
 	}
 };
-
