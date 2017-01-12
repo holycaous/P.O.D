@@ -25,7 +25,7 @@ public:
 
 	UINT mDownScaleGroups;
 public:
-	void InitClass(UINT _Width, UINT _Height)
+	void Init(UINT _Width, UINT _Height)
 	{
 		mWidth  = _Width;
 		mHeight = _Height;

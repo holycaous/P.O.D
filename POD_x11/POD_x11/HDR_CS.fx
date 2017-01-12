@@ -23,9 +23,10 @@ groupshared float SharedPositions[1024];
 float DownScale4x4(uint2 CurPixel, uint groupThreadId)
 {
 	float avgLum = 0.0;
+	uint1 ResY = gTDownScaleCB.Res.y;
 
 	// 바운드 된 픽셀을 건너 뜁니다.
-	if (CurPixel.y < gTDownScaleCB.Res.y)
+	if (CurPixel.y < ResY)
 	{
 		// 4x4 픽셀 그룹 합계
 		int3   nFullResPos = int3  (CurPixel * 4, 0);
@@ -66,9 +67,11 @@ float DownScale1024to4(uint dispatchThreadId, uint groupThreadId, float avgLum)
 		{
 			//이 단계의 휘도 합계를 계산합니다.
 			float stepAvgLum = avgLum;
-			stepAvgLum += dispatchThreadId + step1 < gTDownScaleCB.Domain ? SharedPositions[groupThreadId + step1] : avgLum;
-			stepAvgLum += dispatchThreadId + step2 < gTDownScaleCB.Domain ? SharedPositions[groupThreadId + step2] : avgLum;
-			stepAvgLum += dispatchThreadId + step3 < gTDownScaleCB.Domain ? SharedPositions[groupThreadId + step3] : avgLum;
+			uint1 Domain = gTDownScaleCB.Domain;
+
+			stepAvgLum += dispatchThreadId + step1 < Domain ? SharedPositions[groupThreadId + step1] : avgLum;
+			stepAvgLum += dispatchThreadId + step2 < Domain ? SharedPositions[groupThreadId + step2] : avgLum;
+			stepAvgLum += dispatchThreadId + step3 < Domain ? SharedPositions[groupThreadId + step3] : avgLum;
 
 			// 결과 저장
 			avgLum = stepAvgLum;
@@ -88,9 +91,11 @@ void DownScale4to1(uint dispatchThreadId, uint groupThreadId, uint groupId, floa
 	{
 		//이 스레드 그룹의 평균 루멘스를 계산합니다.
 		float fFinalAvgLum = avgLum;
-		fFinalAvgLum += dispatchThreadId + 256 < gTDownScaleCB.Domain ? SharedPositions[groupThreadId + 256] : avgLum;
-		fFinalAvgLum += dispatchThreadId + 512 < gTDownScaleCB.Domain ? SharedPositions[groupThreadId + 512] : avgLum;
-		fFinalAvgLum += dispatchThreadId + 768 < gTDownScaleCB.Domain ? SharedPositions[groupThreadId + 768] : avgLum;
+		uint1 Domain = gTDownScaleCB.Domain;
+
+		fFinalAvgLum += dispatchThreadId + 256 < Domain ? SharedPositions[groupThreadId + 256] : avgLum;
+		fFinalAvgLum += dispatchThreadId + 512 < Domain ? SharedPositions[groupThreadId + 512] : avgLum;
+		fFinalAvgLum += dispatchThreadId + 768 < Domain ? SharedPositions[groupThreadId + 768] : avgLum;
 		fFinalAvgLum /= 1024.0;
 
 		// 다음 단계에서 사용될 1D UAV에 최종 값을 씁니다.
@@ -108,7 +113,9 @@ void DownScale4to1(uint dispatchThreadId, uint groupThreadId, uint groupId, floa
 [numthreads(1024, 1, 1)] 
 void DownScaleFirstPass(uint3 dispatchThreadId : SV_DispatchThreadID, uint3 groupThreadId : SV_GroupThreadID, uint3 groupId : SV_GroupID)
 {
-	uint2 CurPixel = uint2(dispatchThreadId.x % gTDownScaleCB.Res.x, dispatchThreadId.x / gTDownScaleCB.Res.x);
+	uint1 ResX = gTDownScaleCB.Res.x;
+
+	uint2 CurPixel = uint2(dispatchThreadId.x % ResX, dispatchThreadId.x / ResX);
 
 	// 16 픽셀의 그룹을 단일 픽셀로 줄이고 공유 메모리에 저장
 	float avgLum = DownScale4x4(CurPixel, groupThreadId.x);
@@ -131,7 +138,9 @@ void DownScaleSecondPass(uint3 groupId          : SV_GroupID         , uint3 gro
 {
 	// 공유 메모리를 1D 값으로 채 웁니다.
 	float avgLum = 0.0;
-	if (dispatchThreadId.x < gTDownScaleCB.GroupSize)
+	uint1 GroupSize = gTDownScaleCB.GroupSize;
+
+	if (dispatchThreadId.x < GroupSize)
 	{
 		avgLum = gAverageValues1D[dispatchThreadId.x];
 	}
@@ -144,9 +153,9 @@ void DownScaleSecondPass(uint3 groupId          : SV_GroupID         , uint3 gro
 	{
 		//이 단계의 휘도 합계를 계산합니다.
 		float stepAvgLum = avgLum;
-		stepAvgLum += dispatchThreadId.x + 1 < gTDownScaleCB.GroupSize ? SharedAvgFinal[dispatchThreadId.x + 1] : avgLum;
-		stepAvgLum += dispatchThreadId.x + 2 < gTDownScaleCB.GroupSize ? SharedAvgFinal[dispatchThreadId.x + 2] : avgLum;
-		stepAvgLum += dispatchThreadId.x + 3 < gTDownScaleCB.GroupSize ? SharedAvgFinal[dispatchThreadId.x + 3] : avgLum;
+		stepAvgLum += dispatchThreadId.x + 1 < GroupSize ? SharedAvgFinal[dispatchThreadId.x + 1] : avgLum;
+		stepAvgLum += dispatchThreadId.x + 2 < GroupSize ? SharedAvgFinal[dispatchThreadId.x + 2] : avgLum;
+		stepAvgLum += dispatchThreadId.x + 3 < GroupSize ? SharedAvgFinal[dispatchThreadId.x + 3] : avgLum;
 
 		// 결과 저장
 		avgLum = stepAvgLum;
@@ -160,9 +169,9 @@ void DownScaleSecondPass(uint3 groupId          : SV_GroupID         , uint3 gro
 	{
 		//이 단계의 휘도 합계를 계산합니다.
 		float stepAvgLum = avgLum;
-		stepAvgLum += dispatchThreadId.x + 4  < gTDownScaleCB.GroupSize ? SharedAvgFinal[dispatchThreadId.x + 4]  : avgLum;
-		stepAvgLum += dispatchThreadId.x + 8  < gTDownScaleCB.GroupSize ? SharedAvgFinal[dispatchThreadId.x + 8]  : avgLum;
-		stepAvgLum += dispatchThreadId.x + 12 < gTDownScaleCB.GroupSize ? SharedAvgFinal[dispatchThreadId.x + 12] : avgLum;
+		stepAvgLum += dispatchThreadId.x + 4  < GroupSize ? SharedAvgFinal[dispatchThreadId.x + 4 ] : avgLum;
+		stepAvgLum += dispatchThreadId.x + 8  < GroupSize ? SharedAvgFinal[dispatchThreadId.x + 8 ] : avgLum;
+		stepAvgLum += dispatchThreadId.x + 12 < GroupSize ? SharedAvgFinal[dispatchThreadId.x + 12] : avgLum;
 
 		// 결과 저장
 		avgLum = stepAvgLum;
@@ -176,9 +185,9 @@ void DownScaleSecondPass(uint3 groupId          : SV_GroupID         , uint3 gro
 	{
 		//이 단계의 휘도 합계를 계산합니다.
 		float fFinalLumValue = avgLum;
-		fFinalLumValue += dispatchThreadId.x + 16 < gTDownScaleCB.GroupSize ? SharedAvgFinal[dispatchThreadId.x + 16] : avgLum;
-		fFinalLumValue += dispatchThreadId.x + 32 < gTDownScaleCB.GroupSize ? SharedAvgFinal[dispatchThreadId.x + 32] : avgLum;
-		fFinalLumValue += dispatchThreadId.x + 48 < gTDownScaleCB.GroupSize ? SharedAvgFinal[dispatchThreadId.x + 48] : avgLum;
+		fFinalLumValue += dispatchThreadId.x + 16 < GroupSize ? SharedAvgFinal[dispatchThreadId.x + 16] : avgLum;
+		fFinalLumValue += dispatchThreadId.x + 32 < GroupSize ? SharedAvgFinal[dispatchThreadId.x + 32] : avgLum;
+		fFinalLumValue += dispatchThreadId.x + 48 < GroupSize ? SharedAvgFinal[dispatchThreadId.x + 48] : avgLum;
 		fFinalLumValue /= 64.0;
 
 		// 최종 값 저장

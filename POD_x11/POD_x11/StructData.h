@@ -238,14 +238,14 @@ public:
 public:
 	MyMat()
 	{
-		InitClass();
+		Init();
 	}
 	~MyMat()
 	{
 		ClearClass();
 	}
 
-	void InitClass()
+	void Init()
 	{
 		strcpy(mDiffuseSRV , "NULL\0");
 		strcpy(mSpecularSRV, "NULL\0");
@@ -551,7 +551,7 @@ public:
 	}
 
 	// 위치 설정
-	void setPos(float _x, float _y, float _z)
+	void setPos(float& _x, float& _y, float& _z)
 	{
 		mWdMtx._41 = _x;
 		mWdMtx._42 = _y;
@@ -559,24 +559,45 @@ public:
 	}
 
 	// 위치 설정
-	void setPosXZ(float _x, float _z)
+	void setPosXZ(float& _x, float& _z)
 	{
 		mWdMtx._41 = _x;
 		mWdMtx._43 = _z;
 	}
 
 	// 위치 설정
-	void setPosY(float _y)
+	void setPosY(float& _y)
 	{
 		mWdMtx._42 = _y;
 	}
 
 	// 스케일 설정
-	void setScale(float _x, float _y, float _z)
+	void setScale(float& _x, float& _y, float& _z)
 	{
 		mWdMtx._11 *= _x;
 		mWdMtx._22 *= _y;
 		mWdMtx._33 *= _z;
+	}
+
+	// 로테이트 Y
+	void setRoateY(float& _angle)
+	{
+		// Rotate the basis vectors about the world y-axis.
+		XMMATRIX R = XMMatrixRotationY(_angle);
+
+		XMFLOAT3 _Look (mWdMtx._11, mWdMtx._12, mWdMtx._13); // x,z가 바뀌어서 이렇게 했는데, 큰 문제는 없을듯
+		XMFLOAT3 _Up   (mWdMtx._21, mWdMtx._22, mWdMtx._23);
+		XMFLOAT3 _Right(mWdMtx._31, mWdMtx._32, mWdMtx._33);
+
+		// 회전
+		XMStoreFloat3(&_Look , XMVector3TransformNormal(XMLoadFloat3(&_Look ), R));
+		XMStoreFloat3(&_Up   , XMVector3TransformNormal(XMLoadFloat3(&_Up   ), R));
+		XMStoreFloat3(&_Right, XMVector3TransformNormal(XMLoadFloat3(&_Right), R));
+
+		// 저장
+		mWdMtx._11 = _Look.x;  mWdMtx._12 = _Look.y;  mWdMtx._13 = _Look.z;
+		mWdMtx._21 = _Up.x;    mWdMtx._22 = _Up.y;    mWdMtx._23 = _Up.z;
+		mWdMtx._31 = _Right.x; mWdMtx._32 = _Right.y; mWdMtx._33 = _Right.z;
 	}
 
 	// 월드 매트릭스 얻기
@@ -611,7 +632,7 @@ public:
 	}
 
 	// X 방향 저장
-	void setRightDir(float _x, float _y, float _z) 
+	void setRightDir(float& _x, float& _y, float& _z) 
 	{
 		mWdMtx._31 = _x;
 		mWdMtx._32 = _y;
@@ -619,7 +640,7 @@ public:
 	}
 
 	// Y 방향 저장
-	void setUpDir(float _x, float _y, float _z) 
+	void setUpDir(float& _x, float& _y, float& _z) 
 	{
 		mWdMtx._21 = _x;
 		mWdMtx._22 = _y;
@@ -627,7 +648,7 @@ public:
 	}
 
 	// Z 방향 저장
-	void setLookDir(float _x, float _y, float _z) 
+	void setLookDir(float& _x, float& _y, float& _z) 
 	{
 		mWdMtx._11 = _x;
 		mWdMtx._12 = _y;
@@ -1054,10 +1075,17 @@ public:
 	}
 
 	// 오브젝트 스케일
-	void SetScale(int _uniqueCode, float _x, float _y, float _z)
+	void SetScale(int& _uniqueCode, float& _x, float& _y, float& _z)
 	{
 		// 오브젝트 이동
 		mObjData[_uniqueCode].setScale(_x, _y, _z);
+	}
+
+	// 오브젝트 회전Y
+	void SetRotateY(int& _uniqueCode, float& _angle)
+	{
+		// 오브젝트 회전
+		mObjData[_uniqueCode].setRoateY(_angle);
 	}
 
 	// 오브젝트 삭제
@@ -2937,7 +2965,7 @@ public:
 public:
 	MyMeshData()
 	{
-		InitClass();
+		Init();
 	}
 
 	~MyMeshData()
@@ -2945,9 +2973,9 @@ public:
 		ClearClass();
 	}
 
-	void InitClass()
+	void Init()
 	{
-		mMyMat.InitClass();
+		mMyMat.Init();
 	}
 
 	void ClearClass()

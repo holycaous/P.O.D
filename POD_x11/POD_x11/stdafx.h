@@ -12,7 +12,7 @@
 #define SHADOW_ON
 
 // 포스트 이펙트 활성
-#define POSTEFFECT_ON
+//#define POSTEFFECT_ON
 
 
 // 프로그램을 벗어나면 렌더링 중지
@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <windows.h>
+#include <mmsystem.h>
 #include <algorithm>
 #include <vector>
 #include <list>
@@ -65,11 +66,13 @@ using namespace std;
 
 // << 일반 클래스 >>
 #include "cCam.h"
+#include "cSoundManager.h"
 #include "cLightManager.h"
 #include "cShadowMap.h"
 #include "cHDRManager.h"
 #include "cAniManager.h"
 #include "cMapManager.h"
+#include "cUIManager.h"
 #include "cModelManager.h"
 #include "cShaderManager.h"
 #include "cMaterialManager.h"

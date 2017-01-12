@@ -37,6 +37,10 @@ cEngine::~cEngine()
 	cDrawManager    ::DestroyInstance();
 	cHDRManager     ::GetInstance()->ClearClass();
 	cHDRManager     ::DestroyInstance();
+	cUIManager		::GetInstance()->ClearClass();
+	cUIManager		::DestroyInstance();
+	cSoundManager	::GetInstance()->ClearClass();
+	cSoundManager	::DestroyInstance();
 	cMapManager     ::DestroyInstance();
 	cShadowMap      ::DestroyInstance();
 
@@ -66,11 +70,14 @@ bool cEngine::Init()
 		return false;
 
 	// 매니저 초기화
+	cSoundManager   ::GetInstance()->Init();
 	cLightManager   ::GetInstance()->Init();
 	cMaterialManager::GetInstance()->Init();
 	cShaderManager  ::GetInstance()->Init();
+	cUIManager		::GetInstance()->Init();
 	cModelManager   ::GetInstance()->Init();
 	cDrawManager    ::GetInstance()->Init();
+	
 
 	// 게임 상태 초기화
 	cGameStateManager::GetInstance()->Init();

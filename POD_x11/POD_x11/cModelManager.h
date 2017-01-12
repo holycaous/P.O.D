@@ -530,6 +530,25 @@ public:
 		}
 	}
 
+	void SetRotateY(int _uniqueCode, string _Name, float _angle)
+	{
+		string _SlectModel;
+
+		// 각도를 라디안으로 변환
+		float tangle = _angle * XM_PI / 180.f;
+
+		// 모델의 체인만큼 (서브 모델)
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 체인에 있는 모델을 순차적으로 선택
+			_SlectModel = mModelChain[_Name][i];
+
+			// 체인에 있는 모델 모두 이동
+			mAllModelData[_SlectModel]->SetRotateY(_uniqueCode, tangle);
+			_SlectModel.clear();
+		}
+	}
+
 	// 모델 데이터 가져오기 (_outData에 모두 다 가져감. _outData는 밖에서 생성하고 별도로 삭제해줘야함) // 주의
 	void getModelData(int _uniqueCode, string _Name, vector<ObjData>& _outData)
 	{
@@ -696,7 +715,7 @@ public:
 		// 읽은 경로내의 모델 갯수만큼 반복
 		for (int i = 0; i < _ReadLocNum; ++i)
 		{
-			mXMLParser.InitClass();
+			mXMLParser.Init();
 			tSelectModelRoute = mXMLParser.mNewModleLoc[i].Data; // 선택된 모델의 루트
 
 			// 첫 모델이라면 자신의 이름으로 짓는다.
@@ -760,7 +779,7 @@ public:
 		// 읽은 경로내의 모델 갯수만큼 반복
 		for (int i = 0; i < _ReadLocNum; ++i)
 		{
-			mXMLParser.InitClass();
+			mXMLParser.Init();
 			tSelectModelRoute = mXMLParser.mNewModleLoc[i].Data; // 선택된 모델의 루트
 
 			// 첫 모델이라면 자신의 이름으로 짓는다.

@@ -16,9 +16,6 @@
     <Filter Include="소스 파일\Main">
       <UniqueIdentifier>{29279497-7beb-449e-8101-3cac2be67814}</UniqueIdentifier>
     </Filter>
-    <Filter Include="헤더 파일\Main">
-      <UniqueIdentifier>{0ee1e3d8-ab93-4a59-9fc8-f5a9c4ea6abc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Etc">
       <UniqueIdentifier>{fb42641c-647f-4f2a-b5c2-397064923090}</UniqueIdentifier>
     </Filter>
@@ -84,6 +81,9 @@
     </Filter>
     <Filter Include="소스 파일\Manager\Storage">
       <UniqueIdentifier>{dd7d6ce8-cf18-49ab-9bd6-33c98cac6067}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Main">
+      <UniqueIdentifier>{0ee1e3d8-ab93-4a59-9fc8-f5a9c4ea6abc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -180,6 +180,12 @@
     <ClInclude Include="cHDRManager.h">
       <Filter>헤더 파일\Manager\Etc</Filter>
     </ClInclude>
+    <ClInclude Include="cSoundManager.h">
+      <Filter>헤더 파일\Manager\Etc</Filter>
+    </ClInclude>
+    <ClInclude Include="cUIManager.h">
+      <Filter>헤더 파일\Manager\Etc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -258,6 +264,12 @@
       <Filter>소스 파일\Manager</Filter>
     </ClCompile>
     <ClCompile Include="cHDRManager.cpp">
+      <Filter>소스 파일\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="cSoundManager.cpp">
+      <Filter>소스 파일\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="cUIManager.cpp">
       <Filter>소스 파일\Manager</Filter>
     </ClCompile>
   </ItemGroup>

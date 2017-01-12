@@ -431,7 +431,7 @@ void cInitD3D::OnResize()
 
 	// 쉐도우 맵 초기화
 	cShadowMap::GetInstance()->ClearClass();
-	cShadowMap::GetInstance()->InitClass(mClientWidth, mClientHeight);
+	cShadowMap::GetInstance()->Init(mClientWidth, mClientHeight);
 
 	//-----------------------------------------------------------------------------//
 	// HDR 렌더 대상을 만듭니다.
@@ -473,7 +473,7 @@ void cInitD3D::OnResize()
 
 	// HDR 초기화
 	cHDRManager::GetInstance()->ClearClass();
-	cHDRManager::GetInstance()->InitClass(mClientWidth, mClientHeight);
+	cHDRManager::GetInstance()->Init(mClientWidth, mClientHeight);
 
 	// 코어에 저장
 	SetCoreStorage();

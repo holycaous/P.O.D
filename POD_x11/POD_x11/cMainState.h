@@ -54,6 +54,12 @@ public:
 		mModelManager->SetScale(1, "MapObj4", 2.0f, 1.f, 2.0f);
 		mModelManager->SetScale(2, "MapObj4", 2.0f, 1.f, 2.0f);
 		mModelManager->SetScale(3, "MapObj4", 2.0f, 1.f, 2.0f);
+		mModelManager->SetRotateY(0, "MapObj4", 90.f);
+		mModelManager->SetRotateY(1, "MapObj4", 90.f);
+		mModelManager->SetRotateY(2, "MapObj4", 90.f);
+		mModelManager->SetRotateY(3, "MapObj4", 90.f);
+
+		
 
 		mModelManager->AddModel(0, "MapObj6" , -1650.0f, 0.0f, -1400.0f); // ถฅฟก นÛศ๙ ม๖บุ
 

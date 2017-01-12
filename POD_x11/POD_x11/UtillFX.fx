@@ -462,8 +462,11 @@ float3 ToneMapping(float3 HDRColor)
 	// 현재 픽셀의 휘도 스케일을 찾습니다.
 	float LScale = dot(HDRColor, LUM_FACTOR2);
 
-	LScale *= gTFinalPassCB.MiddleGrey  / gAvgLum[0];
-	LScale  = (LScale + LScale * LScale / gTFinalPassCB.LumWhiteSqr) / (1.0 + LScale);
+	float look = gTFinalPassCB.LumWhiteSqr;
+	float look2 = gAvgLum[0];
+
+	LScale *= gTFinalPassCB.MiddleGrey / look2;
+	LScale = (LScale + LScale * LScale / look) / (1.0 + LScale);
 
 	// 휘도 스케일을 픽셀 색상에 적용합니다.
 	return HDRColor * LScale;

@@ -68,7 +68,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;D3DCompiler.lib;Effects11d.lib;dxgi.lib;dxguid.lib;D3DX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;D3DCompiler.lib;Effects11d.lib;dxgi.lib;dxguid.lib;D3DX11.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>WinMainCRTStartup</EntryPointSymbol>
     </Link>
     <FxCompile>
@@ -99,7 +99,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>d3d11.lib;D3DCompiler.lib;Effects11.lib;dxgi.lib;dxguid.lib;D3DX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;D3DCompiler.lib;Effects11.lib;dxgi.lib;dxguid.lib;D3DX11.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>WinMainCRTStartup</EntryPointSymbol>
     </Link>
     <FxCompile>
@@ -136,6 +136,8 @@
     <ClInclude Include="cSingleton.h" />
     <ClInclude Include="cGameTimer.h" />
     <ClInclude Include="cInitD3D.h" />
+    <ClInclude Include="cSoundManager.h" />
+    <ClInclude Include="cUIManager.h" />
     <ClInclude Include="cXMLParser.h" />
     <ClInclude Include="cXnaHelper.h" />
     <ClInclude Include="d3dx11effect.h" />
@@ -168,6 +170,8 @@
     <ClCompile Include="cShaderManager.cpp" />
     <ClCompile Include="cEngine.cpp" />
     <ClCompile Include="cShadowMap.cpp" />
+    <ClCompile Include="cSoundManager.cpp" />
+    <ClCompile Include="cUIManager.cpp" />
     <ClCompile Include="cXMLParser.cpp" />
     <ClCompile Include="cXnaHelper.cpp" />
     <ClCompile Include="Main.cpp" />

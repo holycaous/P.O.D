@@ -27,7 +27,7 @@ public:
 	cXMLParser()
 	{
 		ClearClass();
-		InitClass();
+		Init();
 	}
 
 	~cXMLParser()
@@ -35,10 +35,10 @@ public:
 		ClearClass();
 	}
 
-	void InitClass()
+	void Init()
 	{
 		ClearPointer();
-		mMyMeshData.InitClass();
+		mMyMeshData.Init();
 	}
 
 	// 버퍼 초기화

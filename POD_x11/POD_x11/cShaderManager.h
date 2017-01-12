@@ -138,6 +138,9 @@ public:
 #ifdef POSTEFFECT_ON
 		else if (mShaderMode == e_ShaderFinHDR)
 		{
+			SetShaderValue(e_ShaderVal, "gTDownScaleCB", mHDRManager->mTDownScaleCB);
+			SetShaderValue(e_ShaderVal, "gTFinalPassCB", mHDRManager->mTFinalPassCB);
+
 			// HDR ют╥б
 			SetShaderValue(e_ShaderValResource, "gAvgLum", mHDRManager->mAvgLumSRV);
 		}
