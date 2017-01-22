@@ -124,6 +124,9 @@ public:
 		// 카메라 업데이트
 		UpdateCam(dt);
 
+		// 유아이 업데이트
+		mUIManager->Update();
+
 		// 인스턴스 업데이트
 		mModelManager->UpdateIns();
 	}

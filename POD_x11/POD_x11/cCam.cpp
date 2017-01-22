@@ -173,8 +173,11 @@ void cCam::Walk(float d)
 	if (mCamMode == e_3Person)
 	{
 		m3PersonLook = mLook;
-		m3PersonLook.y = 0.0f;
-		l = XMLoadFloat3(&m3PersonLook);
+
+		XMVECTOR tRight = XMLoadFloat3(&mRight);
+		XMVECTOR tUp = XMLoadFloat3(&XMFLOAT3(0.0f, 1.0f, 0.0f));
+
+		l = XMVector3Cross(tRight, tUp);
 	}
 	// 1ÀÎÄª ¸ðµå
 	else if (mCamMode == e_1Person)
@@ -189,8 +192,8 @@ void cCam::Walk(float d)
 void cCam::Pitch(float angle)
 {
 	// Rotate up and look vector about the right vector.
-
 	XMMATRIX R = XMMatrixRotationAxis(XMLoadFloat3(&mRight), angle);
+
 
 	// 3ÀÎÄª ¸ðµå
 	if (mCamMode == e_3Person)

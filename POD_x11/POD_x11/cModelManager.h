@@ -1385,7 +1385,6 @@ public:
 	// 플레이어 전진, 후진
 	XMFLOAT3 PlayerWalk(float _speed)
 	{
-		XMFLOAT3 _PlayerLookDir = PlayerLookDir();
 		gCam.Walk(_speed);
 
 		mPlayer.mPos = gCam.GetThirdPosition();
