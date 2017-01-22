@@ -27,10 +27,11 @@ public:
 	cXMLParser mXMLParser;
 	
 	// 매니저
-	cAniManager * mAniManager = cAniManager::GetInstance();
-	cMapManager * mMapManager = cMapManager::GetInstance();
-	cShadowMap  * mShadowMap  = cShadowMap ::GetInstance();
-	cHDRManager * mHDRManager = cHDRManager::GetInstance();
+	cAniManager   * mAniManager   = cAniManager  ::GetInstance();
+	cMapManager   * mMapManager   = cMapManager  ::GetInstance();
+	cShadowMap    * mShadowMap    = cShadowMap   ::GetInstance();
+	cHDRManager   * mHDRManager   = cHDRManager  ::GetInstance();
+	cSoundManager * mSoundManager = cSoundManager::GetInstance(); 
 
 	// 플레이어
 	PlayerInfo mPlayer;
@@ -1231,6 +1232,43 @@ public:
 			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _moveAble);
 			UsingModel(mModelChain[_Name][i]);
 		}
+		_Name.clear();
+	}
+
+	// 모델 추가하기
+	void AddModel(int _key, string _Name, float _x, float _y, float _z, float _sX, float _sY, float _sZ, float _radius, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
+		}
+
+		// 스케일
+		SetScale(_key, _Name, _sX, _sY, _sZ);
+
+		// 각도
+		SetRotateY(_key, _Name, _radius);
+
+		_Name.clear();
+	}
+
+	// 모델 추가하기
+	void AddModel(int _key, string _Name, float _x, float _y, float _z, float _sX, float _sY, float _sZ, OBJ_MOVEABLE _moveAble = e_StaticObj)
+	{
+		// 모델 파일에 있는 서브 모델 수 만큼
+		for (unsigned int i = 0; i < mModelChain[_Name].size(); ++i)
+		{
+			// 서브 모델 추가
+			addSubModel(_key, mModelChain[_Name][i], _x, _y, _z, _moveAble);
+			UsingModel(mModelChain[_Name][i]);
+		}
+
+		// 스케일
+		SetScale(_key, _Name, _sX, _sY, _sZ);
+
 		_Name.clear();
 	}
 

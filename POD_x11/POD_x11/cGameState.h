@@ -13,6 +13,7 @@ protected:
 	cShaderManager*   mShaderManager   = cShaderManager  ::GetInstance(); // ¶óÀÌÆ® ¶«½Ã?
 	cShadowMap    *   mShadowMap       = cShadowMap      ::GetInstance(); // ½¦µµ¿ì ¸Ê
 	cMapManager   *   mMapManager      = cMapManager     ::GetInstance(); // ¸Ê ¸Å´ÏÀú
+	cSoundManager *   mSoundManager    = cSoundManager   ::GetInstance(); // »ç¿îµå ¸Å´ÏÀú
 
 	//cShaderManager*   mShaderManager   = cShaderManager  ::GetInstance();
 	//cMaterialManager* mMaterialManager = cMaterialManager::GetInstance();

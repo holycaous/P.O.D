@@ -16,6 +16,10 @@ public:
 	// 브금시작
 	void PlayBGM(GAME_STATE_TYPE _state)
 	{
+		// 기존 BGM 종료
+		StopBGM();
+
+		// 새로운 BGM 시작
 		switch (_state)
 		{
 		case e_MainState:
@@ -41,6 +45,7 @@ public:
 	void ClearClass()
 	{
 		StopBGM();
+		ClearESD();
 	}
 
 	// 사운드 재생
@@ -62,8 +67,8 @@ private:
 	// BGM 초기화
 	void initBGM()
 	{
-		mMainStateBGM = L"Sound/.wav";
-		mPlayStateBGM = L"Sound/.wav";
+		mMainStateBGM = L"Sound/BGM/Fairy_Village.wav";
+		mPlayStateBGM = L"Sound/BGM/Popolion_Village.wav";
 	}
 
 	// 효과음 초기화
@@ -74,7 +79,7 @@ private:
 		mSDSystem->init(2, FMOD_INIT_NORMAL, NULL);
 
 		// 효과음 로딩 // string _soundName, string _fileLocation, float _VolumeSize
-		//addEffectSound();
+		addEffectSound("Attack1", "Sound/ESD/AttackF_00.ogg", 100);
 	}
 
 	// 효과음 클리어

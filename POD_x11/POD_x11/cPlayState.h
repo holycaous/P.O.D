@@ -9,32 +9,36 @@ public:
 	// 초기화
 	void Init()
 	{
+		// BGM
+		mSoundManager->PlayBGM(e_PlayState);
+
 		// 이전 모델 데이터 삭제 ( 정확히말하면 월드 매트릭스 )
 		mModelManager->ClearModel();
-
-		// 모델 추가
-		int size  = 550;
-		int Count = 5500;
-		for (int x = 0; x < Count; ++x)
-		{
-			switch (rand() % 2)
-			{
-			case 0:
-				mModelManager->AddModel("BOX2", float(rand() % size), float(rand() % size), float(rand() % size));
-				break;
-			case 1:
-				mModelManager->AddModel("BOX3", float(rand() % size), float(rand() % size), float(rand() % size));
-				break;
-			}
-		}
 
 		// 스크린 추가 (풀 스크린쿼드)
 		mModelManager->AddScreen(0.0f, 0.0f, 0.0f);
 
+#ifdef POSTEFFECT_ON
+		// HDR 스크린 추가 (풀 스크린쿼드)
+		mModelManager->AddHdrScreen(0.0f, 0.0f, 0.0f);
+#endif
+		// 맵 테스트용
+		mModelManager->AddMap(0, "Map1", 0.0f, 0.0f, 0.0f);
+
+		// 쉐도우맵 경계구 반지름 추가
+		mShadowMap->SetmSceneBoundsRadius(mMapManager->mData["Map1"].GetWidth() / 1.8f);
+
+		// 모델 2 
+		mModelManager->AddModel(1, "Model2", 100.0f, 0.0f, 100.0f, e_Idle);
+
+		// 큐브맵 적용
+		mModelManager->AddCubeMap(0, "CubeMap1", 0.0f, 0.0f, 0.0f);
+
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
 
-		// 카메라 초기화
+		// 플레이어 및 카메라 세팅
+		mModelManager->IniPlayer(0, "Model1", 0.0f, 0.0f, 0.0f, e_Run);
 		gCam.Change1PersonCam();
 	}
 
@@ -49,6 +53,9 @@ public:
 	{
 		// 렌더링 매니저 업데이트
 		mDrawManager->Update(dt);
+
+		// 모델 매니저 업데이트
+		mModelManager->Update(dt);
 
 		// 플레이어 액션
 		PlayerAction(dt);

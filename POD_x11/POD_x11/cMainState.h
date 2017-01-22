@@ -9,6 +9,9 @@ public:
 	// 초기화
 	void Init()
 	{
+		// BGM
+		mSoundManager->PlayBGM(e_MainState);
+
 		// 이전 모델 데이터 삭제 ( 정확히말하면 월드 매트릭스 )
 		mModelManager->ClearModel();
 
@@ -46,20 +49,18 @@ public:
 		mModelManager->AddModel(0, "MapObj2" , 1000.0f, 0.0f, 1700.0f); // 작은 건물1
 		mModelManager->AddModel(1, "MapObj2" ,  900.0f, 0.0f, 1700.0f);
 
-		mModelManager->AddModel(0, "MapObj4" , -500.0f, 0.0f,  -900.0f); // 풀밭
-		mModelManager->AddModel(1, "MapObj4",  -100.0f, 0.0f,  -900.0f);
-		mModelManager->AddModel(2, "MapObj4",  -500.0f, 0.0f,  -600.0f);
-		mModelManager->AddModel(3, "MapObj4",  -100.0f, 0.0f,  -600.0f);
-		mModelManager->SetScale(0, "MapObj4", 2.0f, 1.f, 2.0f);
-		mModelManager->SetScale(1, "MapObj4", 2.0f, 1.f, 2.0f);
-		mModelManager->SetScale(2, "MapObj4", 2.0f, 1.f, 2.0f);
-		mModelManager->SetScale(3, "MapObj4", 2.0f, 1.f, 2.0f);
-		mModelManager->SetRotateY(0, "MapObj4", 90.f);
-		mModelManager->SetRotateY(1, "MapObj4", 90.f);
-		mModelManager->SetRotateY(2, "MapObj4", 90.f);
-		mModelManager->SetRotateY(3, "MapObj4", 90.f);
-
-		
+		mModelManager->AddModel(0, "MapObj4" , -500.0f, 0.0f, -900.0f, 2.0f, 1.f, 2.0f, 90.f); // 풀밭
+		mModelManager->AddModel(1, "MapObj4",  -200.0f, 0.0f, -900.0f, 2.0f, 1.f, 2.0f, 0.f);
+		mModelManager->AddModel(2, "MapObj4",  -500.0f, 0.0f, -600.0f, 2.0f, 1.f, 2.0f, 180.f);
+		mModelManager->AddModel(3, "MapObj4",  -200.0f, 0.0f, -600.0f, 2.0f, 1.f, 2.0f, 270.f);
+		//mModelManager->SetScale(0, "MapObj4", 2.0f, 1.f, 2.0f);
+		//mModelManager->SetScale(1, "MapObj4", 2.0f, 1.f, 2.0f);
+		//mModelManager->SetScale(2, "MapObj4", 2.0f, 1.f, 2.0f);
+		//mModelManager->SetScale(3, "MapObj4", 2.0f, 1.f, 2.0f);
+		//mModelManager->SetRotateY(0, "MapObj4", 90.f);
+		//mModelManager->SetRotateY(1, "MapObj4", 90.f);
+		//mModelManager->SetRotateY(2, "MapObj4", 90.f);
+		//mModelManager->SetRotateY(3, "MapObj4", 90.f);
 
 		mModelManager->AddModel(0, "MapObj6" , -1650.0f, 0.0f, -1400.0f); // 땅에 밖힌 지붕
 
@@ -107,19 +108,20 @@ public:
 		//--------------------------------------------------------------------------------------------------------------------//
 		mModelManager->AddModel(1, "Model2", 100.0f, 0.0f, 100.0f, e_Idle);
 		//mModelManager->DrawBone( "Model2", "Run" , 100.0f, 100.0f, 600.0f, 10);  // 애니키 번호
-		
+		//
 		// 본 일렬로 세우기
 		//for (int i = 0; i < 17; ++i)
 		//	mModelManager->DrawBone("Model2", "Run", 50.0f, 100.0f, 100.0f * i, i);  // 애니키 번호
-
+		//
 		//--------------------------------------------------------------------------------------------------------------------//
+
 		// 해당 인스턴스 버퍼를 만들겠당..
 		mModelManager->MakeInsbuf();
 
 
-
 		// 플레이어 및 카메라 세팅
 		mModelManager->IniPlayer(0, "Model1", 0.0f, 0.0f, 0.0f, e_Run);
+		gCam.Change3PersonCam();
 	
 		// 체력 제어
 		//mModelManager->SetHP(0, "Mode1", 100.0f);
@@ -243,6 +245,7 @@ public:
 		if (GetAsyncKeyState(VK_SPACE) & 0x8000)
 		{
 			mModelManager->Jump(0, "Model1");
+			//mSoundManager->PlayESound("Attack1");
 		}
 
 		//-------------------------------------------------------------------//

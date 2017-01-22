@@ -10,6 +10,8 @@ class cDrawManager : public cSingleton<cDrawManager>
 	cModelManager*    mModelManager    = cModelManager   ::GetInstance();
 	cShadowMap*       mShadowMap       = cShadowMap      ::GetInstance();
 	cHDRManager*      mHDRManager	   = cHDRManager     ::GetInstance();
+	cUIManager*       mUIManager       = cUIManager      ::GetInstance();
+
 
 	// 어떻게 그릴 것인가
 	ID3D11RasterizerState* mWireframeRS  = nullptr;
