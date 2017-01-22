@@ -11,6 +11,14 @@ typedef enum
 	e_PlayState = 2
 }GAME_STATE_TYPE;
 
+// 렌즈 타입
+typedef enum
+{
+	e_Perspective = 0,
+	e_Ortho = 1
+}LENS_TYPE;
+
+
 // 기본 재질
 typedef enum
 {
@@ -222,6 +230,43 @@ public:
 	XMFLOAT3 Max;
 	XMFLOAT3 Min;
 	XMFLOAT3 Center;
+};
+
+// 사운드 클래스
+class soundFile
+{
+public:
+	bool IsPlaying;
+	Channel* mChannel;
+	Sound  * mSound;
+
+public:
+	soundFile()
+	{
+		IsPlaying = true;
+	}
+
+	~soundFile()
+	{
+		ClearClass();
+	}
+
+	void ClearClass()
+	{
+		mChannel->stop();
+		mSound->release();
+	}
+
+	void StopSD()
+	{
+		//IsPlaying = false;
+		mChannel->stop();
+	}
+
+	void SetVol(float& _VolumeSize)
+	{
+		mChannel->setVolume(_VolumeSize / 100.0f);
+	}
 };
 
 // 재질

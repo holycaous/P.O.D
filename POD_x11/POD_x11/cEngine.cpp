@@ -55,7 +55,7 @@ void cEngine::OnResize()
 	cInitD3D::OnResize();
 	
 	// 카메라 다시 만들기
-	gCam.SetLens(0.25f * cMathHelper::Pi, AspectRatio());
+	gCam.SetLens(e_Perspective, 0.25f * cMathHelper::Pi, AspectRatio());
 
 	// 카메라 뷰 프리스텀 업데이트
 	//gCam.FrustumProjection();

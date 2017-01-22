@@ -27,6 +27,11 @@
 #include <map>
 #include "targetver.h"
 
+// Fmod (사운드)
+#include "fmod.hpp"
+#pragma comment (lib, "fmodex_vc.lib")
+
+using namespace FMOD;
 using namespace std;
 
 // 윈도우 사이즈

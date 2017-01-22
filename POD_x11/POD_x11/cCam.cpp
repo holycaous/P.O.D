@@ -44,6 +44,30 @@ void cCam::initCam(float _x, float _y, float _z)
 	UpdateViewMatrix();
 }
 
+void cCam::initUIViewMtx()
+{
+	// UI View 초기화
+	mUiView(0, 0) = mRight.x;
+	mUiView(1, 0) = mRight.y;
+	mUiView(2, 0) = mRight.z;
+	mUiView(3, 0) = 0.0f;
+
+	mUiView(0, 1) = mUp.x;
+	mUiView(1, 1) = mUp.y;
+	mUiView(2, 1) = mUp.z;
+	mUiView(3, 1) = -100.0f;
+
+	mUiView(0, 2) = mLook.x;
+	mUiView(1, 2) = mLook.y;
+	mUiView(2, 2) = mLook.z;
+	mUiView(3, 2) = 0.0f;
+
+	mUiView(0, 3) = 0.0f;
+	mUiView(1, 3) = 0.0f;
+	mUiView(2, 3) = 0.0f;
+	mUiView(3, 3) = 1.0f;
+}
+
 void cCam::initDir()
 {
 	// 각 방향벡터 초기화
@@ -67,34 +91,45 @@ void cCam::FrustumProjection()
 }
 
 // 카메라 조절
-void cCam::SetLens(float fovY, float aspect, float zn, float zf)
+void cCam::SetLens(LENS_TYPE lensType, float fovY, float aspect, float zn, float zf)
 {
 	// cache properties
-	mFovY   = fovY;
+	mFovY = fovY;
 	mAspect = aspect;
-	mNearZ  = zn;
-	mFarZ   = zf;
+	mNearZ = zn;
+	mFarZ = zf;
 
 	mNearWindowHeight = 2.0f * mNearZ * tanf(0.5f * mFovY);
-	mFarWindowHeight  = 2.0f * mFarZ  * tanf(0.5f * mFovY);
+	mFarWindowHeight = 2.0f * mFarZ  * tanf(0.5f * mFovY);
 
-	XMMATRIX P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
+	XMMATRIX P = XMMatrixIdentity();
+	if (lensType == e_Perspective)
+		P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
+	else
+		P = XMMatrixOrthographicLH(mFovY, mAspect, mNearZ, mFarZ);
 	XMStoreFloat4x4(&mProj, P);
 }
 
 // 카메라 조절
-void cCam::SetLens(float fovY, float aspect)
+void cCam::SetLens(LENS_TYPE lensType, float fovY, float aspect)
 {
 	// cache properties
-	mFovY   = fovY;
+	mFovY = fovY;
 	mAspect = aspect;
 
 	mNearWindowHeight = 2.0f * mNearZ * tanf(0.5f * mFovY);
-	mFarWindowHeight  = 2.0f * mFarZ  * tanf(0.5f * mFovY);
+	mFarWindowHeight = 2.0f * mFarZ  * tanf(0.5f * mFovY);
 
-	XMMATRIX P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
+	XMMATRIX P = XMMatrixIdentity();
+	if (lensType == e_Perspective)
+		P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
+	else
+		P = XMMatrixOrthographicLH(mFovY, mAspect, mNearZ, mFarZ);
 	XMStoreFloat4x4(&mProj, P);
 }
+
+
+
 
 void cCam::LookAt(FXMVECTOR pos, FXMVECTOR target, FXMVECTOR worldUp)
 {

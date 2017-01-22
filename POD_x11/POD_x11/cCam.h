@@ -12,6 +12,7 @@ public:
 
 	// Get/Set world camera position.
 	void initCam(float _x, float _y, float _z);
+	void initUIViewMtx();
 	void initDir();
 	XMVECTOR GetPositionXM()const;
 	XMFLOAT3 GetPosition()const;
@@ -48,8 +49,8 @@ public:
 	float GetFarWindowHeight()const;
 
 	// Set frustum.
-	void SetLens(float fovY, float aspect, float zn, float zf);
-	void SetLens(float fovY, float aspect);
+	void SetLens(LENS_TYPE lensType, float fovY, float aspect, float zn, float zf);
+	void SetLens(LENS_TYPE lensType, float fovY, float aspect);
 
 	//
 	void FrustumProjection();
@@ -103,4 +104,5 @@ private:
 	// Cache View/Proj matrices.
 	XMFLOAT4X4 mView;
 	XMFLOAT4X4 mProj;
+	XMFLOAT4X4 mUiView;
 };
