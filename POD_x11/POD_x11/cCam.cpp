@@ -35,6 +35,9 @@ void cCam::initCam(float _x, float _y, float _z)
 
 	// 방향
 	initDir();
+	
+	// UI 매트릭스 초기화
+	initUIViewMtx();
 
 	// 회전
 	Pitch(0.71f);
@@ -47,25 +50,25 @@ void cCam::initCam(float _x, float _y, float _z)
 void cCam::initUIViewMtx()
 {
 	// UI View 초기화
-	mUiView(0, 0) = mRight.x;
-	mUiView(1, 0) = mRight.y;
-	mUiView(2, 0) = mRight.z;
-	mUiView(3, 0) = 0.0f;
+	mUIView(0, 0) = mRight.x;
+	mUIView(1, 0) = mRight.y;
+	mUIView(2, 0) = mRight.z;
+	mUIView(3, 0) = 0.0f;
 
-	mUiView(0, 1) = mUp.x;
-	mUiView(1, 1) = mUp.y;
-	mUiView(2, 1) = mUp.z;
-	mUiView(3, 1) = -100.0f;
+	mUIView(0, 1) = mUp.x;
+	mUIView(1, 1) = mUp.y;
+	mUIView(2, 1) = mUp.z;
+	mUIView(3, 1) = CAM_ORTHO_Y;
 
-	mUiView(0, 2) = mLook.x;
-	mUiView(1, 2) = mLook.y;
-	mUiView(2, 2) = mLook.z;
-	mUiView(3, 2) = 0.0f;
+	mUIView(0, 2) = mLook.x;
+	mUIView(1, 2) = mLook.y;
+	mUIView(2, 2) = mLook.z;
+	mUIView(3, 2) = 0.0f;
 
-	mUiView(0, 3) = 0.0f;
-	mUiView(1, 3) = 0.0f;
-	mUiView(2, 3) = 0.0f;
-	mUiView(3, 3) = 1.0f;
+	mUIView(0, 3) = 0.0f;
+	mUIView(1, 3) = 0.0f;
+	mUIView(2, 3) = 0.0f;
+	mUIView(3, 3) = 1.0f;
 }
 
 void cCam::initDir()
@@ -91,7 +94,7 @@ void cCam::FrustumProjection()
 }
 
 // 카메라 조절
-void cCam::SetLens(LENS_TYPE lensType, float fovY, float aspect, float zn, float zf)
+void cCam::SetLens(float fovY, float aspect, float zn, float zf)
 {
 	// cache properties
 	mFovY = fovY;
@@ -102,16 +105,19 @@ void cCam::SetLens(LENS_TYPE lensType, float fovY, float aspect, float zn, float
 	mNearWindowHeight = 2.0f * mNearZ * tanf(0.5f * mFovY);
 	mFarWindowHeight = 2.0f * mFarZ  * tanf(0.5f * mFovY);
 
+	// 원근 투영 Proj
 	XMMATRIX P = XMMatrixIdentity();
-	if (lensType == e_Perspective)
-		P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
-	else
-		P = XMMatrixOrthographicLH(mFovY, mAspect, mNearZ, mFarZ);
+	P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
 	XMStoreFloat4x4(&mProj, P);
+
+	// 직교투영 Proj
+	P = XMMatrixOrthographicLH(mFovY, mAspect, mNearZ, mFarZ);
+	XMStoreFloat4x4(&mUIProj, P);
+
 }
 
 // 카메라 조절
-void cCam::SetLens(LENS_TYPE lensType, float fovY, float aspect)
+void cCam::SetLens(float fovY, float aspect)
 {
 	// cache properties
 	mFovY = fovY;
@@ -120,15 +126,15 @@ void cCam::SetLens(LENS_TYPE lensType, float fovY, float aspect)
 	mNearWindowHeight = 2.0f * mNearZ * tanf(0.5f * mFovY);
 	mFarWindowHeight = 2.0f * mFarZ  * tanf(0.5f * mFovY);
 
+	// 원근 투영 Proj
 	XMMATRIX P = XMMatrixIdentity();
-	if (lensType == e_Perspective)
-		P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
-	else
-		P = XMMatrixOrthographicLH(mFovY, mAspect, mNearZ, mFarZ);
+	P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
 	XMStoreFloat4x4(&mProj, P);
+
+	// 직교투영 Proj
+	P = XMMatrixOrthographicLH(mFovY, mAspect, mNearZ, mFarZ);
+	XMStoreFloat4x4(&mUIProj, P);
 }
-
-
 
 
 void cCam::LookAt(FXMVECTOR pos, FXMVECTOR target, FXMVECTOR worldUp)
@@ -470,6 +476,21 @@ XMMATRIX cCam::Proj()const
 XMMATRIX cCam::ViewProj()const
 {
 	return XMMatrixMultiply(View(), Proj());
+}
+
+XMMATRIX cCam::UIView()const
+{
+	return XMLoadFloat4x4(&mUIView);
+}
+
+XMMATRIX cCam::UIProj()const
+{
+	return XMLoadFloat4x4(&mUIProj);
+}
+
+XMMATRIX cCam::UIViewProj()const
+{
+	return XMMatrixMultiply(UIView(), UIProj());
 }
 
 void cCam::Setm3PersonLength(float _amount)

@@ -78,15 +78,15 @@ public:
 		// 기본 정보 세팅
 		XMMATRIX world             = XMLoadFloat4x4(&mNowModel->mObjData[_Num].mWdMtx);
 		XMMATRIX worldInvTranspose = cMathHelper::InverseTranspose(world);
-		XMMATRIX viewInvTranspose  = cMathHelper::InverseTranspose(gCam.View());
 		XMMATRIX worldViewProj     = world * gCam.ViewProj();
 		XMMATRIX WorldView		   = gCam.View() * world;
 
 		// 카메라 값 세팅
 		XMMATRIX view      = gCam.View();
 		XMMATRIX proj      = gCam.Proj();
-		XMMATRIX viewProj  = gCam.ViewProj();
+		XMMATRIX viewInvTranspose = cMathHelper::InverseTranspose(gCam.View());
 		XMMATRIX projInvTranspose = cMathHelper::InverseTranspose(gCam.Proj());
+
 
 		// viewInvTranspose
 		// -> 이동은 무시 하고
@@ -98,6 +98,37 @@ public:
 
 		// 모델 매트릭스 업데이트
 		UpdateWorldMtx(world, worldInvTranspose, worldViewProj, view, viewInvTranspose, proj, projInvTranspose);
+
+		// 카메라 위치 업데이트
+		UpdateCamPos(gCam.GetPosition());
+	}
+
+	// '기본' UI 쉐이더 변수 업데이트
+	void SetUIBasicShaderValue(InitMetaData* mNowModel, int _Num)
+	{
+		// 기본 정보 세팅
+		XMMATRIX world             = XMLoadFloat4x4(&mNowModel->mObjData[_Num].mWdMtx);
+		XMMATRIX worldInvTranspose = cMathHelper::InverseTranspose(world);
+		XMMATRIX UIworldViewProj   = world * gCam.UIViewProj();
+		XMMATRIX WorldView		   = gCam.View() * world;
+
+		// 카메라 값 세팅
+		XMMATRIX UIview      = gCam.UIView();
+		XMMATRIX UIproj      = gCam.UIProj();
+		XMMATRIX UIviewInvTranspose = cMathHelper::InverseTranspose(gCam.UIView());
+		XMMATRIX UIprojInvTranspose = cMathHelper::InverseTranspose(gCam.UIProj());
+
+
+		// viewInvTranspose
+		// -> 이동은 무시 하고
+		// -> 회전은 그데로 살리고
+		// -> 스케일은
+		// -> 다시 1로
+		// -> 만들기 위해서
+		// -> 하는거야
+
+		// 모델 매트릭스 업데이트
+		UpdateUIWorldMtx(world, worldInvTranspose, UIworldViewProj, UIview, UIviewInvTranspose, UIproj, UIprojInvTranspose);
 
 		// 카메라 위치 업데이트
 		UpdateCamPos(gCam.GetPosition());
@@ -157,10 +188,9 @@ public:
 			// 카메라 값 세팅
 			XMMATRIX view = gCam.View();
 			XMMATRIX proj = gCam.Proj();
-			XMMATRIX projInvTranspose = cMathHelper::InverseTranspose(gCam.Proj());
-
 			XMMATRIX viewProj = gCam.ViewProj();
 			XMMATRIX viewInvTranspose = cMathHelper::InverseTranspose(gCam.View());
+			XMMATRIX projInvTranspose = cMathHelper::InverseTranspose(gCam.Proj());
 
 			//// 이런식으로 접근 가능함, 모델 매트릭스에 ----------
 			//XMFLOAT4X4 _world;
@@ -195,6 +225,27 @@ public:
 		// HDR 텍스처 갱신
 		SetShaderValue(e_ShaderValResource, "gHDRTex", mCoreStorage->mHDRSRV);
 #endif
+	}
+
+	// '기본' 쉐이더 변수 업데이트
+	void SetUIBasicShaderValueIns(TECH_TYPE _TechType)
+	{
+		//-----------------------------------------------------------------------------------//
+		// 일반 쉐이더 전용
+		//-----------------------------------------------------------------------------------//
+		// 기본 정보 세팅
+		XMMATRIX world = XMMatrixIdentity();
+		XMMATRIX worldInvTranspose = cMathHelper::InverseTranspose(world);
+
+		// 카메라 값 세팅
+		XMMATRIX UIview             = gCam.UIView();
+		XMMATRIX UIproj             = gCam.UIProj();
+		XMMATRIX UIviewProj         = gCam.UIViewProj();
+		XMMATRIX UIviewInvTranspose = cMathHelper::InverseTranspose(gCam.UIView());
+		XMMATRIX UIprojInvTranspose = cMathHelper::InverseTranspose(gCam.UIProj());
+
+		// 모델 매트릭스 업데이트
+		UpdateUIWorldMtxIns(world, worldInvTranspose, UIviewProj, UIview, UIviewInvTranspose, UIproj, UIprojInvTranspose);
 	}
 
 	// '개별' 쉐이더 변수 업데이트
@@ -447,25 +498,50 @@ protected:
 	template <class T>
 	void UpdateWorldMtx(T& world, T& worldInvTranspose, T& worldViewProj, T& view, T& viewInvTranspose, T& proj, T& ProjInvTranspose)
 	{
-		SetShaderValue(e_ShaderValMtx, "gWorld"			   , world);
-		SetShaderValue(e_ShaderValMtx, "gWorldInvTranspose", worldInvTranspose);
-		SetShaderValue(e_ShaderValMtx, "gWorldViewProj"    , worldViewProj);
-		SetShaderValue(e_ShaderValMtx, "gView"			   , view);
-		SetShaderValue(e_ShaderValMtx, "gViewInvTranspose" , viewInvTranspose);
-		SetShaderValue(e_ShaderValMtx, "gProj"			   , proj);
-		SetShaderValue(e_ShaderValMtx, "gProjInvTranspose" , ProjInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gWorld"			       , world);
+		SetShaderValue(e_ShaderValMtx, "gWorldInvTranspose"    , worldInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gWorldViewProj"        , worldViewProj);
+		SetShaderValue(e_ShaderValMtx, "gView"			       , view);
+		SetShaderValue(e_ShaderValMtx, "gViewInvTranspose"     , viewInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gProj"			       , proj);
+		SetShaderValue(e_ShaderValMtx, "gProjInvTranspose"     , ProjInvTranspose);
 	}
 
 	template <class T>
 	void UpdateWorldMtxIns(T& world, T& worldInvTranspose, T& viewProj, T& view, T& viewInvTranspose, T& proj, T& ProjInvTranspose)
 	{
-		SetShaderValue(e_ShaderValMtx, "gWorld"			   , world);
-		SetShaderValue(e_ShaderValMtx, "gWorldInvTranspose", worldInvTranspose);
-		SetShaderValue(e_ShaderValMtx, "gViewProj"		   , viewProj);
-		SetShaderValue(e_ShaderValMtx, "gView"			   , view);
-		SetShaderValue(e_ShaderValMtx, "gViewInvTranspose" , viewInvTranspose);
-		SetShaderValue(e_ShaderValMtx, "gProj"			   , proj);
-		SetShaderValue(e_ShaderValMtx, "gProjInvTranspose" , ProjInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gWorld"			       , world);
+		SetShaderValue(e_ShaderValMtx, "gWorldInvTranspose"    , worldInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gViewProj"		       , viewProj);
+		SetShaderValue(e_ShaderValMtx, "gView"			       , view);
+		SetShaderValue(e_ShaderValMtx, "gViewInvTranspose"     , viewInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gProj"			       , proj);
+		SetShaderValue(e_ShaderValMtx, "gProjInvTranspose"     , ProjInvTranspose);
+	}
+
+	// 기본 매트릭스 업데이트
+	template <class T>
+	void UpdateUIWorldMtx(T& world, T& worldInvTranspose, T& oview, T& oviewInvTranspose, T& oproj, T& oProjInvTranspose, T& oworldviewProj)
+	{
+		SetShaderValue(e_ShaderValMtx, "gWorld"					, world);
+		SetShaderValue(e_ShaderValMtx, "gWorldInvTranspose"		, worldInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gOrthoView"				, oview);
+		SetShaderValue(e_ShaderValMtx, "gOrthoViewInvTranspose" , oviewInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gOrthoProj"				, oproj);
+		SetShaderValue(e_ShaderValMtx, "gOrthoProjInvTranspose" , oProjInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gOrthoWorldViewProj"	, oworldviewProj);
+	}
+
+	template <class T>
+	void UpdateUIWorldMtxIns(T& world, T& worldInvTranspose, T& oview, T& oviewInvTranspose, T& oproj, T& oProjInvTranspose, T& oviewproj)
+	{
+		SetShaderValue(e_ShaderValMtx, "gWorld"					, world);
+		SetShaderValue(e_ShaderValMtx, "gWorldInvTranspose"	    , worldInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gOrthoView"			    , oview);
+		SetShaderValue(e_ShaderValMtx, "gOrthoViewInvTranspose" , oviewInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gOrthoProj"				, oproj);
+		SetShaderValue(e_ShaderValMtx, "gOrthoProjInvTranspose" , oProjInvTranspose);
+		SetShaderValue(e_ShaderValMtx, "gOrthoViewProj"		    , oviewproj);
 	}
 
 	template <class T>
@@ -552,19 +628,25 @@ private:
 		GetTech(tEffectStorage, _TechType, _TechniqueName);
 		
 		// 상수버퍼 수정할 수 있게끔 값 얻기 (Get)
-		GetShaderValue(tEffectStorage, "gWorld"			   , e_ShaderValMtx);      // 매트릭스
-		GetShaderValue(tEffectStorage, "gWorldInvTranspose", e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gView"		       , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gViewInvTranspose" , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gProj"			   , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gProjInvTranspose" , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gWorldViewProj"	   , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gViewProj"		   , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gTexTFMtx"		   , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gLocTMMtx"		   , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gWdTMMtx"          , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gShadowTransform"  , e_ShaderValMtx);      
-		GetShaderValue(tEffectStorage, "gLightViewProj"    , e_ShaderValMtx);  
+		GetShaderValue(tEffectStorage, "gWorld"			         , e_ShaderValMtx);      // 매트릭스
+		GetShaderValue(tEffectStorage, "gWorldInvTranspose"      , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gView"		             , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gViewInvTranspose"       , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gProj"			         , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gProjInvTranspose"       , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gWorldViewProj"	         , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gViewProj"		         , e_ShaderValMtx);   
+		GetShaderValue(tEffectStorage, "gOrthoView"		         , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gOrthoViewInvTranspose"  , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gOrthoProj"			     , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gOrthoProjInvTranspose"  , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gOrthoWorldViewProj"	 , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gOrthoViewProj"		     , e_ShaderValMtx);  
+		GetShaderValue(tEffectStorage, "gTexTFMtx"			     , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gLocTMMtx"		         , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gWdTMMtx"                , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gShadowTransform"        , e_ShaderValMtx);      
+		GetShaderValue(tEffectStorage, "gLightViewProj"          , e_ShaderValMtx);  
 																			       
 		GetShaderValue(tEffectStorage, "gEyePosW"		   , e_ShaderValVtx);      // 버텍스
 																		

@@ -41,6 +41,7 @@ using namespace std;
 #define CAM_NEAR 1
 #define CAM_FAR 5100
 #define CAM_3PERSON_LENGTH 375
+#define CAM_ORTHO_Y -100
 
 #define GRAVITY 800
 

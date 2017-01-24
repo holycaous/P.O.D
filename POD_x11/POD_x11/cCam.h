@@ -49,8 +49,8 @@ public:
 	float GetFarWindowHeight()const;
 
 	// Set frustum.
-	void SetLens(LENS_TYPE lensType, float fovY, float aspect, float zn, float zf);
-	void SetLens(LENS_TYPE lensType, float fovY, float aspect);
+	void SetLens(float fovY, float aspect, float zn, float zf);
+	void SetLens(float fovY, float aspect);
 
 	//
 	void FrustumProjection();
@@ -63,6 +63,10 @@ public:
 	XMMATRIX View()const;
 	XMMATRIX Proj()const;
 	XMMATRIX ViewProj()const;
+	XMMATRIX UIView()const;
+	XMMATRIX UIProj()const;
+	XMMATRIX UIViewProj()const;
+
 
 	// Strafe/Walk the camera a distance d.
 	void Strafe(float d);
@@ -104,5 +108,6 @@ private:
 	// Cache View/Proj matrices.
 	XMFLOAT4X4 mView;
 	XMFLOAT4X4 mProj;
-	XMFLOAT4X4 mUiView;
+	XMFLOAT4X4 mUIView;
+	XMFLOAT4X4 mUIProj;
 };

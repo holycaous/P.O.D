@@ -11,14 +11,6 @@ typedef enum
 	e_PlayState = 2
 }GAME_STATE_TYPE;
 
-// 렌즈 타입
-typedef enum
-{
-	e_Perspective = 0,
-	e_Ortho = 1
-}LENS_TYPE;
-
-
 // 기본 재질
 typedef enum
 {
@@ -60,6 +52,13 @@ typedef enum
 	e_Basic  = 0,
 	e_Shadow = 1
 }TECH_TYPE;
+
+// UI 충돌체크하는 텍스처인가?
+typedef enum
+{
+	e_able    = 0,
+	e_disable = 1
+}UI_TEX_COL;
 
 // 모델 FSM
 typedef enum
@@ -431,6 +430,86 @@ public:
 	int  Key;
 	char Name[BUF_SIZE];
 	char objClass[BUF_SIZE];
+};
+
+// UI 데이터
+class UIObjData
+{
+	float mBasicYpos = CAM_ORTHO_Y;
+
+public:
+	UI_TEX_COL   mColTex;
+	XMFLOAT4X4   mWdMtx;
+
+	// 바운드박스 데이터 (풀스크린 쿼드, uv로 충돌체크)
+	BoundBox mBoundBox;
+	float    mRadius;
+
+public:
+	void init(XMFLOAT3& _Pos, XMFLOAT3& _Center, XMFLOAT3& _Min, XMFLOAT3& _Max, float& _Radius, UI_TEX_COL _ColTex)
+	{
+		mBoundBox.Center = _Center;
+		mBoundBox.Min = _Min;
+		mBoundBox.Max = _Max;
+		mRadius = _Radius;
+		mColTex = _ColTex;
+
+		// 월드 매트릭스 초기화
+		XMMATRIX I = XMMatrixIdentity();
+		XMStoreFloat4x4(&mWdMtx, I);
+		mWdMtx._41 = _Pos.x;
+		mWdMtx._42 = _Pos.y;
+		mWdMtx._43 = _Pos.z;
+
+	}
+
+	// 원 충돌체크
+	bool ColCirCheck()
+	{
+		// 충돌체크하는 텍스처인가
+		if (mColTex == e_able)
+		{
+			mBasicYpos; // 보정값
+
+			mBoundBox.Center;
+			mRadius;
+
+			ColBoxCheck();
+		}
+	}
+
+	// get&set
+	XMFLOAT3 getCenter()
+	{
+		return mBoundBox.Center;
+	}
+	XMFLOAT3 getPos()
+	{
+		return XMFLOAT3(mWdMtx._41, mWdMtx._42, mWdMtx._43);
+	}
+	void setCenter(float _x, float _y, float _z)
+	{
+		mBoundBox.Center.x = _x;
+		mBoundBox.Center.y = _y;
+		mBoundBox.Center.z = _z;
+	}
+	void setPos(float _x, float _y, float _z)
+	{
+		mWdMtx._41 = _x;
+		mWdMtx._42 = _y;
+		mWdMtx._43 = _z;
+	}
+
+private:
+	// 박스 충돌체크
+	bool ColBoxCheck()
+	{
+		mBasicYpos; // 보정값
+
+		mBoundBox.Min;
+		mBoundBox.Max;
+
+	}
 };
 
 // 스텟 등 정보들 모두 넣을 거임
@@ -1146,6 +1225,11 @@ public:
 		mVertexOffset = Vertices.size();
 		mIndexOffset  = Indices.size();
 		mIndexCount   = Indices.size();
+	}
+
+	BoundBox GetBoundingBox()
+	{
+		return mBoundingBox;
 	}
 
 	// 오브젝트 데이터 1개 가져요기
@@ -3038,6 +3122,11 @@ public:
 		memset(&mObjClass  , '\0', sizeof(mObjClass));
 		memset(&mParentName, '\0', sizeof(mParentName));
 	}
+
+	BoundBox GetBoundingBox()
+	{
+		return mBoundingBox;
+	}
 };
 
 // 부모 정보를 가지고 있는 값
@@ -3109,6 +3198,11 @@ public:
 		XMStoreFloat4x4(&mTMLocalMtx, I);
 		XMStoreFloat4x4(&mTMWorldMtx, I);
 		XMStoreFloat4x4(&mInvWorldTMMtx, I);
+	}
+
+	BoundBox GetBoundingBox()
+	{
+		return mBoundingBox;
 	}
 
 	// 애니 데이터

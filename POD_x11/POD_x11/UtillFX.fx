@@ -323,6 +323,18 @@ float4x4 gProjInvTranspose;
 float4x4 gViewProj;
 float4x4 gWorldViewProj;
 
+// 직교투영 뷰
+float4x4 gOrthoView;
+float4x4 gOrthoViewInvTranspose;
+
+// 직교투영 프로젝션
+float4x4 gOrthoProj;
+float4x4 gOrthoProjInvTranspose;
+
+// 직교투영 합성
+float4x4 gOrthoViewProj;
+float4x4 gOrthoWorldViewProj;
+
 // 기타
 float4x4 gTexTFMtx;
 float4x4 gLocTMMtx;

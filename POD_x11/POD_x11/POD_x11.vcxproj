@@ -209,6 +209,7 @@
     </FxCompile>
     <FxCompile Include="PNT_MAP.fx" />
     <FxCompile Include="SKY_BOX.fx" />
+    <FxCompile Include="UI.fx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
